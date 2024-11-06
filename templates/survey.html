@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Survey - Throwback Request Live{% endblock %}
+
+{% block content %}
+    <div class="survey-container">
+        <script>
+            (function(t, e, s, n) {
+                var o, a, c;
+                t.SMCX = t.SMCX || [];
+                if (!e.getElementById(n)) {
+                    o = e.getElementsByTagName(s);
+                    a = o[o.length - 1];
+                    c = e.createElement(s);
+                    c.type = "text/javascript";
+                    c.async = true;
+                    c.id = n;
+                    c.src = "https://widget.surveymonkey.com/collect/website/js/tRaiETqnLgj758hTBazgd6dewImyJ_2B_2B3Rb1pG5zN_2Bnf3o9FuGY4sK5n6r2a6oFOP.js";
+                    a.parentNode.insertBefore(c, a);
+                    
+                    c.onload = function() {
+                        setTimeout(function() {
+                            var requestButton = document.querySelector('.done-button'); 
+                            if (requestButton) {
+                                requestButton.addEventListener('click', function() {
+                                    alert("REQUEST button clicked!");
+                                });
+                            }
+                        }, 1000);
+                    };
+                }
+            })(window, document, "script", "smcx-sdk");
+        </script>
+    </div>
+{% endblock %}

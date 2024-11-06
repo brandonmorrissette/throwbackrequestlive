@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Throwback Request Live{% endblock %}</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header class="header d-flex justify-content-between align-items-center">
+        <a href="{{ url_for('tip') }}" class="mx-3 subtle">Tip</a>
+        <h1 class="mx-auto">
+            <a href="{{ url_for('home') }}" >Throwback Request Live</a>
+        </h1>
+        <a href="{{ url_for('contact') }}" class="mx-3 subtle">Contact</a>
+    </header>
+
+    <main class="main">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="footer">
+        <a href="{{ url_for('tip') }}" class="mx-3 subtle">Tip</a>
+        <a href="{{ url_for('contact') }}" class="mx-3 subtle">Contact</a>
+    </footer>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

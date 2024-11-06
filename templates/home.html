@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Throwback Request Live{% endblock %}
+
+{% block content %}
+<h2>Upcoming Events</h2>
+
+
+<!-- Include FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var eventsData = JSON.parse('{{ events | tojson | safe }}'.trim());
+
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            events: eventsData,
+            headerToolbar: {
+                left: 'prev,next',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            themeSystem: 'bootstrap5',
+            eventClick: function (info) {
+                alert("Event: " + info.event.title);
+            }
+        });
+        calendar.render();
+
+
+    });
+</script>
+
+<div id='calendar'></div>
+{% endblock %}
