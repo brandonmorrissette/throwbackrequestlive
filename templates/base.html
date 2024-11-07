@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,18 +8,34 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
-    <header class="header d-flex justify-content-between align-items-center">
-        <a href="{{ url_for('tip') }}" class="mx-3 subtle">Tip</a>
-        <h1 class="mx-auto">
-            <a href="{{ url_for('home') }}" >Throwback Request Live</a>
-        </h1>
-        <a href="{{ url_for('contact') }}" class="mx-3 subtle">Contact</a>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="{{ url_for('home') }}"><img src="/static/logo.jpg"
+                    alt="Throwback Request Live" style="height: 40px;"></a>
+            <button class="navbar-toggler custom-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon custom-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link subtle" href="{{ url_for('tip') }}">Tip</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link subtle" href="{{ url_for('contact') }}">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
     </header>
 
     <main class="main">
-        {% block content %}
-        {% endblock %}
+        <div class="list-group-item content-wrapper">
+            {% block content %}
+            {% endblock %}
+        </div>
     </main>
 
     <footer class="footer">
@@ -30,4 +47,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>
