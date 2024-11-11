@@ -5,24 +5,30 @@
 {% block content %}
 <h2>Upcoming Events</h2>
 
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 <div class="container">
     <div class="list-group">
         {% for event in events %}
-        <a href="#" class="list-group-item list-group-item-action event-list-group-item" data-toggle="modal"
-            data-target="#eventModal" data-name="{{ event.name }}" data-date="{{ event.date }}"
-            data-venue="{{ event.venue }}" data-address="{{ event.address }}">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">{{ event.name }}</h5>
-                <span>{{ event.venue }}</span>
+        <a href="#" class="event-list-group-item" data-toggle="modal" data-target="#eventModal"
+            data-name="{{ event.name }}" data-date="{{ event.date }}" data-time="{{ event.time }}"
+            data-venue="{{ event.venue }}" data-street="{{ event.street }}" data-city="{{ event.city }}"
+            data-state="{{ event.state }}">
+
+            <div class="d-flex w-100 justify-content-between event-title">
+                <h5 class="event-name">{{ event.name }}</h5>
+                <h5 class="event-venue">{{ event.venue }}</h5>
             </div>
-            <div class="d-flex justify-content-between mb-1">
-                <span>{{ event.date }}</span>
-                <span>{{ event.address }}</span>
+
+            <div class="d-flex justify-content-between event-details">
+                <div class="event-date-time">
+                    <span class="event-time">{{ event.time }}</span>
+                    <span class="event-date">{{ event.date }}</span>
+                </div>
+                <span class="event-address">
+                    {% if event.street %}
+                    <div>{{ event.street }}</div>
+                    {% endif %}
+                    <div>{{ event.city }}, {{ event.state }}</div>
+                </span>
             </div>
         </a>
         {% endfor %}
@@ -41,30 +47,47 @@
             <div class="modal-body">
                 <p><strong>Event Name:</strong> <span id="modalEventName"></span></p>
                 <p><strong>Date:</strong> <span id="modalEventDate"></span></p>
+                <p><strong>Time:</strong> <span id="modalEventTime"></span></p>
                 <p><strong>Venue:</strong> <span id="modalEventVenue"></span></p>
                 <p><strong>Address:</strong> <span id="modalEventAddress"></span></p>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-custom" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <script>
     $('#eventModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
+
         var name = button.data('name');
         var date = button.data('date');
+        var time = button.data('time');
         var venue = button.data('venue');
-        var address = button.data('address');
+        var street = button.data('street');
+        var city = button.data('city');
+        var state = button.data('state');
+
+        var address = (street ? street + ', ' : '') + city + ', ' + state;
+        var mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
         var modal = $(this);
         modal.find('#modalEventName').text(name);
         modal.find('#modalEventDate').text(date);
+        modal.find('#modalEventTime').text(time);
         modal.find('#modalEventVenue').text(venue);
-        modal.find('#modalEventAddress').text(address);
+
+        modal.find('#modalEventAddress').html(`<a href="${mapsLink}" target="_blank">${address}</a>`);
     });
 </script>
+
+
+
 
 {% endblock %}

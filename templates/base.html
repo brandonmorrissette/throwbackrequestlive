@@ -12,8 +12,11 @@
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="{{ url_for('home') }}"><img src="/static/logo.jpg"
-                    alt="Throwback Request Live" style="height: 40px;"></a>
+            <a class="navbar-brand" href="{{ url_for('home') }}">
+                <img src="/static/logo.jpg" alt="Throwback Request Live" style="height: 40px;">
+            </a>
+
+            <!--
             <button class="navbar-toggler custom-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon custom-toggler-icon"></span>
@@ -24,15 +27,16 @@
                         <a class="nav-link subtle" href="{{ url_for('tip') }}">Tip</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link subtle" href="{{ url_for('contact') }}">Contact</a>
+                        <a class="nav-link subtle" href="{{ url_for('book') }}">Book</a>
                     </li>
                 </ul>
             </div>
+        -->
         </nav>
     </header>
 
     <main class="main">
-        <div class="list-group-item content-wrapper">
+        <div class="content-wrapper ">
             {% block content %}
             {% endblock %}
         </div>
@@ -40,7 +44,7 @@
 
     <footer class="footer">
         <a href="{{ url_for('tip') }}" class="mx-3 subtle">Tip</a>
-        <a href="{{ url_for('contact') }}" class="mx-3 subtle">Contact</a>
+        <a href="{{ url_for('book') }}" class="mx-3 subtle">Book</a>
     </footer>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

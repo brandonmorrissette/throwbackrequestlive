@@ -1,10 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Contact - Throwback Request Live{% endblock %}
+{% block title %}Booking - Throwback Request Live{% endblock %}
 
 {% block content %}
-<h2>Contact Us</h2>
-<p>If you have any questions or would like to book us for your event, feel free to reach out!</p>
+<h2>Booking</h2>
+<p>
+    For questions regarding booking us for your next event,
+    please fill out this form and we will gladly get back to you as soon as we can.
+    Thank you, have a great day!
+</p>
 
 <form action="mailto:ThrowbackRequestLive@proton.me" method="post" enctype="text/plain" class="contact-form">
     <div class="form-group">
@@ -24,7 +28,7 @@
         <textarea id="message" name="message" rows="4" required></textarea>
     </div>
     <div class="form-group text-center">
-        <button type="submit" class="btn btn-primary">Send Message</button>
+        <button type="submit" class="btn btn-custom">Send Message</button>\
     </div>
 </form>
 

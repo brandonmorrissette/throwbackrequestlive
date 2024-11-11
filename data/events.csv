@@ -1,29 +1,22 @@
-date,name,venue,address
-2024-11-01 18:00,Music Festival,Strawbery Banke,"14 Hancock St, Portsmouth, NH"
-2024-11-02 14:00,Art Exhibition,Portsmouth Art Gallery,"1-3 Market Square, Portsmouth, NH"
-2024-11-04 19:00,Weekly Yoga Class,Seacoast Yoga,"234 State St, Portsmouth, NH"
-2024-11-08 09:00,Tech Conference,The Music Hall,"28 Chestnut St, Portsmouth, NH"
-2024-11-10 12:00,Food Truck Rally,New Castle Commons,"New Castle, NH"
-2024-11-11 15:00,Book Club Meeting,Portsmouth Public Library,"175 Parrott Ave, Portsmouth, NH"
-2024-11-15 10:00,Coding Workshop,Portsmouth Tech Hub,"30 Deer St, Portsmouth, NH"
-2024-11-17 20:00,Outdoor Movie Night,Prescott Park,"105 Marcy St, Portsmouth, NH"
-2024-11-20 11:00,Thanksgiving Market,Market Square,"Portsmouth, NH"
-2024-11-22 09:00,Black Friday Sale,The Mall at Fox Run,"50 Fox Run Rd, Newington, NH"
-2024-11-25 08:00,Charity Run,Portsmouth Stadium,"Portsmouth, NH"
-2024-11-30 10:00,Holiday Craft Fair,Exeter Town Hall,"10 Front St, Exeter, NH"
-2024-12-01 17:00,Christmas Tree Lighting,City Hall,"1 Junkins Ave, Portsmouth, NH"
-2024-12-04 19:30,Winter Concert,The Press Room,"77 Daniel St, Portsmouth, NH"
-2024-12-07 10:00,Holiday Market,Exeter Town Square,"Exeter, NH"
-2024-12-08 18:00,Art and Wine Night,Sonny's Tavern,"14 Ocean Blvd, Hampton, NH"
-2024-12-12 16:00,Technology in Education Seminar,Portsmouth Middle School,"155 Parrott Ave, Portsmouth, NH"
-2024-12-15 13:00,Community Potluck,Newmarket Community Center,"3 Granite St, Newmarket, NH"
-2024-12-21 14:00,Winter Solstice Celebration,Odiorne Point State Park,"570 Ocean Blvd, Rye, NH"
-2024-12-25 17:00,Christmas Dinner,Various Locations,"Various Locations"
-2024-12-31 20:00,New Year's Eve Bash,The Wentworth,"588 Wentworth Rd, New Castle, NH"
-2025-01-03 09:00,New Year New You Workshop,Seacoast Wellness Center,"22 Pease International Tradeport, Portsmouth, NH"
-2025-01-06 18:00,Monthly Book Discussion,Exeter Public Library,"4 Chestnut St, Exeter, NH"
-2025-01-11 10:00,Winter Sports Day,Exeter Sports Complex,"10 Oak St, Exeter, NH"
-2025-01-13 09:00,Community Gardening Day,Seacoast Community Garden,"Portsmouth, NH"
-2025-01-18 19:00,Ice Skating Party,Rye Recreation Center,"10 Central Rd, Rye, NH"
-2025-01-20 14:00,MLK Day Celebration,Portsmouth Community Center,"Portsmouth, NH"
-2025-01-26 10:00,Health Fair,Portsmouth Regional Hospital,"333 Borthwick Ave, Portsmouth, NH"
+date,time,name,venue,street,city,state
+11-01-2024,06:00 PM,Music Festival,Strawbery Banke,14 Hancock St,Portsmouth,NH
+11-02-2024,02:00 PM,Art Exhibition,Portsmouth Art Gallery,1-3 Market Square,Portsmouth,NH
+11-04-2024,07:00 PM,Weekly Yoga Class,Seacoast Yoga,234 State St,Portsmouth,NH
+11-08-2024,09:00 AM,Tech Conference,The Music Hall,28 Chestnut St,Portsmouth,NH
+11-11-2024,03:00 PM,Book Club Meeting,Portsmouth Public Library,175 Parrott Ave,Portsmouth,NH
+11-15-2024,10:00 AM,Coding Workshop,Portsmouth Tech Hub,30 Deer St,Portsmouth,NH
+11-17-2024,08:00 PM,Outdoor Movie Night,Prescott Park,105 Marcy St,Portsmouth,NH
+11-22-2024,09:00 AM,Black Friday Sale,The Mall at Fox Run,50 Fox Run Rd,Newington,NH
+11-30-2024,10:00 AM,Holiday Craft Fair,Exeter Town Hall,10 Front St,Exeter,NH
+12-01-2024,05:00 PM,Christmas Tree Lighting,City Hall,1 Junkins Ave,Portsmouth,NH
+12-04-2024,07:30 PM,Winter Concert,The Press Room,77 Daniel St,Portsmouth,NH
+12-08-2024,06:00 PM,Art and Wine Night,Sonny's Tavern,14 Ocean Blvd,Hampton,NH
+12-12-2024,04:00 PM,Technology in Education Seminar,Portsmouth Middle School,155 Parrott Ave,Portsmouth,NH
+12-15-2024,01:00 PM,Community Potluck,Newmarket Community Center,3 Granite St,Newmarket,NH
+12-21-2024,02:00 PM,Winter Solstice Celebration,Odiorne Point State Park,570 Ocean Blvd,Rye,NH
+12-31-2024,08:00 PM,New Year's Eve Bash,The Wentworth,588 Wentworth Rd,New Castle,NH
+01-03-2025,09:00 AM,New Year New You Workshop,Seacoast Wellness Center,22 Pease International Tradeport,Portsmouth,NH
+01-06-2025,06:00 PM,Monthly Book Discussion,Exeter Public Library,4 Chestnut St,Exeter,NH
+01-11-2025,10:00 AM,Winter Sports Day,Exeter Sports Complex,10 Oak St,Exeter,NH
+01-18-2025,07:00 PM,Ice Skating Party,Rye Recreation Center,10 Central Rd,Rye,NH
+01-26-2025,10:00 AM,Health Fair,Portsmouth Regional Hospital,333 Borthwick Ave,Portsmouth,NH
