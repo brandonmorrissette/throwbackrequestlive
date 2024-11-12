@@ -38,4 +38,4 @@ jobs:
         run: cdk bootstrap || echo "Bootstrap already complete"
 
       - name: Deploy CDK Stack
-        run: cdk deploy --app "python app.py" --require-approval never
+        run: cdk deploy --app "python cdk_infra/app.py" --require-approval never

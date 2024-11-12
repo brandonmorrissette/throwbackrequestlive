@@ -16,7 +16,6 @@ class ThrowbackRequestLiveStack(Stack):
 
         vpc = ec2.Vpc(self, "ThrowbackRequestLiveVpc", max_azs=2)
         cluster = ecs.Cluster(self, "ThrowbackRequestLiveCluster", vpc=vpc)
-
         repository = ecr.Repository(self, "ThrowbackRequestLiveRepository")
 
         certificate = acm.Certificate(
@@ -25,7 +24,6 @@ class ThrowbackRequestLiveStack(Stack):
             domain_name="www.throwbackrequestlive.com",
             validation=acm.CertificateValidation.from_dns()
         )
-
 
         alb = elbv2.ApplicationLoadBalancer(
             self, 
@@ -40,10 +38,34 @@ class ThrowbackRequestLiveStack(Stack):
             certificates=[certificate]
         )
 
-        target_group = listener.add_targets(
+        task_definition = ecs.FargateTaskDefinition(
+            self, 
+            "TaskDef",
+            memory_limit_mib=512,
+            cpu=256
+        )
+
+        container = task_definition.add_container(
+            "AppContainer",
+            image=ecs.ContainerImage.from_registry("amazon/amazon-ecs-sample"),
+            logging=ecs.LogDrivers.aws_logs(stream_prefix="ThrowbackRequestLive")
+        )
+
+        container.add_port_mappings(
+            ecs.PortMapping(container_port=5000)
+        )
+
+        ecs_service = ecs.FargateService(
+            self,
+            "MyService",
+            cluster=cluster,
+            task_definition=task_definition
+        )
+
+        listener.add_targets(
             "ECS",
             port=80,
-            targets=[ecs.EcsService(self, "MyService", cluster=cluster, task_definition=task_definition)]
+            targets=[ecs_service]
         )
 
         alb.connections.allow_from_any_ipv4(ec2.Port.tcp(443), "Allow HTTPS")
@@ -54,11 +76,10 @@ class ThrowbackRequestLiveStack(Stack):
             domain_name="throwbackrequestlive.com"
         )
 
-
         route53.ARecord(
             self,
             "AliasRecord",
             zone=hosted_zone,
             target=route53.RecordTarget.from_alias(route53_targets.LoadBalancerTarget(alb)),
-            record_name="www" 
+            record_name="www"
         )
