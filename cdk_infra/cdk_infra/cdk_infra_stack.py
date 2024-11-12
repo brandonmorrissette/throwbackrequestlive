@@ -3,7 +3,10 @@ from aws_cdk import (
     aws_ec2 as ec2,
     aws_ecs as ecs,
     aws_ecr as ecr,
-    aws_iam as iam
+    aws_elasticloadbalancingv2 as elbv2,
+    aws_route53 as route53,
+    aws_route53_targets as route53_targets,
+    aws_certificatemanager as acm,
 )
 from constructs import Construct
 
@@ -12,43 +15,50 @@ class ThrowbackRequestLiveStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         vpc = ec2.Vpc(self, "ThrowbackRequestLiveVpc", max_azs=2)
-
         cluster = ecs.Cluster(self, "ThrowbackRequestLiveCluster", vpc=vpc)
 
         repository = ecr.Repository(self, "ThrowbackRequestLiveRepository")
 
-        task_definition = ecs.FargateTaskDefinition(
-            self, "ThrowbackRequestLiveTaskDef",
-            memory_limit_mib=512,
-            cpu=256
+        certificate = acm.Certificate(
+            self, 
+            "SiteCertificate",
+            domain_name="www.throwbackrequestlive.com",
+            validation=acm.CertificateValidation.from_dns()
         )
 
-        task_definition.add_to_execution_role_policy(
-            iam.PolicyStatement(
-                actions=[
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:BatchGetImage",
-                    "ecr:BatchCheckLayerAvailability"
-                ],
-                resources=[repository.repository_arn]
-            )
+
+        alb = elbv2.ApplicationLoadBalancer(
+            self, 
+            "ThrowbackRequestLiveALB",
+            vpc=vpc,
+            internet_facing=True
         )
 
-        container = task_definition.add_container(
-            "ThrowbackRequestLiveContainer",
-            image=ecs.ContainerImage.from_registry("amazon/amazon-ecs-sample"),
-            logging=ecs.LogDrivers.aws_logs(stream_prefix="ThrowbackRequestLive")
-        )
-        container.add_port_mappings(
-            ecs.PortMapping(container_port=5000)
+        listener = alb.add_listener(
+            "HttpsListener",
+            port=443,
+            certificates=[certificate]
         )
 
-        service = ecs.FargateService(
-            self, "ThrowbackRequestLiveService",
-            cluster=cluster,
-            task_definition=task_definition,
-            desired_count=1,
-            assign_public_ip=True,
-            security_groups=[ec2.SecurityGroup(self, "ThrowbackRequestLiveSG", vpc=vpc, allow_all_outbound=True)]
+        target_group = listener.add_targets(
+            "ECS",
+            port=80,
+            targets=[ecs.EcsService(self, "MyService", cluster=cluster, task_definition=task_definition)]
         )
 
+        alb.connections.allow_from_any_ipv4(ec2.Port.tcp(443), "Allow HTTPS")
+
+        hosted_zone = route53.HostedZone.from_lookup(
+            self, 
+            "HostedZone",
+            domain_name="throwbackrequestlive.com"
+        )
+
+
+        route53.ARecord(
+            self,
+            "AliasRecord",
+            zone=hosted_zone,
+            target=route53.RecordTarget.from_alias(route53_targets.LoadBalancerTarget(alb)),
+            record_name="www" 
+        )

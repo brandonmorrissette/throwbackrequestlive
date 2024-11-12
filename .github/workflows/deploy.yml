@@ -1,9 +1,7 @@
 name: Deploy CDK Stack
 
 on:
-  push:
-    branches:
-      - main # Adjust this to your deployment branch
+  workflow_dispatch: 
 
 jobs:
   deploy:
@@ -16,12 +14,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "18"
+          node-version: "18" 
 
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.12"
+          python-version: "3.12" 
 
       - name: Install CDK and project dependencies
         run: |
