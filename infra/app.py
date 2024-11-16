@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import aws_cdk as cdk
-from infra.stack import ThrowbackRequestLiveStack
+from stack import ThrowbackRequestLiveStack
 
 app = cdk.App()
 ThrowbackRequestLiveStack(
