@@ -5,6 +5,7 @@
     --color-primary-opacity: rgba(247, 189, 65, 0.7);
     --color-accent: #f28d35;
     --color-accent-darker: #d46b3f;
+    --color-accenty-opacity: rgba(242, 141, 53, 0.7);
     --color-background-dark: rgba(9, 18, 26, 0.8);
     --color-box-shadow: rgba(9, 18, 26, 0.2);
 }
@@ -76,35 +77,8 @@ a,
 }
 
 /*** Bootstrap ***/
-.modal-content,
-.content-wrapper,
-.wrapper,
-.popup {
-    background-color: var(--color-background-dark) !important;
-    color: var(--color-primary) !important;
-    border-radius: 10px;
-}
 
-.modal-content h5,
-.modal-content p,
-.modal-content span,
-.content-wrapper h5,
-.content-wrapper p,
-.content-wrapper span {
-    color: var(--color-primary) !important;
-}
-
-.modal-content a {
-    color: var(--color-primary);
-    text-decoration: underline;
-    font-weight: bold;
-    transition: color 0.3s ease;
-}
-
-.modal-content a:hover {
-    color: var(--color-accent);
-}
-
+/* button */
 .btn-custom {
     background-color: var(--color-accent);
     color: #ffffff;
@@ -121,6 +95,7 @@ a,
     background-color: var(--color-accent-darker);
 }
 
+/* navbar */
 .navbar {
     background-image: url('/static/header.webp');
     box-shadow: 10px 8px var(--color-box-shadow);
@@ -149,6 +124,46 @@ a,
     width: 100%;
 }
 
+/* modal */
+.modal-title {
+    text-align: center;
+    width: 100%;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.modal-content,
+.content-wrapper,
+.wrapper,
+.popup {
+    background-color: var(--color-background-dark) !important;
+    color: var(--color-primary) !important;
+    border-radius: 10px;
+}
+
+.modal-content h5,
+.modal-content p,
+.modal-content span,
+.content-wrapper h5,
+.content-wrapper p,
+.content-wrapper span {
+    color: var(--color-primary) !important;
+}
+
+.modal-content a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.modal-content a:hover {
+    color: var(--color-accent);
+}
 
 /*** Page Specific ***/
 
@@ -218,6 +233,43 @@ a,
 
 .event-address {
     text-align: right;
+}
+
+/* Survey */
+.song-option {
+    display: flex;
+    flex-direction: column;
+    background-color: transparent !important;
+    border: 2px solid var(--color-accenty-opacity) !important;
+    border-radius: 10px !important;
+    margin: 10px 0;
+    padding: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.song-option:hover {
+    background-color: var(--color-accent-darker);
+}
+
+.song-details {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.song-band {
+    text-align: left;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-right: auto;
+}
+
+.song-name {
+    text-align: right;
+    font-style: italic;
+    font-size: 1.1rem;
+    margin-left: auto;
 }
 
 /* Book */
