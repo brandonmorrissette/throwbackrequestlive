@@ -1,6 +1,9 @@
 name: Deploy CDK Stack
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch: 
 
 jobs:
@@ -38,4 +41,4 @@ jobs:
         run: cdk bootstrap || echo "Bootstrap already complete"
 
       - name: Deploy CDK Stack
-        run: cdk deploy --app "python cdk_infra/app.py" --require-approval never
+        run: cdk deploy --app "python infra/app.py" --require-approval never
