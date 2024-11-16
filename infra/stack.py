@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_certificatemanager as acm,
     aws_route53 as route53,
     aws_route53_targets as targets,
+    aws_ecr_assets as ecr_assets,
     Duration,
     CfnOutput
 )
@@ -31,6 +32,11 @@ class ThrowbackRequestLiveStack(Stack):
             validation=acm.CertificateValidation.from_dns(hosted_zone)
         )
 
+        docker_image = ecr_assets.DockerImageAsset(
+            self, "LocalThrowbackRequestLiveImage",
+            directory="."
+        )
+
         fargate_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self, "FargateService",
             cluster=cluster,
@@ -38,7 +44,7 @@ class ThrowbackRequestLiveStack(Stack):
             memory_limit_mib=512,
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                image=ecs.ContainerImage.from_registry("shoppingalt/throwbackrequestlive:latest"),
+                image=ecs.ContainerImage.from_docker_image_asset(docker_image),
                 container_port=5000,
             ),
             public_load_balancer=True,
