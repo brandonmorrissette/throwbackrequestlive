@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_route53 as route53,
     aws_route53_targets as targets,
     aws_ecr_assets as ecr_assets,
+    aws_logs,
     Duration,
     CfnOutput
 )
@@ -46,6 +47,13 @@ class ThrowbackRequestLiveStack(Stack):
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
                 image=ecs.ContainerImage.from_docker_image_asset(docker_image),
                 container_port=5000,
+                log_driver=ecs.LogDriver.aws_logs(
+                    stream_prefix="ThrowbackRequestLive",
+                    log_group=aws_logs.LogGroup(
+                    self, "LogGroup",
+                    retention=aws_logs.RetentionDays.ONE_WEEK
+            )
+        )
             ),
             public_load_balancer=True,
             certificate=certificate,
