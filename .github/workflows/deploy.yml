@@ -47,11 +47,6 @@ jobs:
       - name: Deploy CDK Stack
         run: cdk deploy --app "python infra/app.py" --require-approval never
 
-      - name: Upload Schema Files
-        run: |
-          zip -r schema.zip schema/
-          aws s3 cp schema.zip s3://<YOUR_BUCKET_NAME>/schema.zip --region $AWS_REGION
-
       - name: Apply Schema via SSM
         run: |
           aws ssm send-command \
