@@ -44,8 +44,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy CDK Stack
-        run: cdk deploy --app "python infra/app.py" --require-approval never
+      # - name: Deploy CDK Stack
+      # -  run: cdk deploy --app "python infra/app.py" --require-approval never
 
       - name: Apply Schema via SSM
         run: |
