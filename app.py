@@ -2,7 +2,16 @@ from flask import Flask, render_template, redirect, request, url_for
 import csv
 from datetime import datetime
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+)
+
 app = Flask(__name__)
+app.logger.addHandler(logging.StreamHandler())
+app.logger.setLevel(logging.DEBUG)
+
 
 def get_events():
     events = []
