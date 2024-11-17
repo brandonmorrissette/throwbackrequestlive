@@ -1,4 +1,4 @@
-name: Deploy CDK Stack and Initialize Database
+name: Deploy CDK Stack and Trigger Schema Deployment
 
 on:
   push:
@@ -6,21 +6,28 @@ on:
       - main
   workflow_dispatch: 
 
+env:
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "18" 
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: "3.12" 
 
@@ -37,23 +44,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: CDK Bootstrap (if needed)
-        run: cdk bootstrap || echo "Bootstrap already complete"
-
       - name: Deploy CDK Stack
         run: cdk deploy --app "python infra/app.py" --require-approval never
 
-      - name: Install PostgreSQL Client
-        run: sudo apt-get install postgresql-client
-
-      - name: Apply Database Schema
-        env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
+      - name: Upload Schema Files
         run: |
-          for file in $(ls schema/*.sql | sort); do
-            echo "Applying $file"
-            PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -f $file
-          done
+          zip -r schema.zip schema/
+          aws s3 cp schema.zip s3://<YOUR_BUCKET_NAME>/schema.zip --region $AWS_REGION
+
+      - name: Apply Schema via SSM
+        run: |
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "[{\"Key\":\"InstanceIds\",\"Values\":[\"<EC2InstanceId>\"]}]" \
+            --parameters '{
+              "commands": [
+                "for file in $(ls /mnt/schema/*.sql | sort); do",
+                "  echo Applying $file",
+                "  PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -f $file",
+                "done"
+              ]
+            }' \
+            --region $AWS_REGION
+        
+        
