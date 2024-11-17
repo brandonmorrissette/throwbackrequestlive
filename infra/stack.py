@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_route53 as route53,
     aws_route53_targets as targets,
     aws_ecr_assets as ecr_assets,
+    aws_rds as rds,
     aws_logs,
     Duration,
     CfnOutput
@@ -84,4 +85,35 @@ class ThrowbackRequestLiveStack(Stack):
             self, "LoadBalancerDNS",
             value=fargate_service.load_balancer.load_balancer_dns_name,
             description="Public DNS of the Load Balancer"
+        )
+
+        rds_security_group = ec2.SecurityGroup(self, "RDSSecurityGroup", vpc=vpc)
+
+        rds_security_group.add_ingress_rule(
+            ec2.Peer.ipv4(vpc.vpc_cidr_block), ec2.Port.tcp(5432), "Allow ECS to access RDS"
+        )
+
+        db_instance = rds.DatabaseInstance(
+            self, "RDSInstance",
+            engine=rds.DatabaseInstanceEngine.postgres(
+                version=rds.PostgresEngineVersion.VER_16_4
+            ),
+            instance_type=ec2.InstanceType.of(
+                ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO
+            ),
+            vpc=vpc,
+            multi_az=False,
+            allocated_storage=20,
+            storage_type=rds.StorageType.GP2,
+            credentials=rds.Credentials.from_generated_secret("db_mod"),
+            security_groups=[rds_security_group],
+            database_name="throwbackrequestlive",
+            backup_retention=Duration.days(7),
+            publicly_accessible=False 
+        )
+
+        CfnOutput(
+            self, "RDSEndpoint",
+            value=db_instance.db_instance_endpoint_address,
+            description="RDS Endpoint"
         )

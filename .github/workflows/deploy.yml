@@ -1,4 +1,4 @@
-name: Deploy CDK Stack
+name: Deploy CDK Stack and Initialize Database
 
 on:
   push:
@@ -42,3 +42,18 @@ jobs:
 
       - name: Deploy CDK Stack
         run: cdk deploy --app "python infra/app.py" --require-approval never
+
+      - name: Install PostgreSQL Client
+        run: sudo apt-get install postgresql-client
+
+      - name: Apply Database Schema
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+        run: |
+          for file in $(ls schema/*.sql | sort); do
+            echo "Applying $file"
+            PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -f $file
+          done
