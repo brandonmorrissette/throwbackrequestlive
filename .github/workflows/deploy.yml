@@ -49,7 +49,7 @@ jobs:
 
       - name: Retrieve EC2 Instance ID
         run: |
-          echo "EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=SchemaDeploymentInstance" --query "Reservations[0].Instances[0].InstanceId" --output text)" >> $GITHUB_ENV
+          echo "EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=ThrowbackRequestLiveStack/SchemaDeploymentInstance*" --query "Reservations[0].Instances[0].InstanceId" --output text)" >> $GITHUB_ENV
 
       - name: Apply Schema via SSM
         run: |
