@@ -27,7 +27,7 @@ class ThrowbackRequestLiveStack(Stack):
 
         Route53Construct(self, "Route53", hosted_zone, fargate_service.load_balancer)
 
-        RdsConstruct(self, "Rds", vpc).db_instance
+        RdsConstruct(self, "Rds", vpc)
 
         CognitoConstruct(self, "Cognito")
 
