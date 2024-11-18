@@ -20,12 +20,12 @@ from aws_cdk import (
 
 from constructs import Construct
 from pathlib import Path
+import os
 
 
 class ThrowbackRequestLiveStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-
 
         vpc = ec2.Vpc(self, "ThrowbackRequestLiveVPC", max_azs=2)
 
@@ -152,6 +152,23 @@ class ThrowbackRequestLiveStack(Stack):
             self, "AdminGroup",
             group_name="Admin",
             user_pool_id=user_pool.user_pool_id
+        )
+
+        superuser = cognito.CfnUser(
+            self, "Super",
+            username="super",
+            user_pool_id=user_pool.user_pool_id,
+            desired_delivery_mediums=["EMAIL"],
+            user_attributes=[
+                {"Name": "email", "Value": os.getenv("ADMIN_EMAIL")}
+            ]
+        )
+
+        cognito.CfnUserPoolUserToGroupAttachment(
+            self, "SuperuserGroupAttachment",
+            user_pool_id=user_pool.user_pool_id,
+            group_name=admin_group.group_name,
+            username=superuser.username
         )
 
         CfnOutput(
