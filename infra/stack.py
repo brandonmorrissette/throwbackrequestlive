@@ -164,7 +164,7 @@ class ThrowbackRequestLiveStack(Stack):
                 password_length=16,
                 exclude_punctuation=False,
             ),
-            description="Superuser credentials for admin access",
+            description="Superuser credentials for super access",
         )
 
         CfnOutput(
