@@ -44,12 +44,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # - name: Deploy CDK Stack
-      # -  run: cdk deploy --app "python infra/app.py" --require-approval never
+      - name: Deploy CDK Stack
+      -  run: cdk deploy --app "python infra/app.py" --require-approval never
 
       - name: Retrieve EC2 Instance ID
         run: |
-          echo "EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=ThrowbackRequestLiveStack/SchemaDeploymentInstance*" --query "Reservations[0].Instances[0].InstanceId" --output text)" >> $GITHUB_ENV
+          echo "EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=DeploymentInstance*" --query "Reservations[0].Instances[0].InstanceId" --output text)" >> $GITHUB_ENV
 
       - name: Apply Schema via SSM
         run: |
