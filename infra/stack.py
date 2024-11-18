@@ -154,23 +154,6 @@ class ThrowbackRequestLiveStack(Stack):
             user_pool_id=user_pool.user_pool_id
         )
 
-        superuser = cognito.CfnUser(
-            self, "Super",
-            username="super",
-            user_pool_id=user_pool.user_pool_id,
-            desired_delivery_mediums=["EMAIL"],
-            user_attributes=[
-                {"Name": "email", "Value": os.getenv("ADMIN_EMAIL")}
-            ]
-        )
-
-        cognito.CfnUserPoolUserToGroupAttachment(
-            self, "SuperuserGroupAttachment",
-            user_pool_id=user_pool.user_pool_id,
-            group_name=admin_group.group_name,
-            username=superuser.username
-        )
-
         CfnOutput(
             self, "UserPoolId",
             value=user_pool.user_pool_id,

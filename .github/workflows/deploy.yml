@@ -65,3 +65,24 @@ jobs:
               ]
             }' \
             --region $AWS_REGION
+
+      - name: Create Cognito Superuser
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          USER_POOL_ID: ${{ secrets.USER_POOL_ID }}
+          SUPERUSER_EMAIL: ${{ secrets.SUPERUSER_EMAIL }}
+          SUPERUSER_PASSWORD: ${{ env.SUPERUSER_PASSWORD }}
+        run: |
+          aws cognito-idp admin-create-user \
+            --user-pool-id $USER_POOL_ID \
+            --username superuser \
+            --temporary-password "$SUPERUSER_PASSWORD" \
+            --user-attributes Name=email,Value=$SUPERUSER_EMAIL \
+            --message-action SUPPRESS
+          
+          aws cognito-idp admin-add-user-to-group \
+            --user-pool-id $USER_POOL_ID \
+            --username superuser \
+            --group-name Admin
