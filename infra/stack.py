@@ -36,7 +36,7 @@ class ThrowbackRequestLiveStack(Stack):
             domain_name="throwbackrequestlive.com"
         )
 
-            certificate = acm.Certificate(
+        certificate = acm.Certificate(
             self, "SiteCertificate",
             domain_name="throwbackrequestlive.com",
             subject_alternative_names=["www.throwbackrequestlive.com"],
