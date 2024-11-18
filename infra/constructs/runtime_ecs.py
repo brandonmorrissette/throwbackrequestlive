@@ -1,4 +1,7 @@
-from aws_cdk import aws_ecs_patterns as ecs_patterns, aws_ecr_assets as ecr_assets, aws_ecs as ecs, aws_logs, Duration
+from aws_cdk import aws_ecs as ecs, aws_logs
+from aws_cdk import aws_ecr_assets as ecr_assets
+from aws_cdk import aws_ecs_patterns as ecs_patterns
+from aws_cdk import Duration
 from constructs import Construct
 
 
@@ -18,16 +21,15 @@ class RuntimeEcsConstruct(Construct):
             memory_limit_mib=512,
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                image=docker_image.image_uri,
+                image=ecs.ContainerImage.from_docker_image_asset(docker_image),
                 container_port=5000,
-            log_driver=ecs.LogDrivers.aws_logs(
-                stream_prefix="ThrowbackRequestLive",
-                log_group=aws_logs.LogGroup(
-                    self, "LogGroup",
-                    retention=aws_logs.RetentionDays.ONE_WEEK
+                log_driver=ecs.LogDrivers.aws_logs(
+                    stream_prefix="ThrowbackRequestLive",
+                    log_group=aws_logs.LogGroup(
+                        self, "LogGroup",
+                        retention=aws_logs.RetentionDays.ONE_WEEK
+                    )
                 )
-            )
-
             ),
             public_load_balancer=True,
             certificate=certificate,
