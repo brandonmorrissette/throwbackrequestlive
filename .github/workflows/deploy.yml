@@ -47,11 +47,15 @@ jobs:
       # - name: Deploy CDK Stack
       # -  run: cdk deploy --app "python infra/app.py" --require-approval never
 
+      - name: Retrieve EC2 Instance ID
+        run: |
+          echo "EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=SchemaDeploymentInstance" --query "Reservations[0].Instances[0].InstanceId" --output text)" >> $GITHUB_ENV
+
       - name: Apply Schema via SSM
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "[{\"Key\":\"InstanceIds\",\"Values\":[\"<EC2InstanceId>\"]}]" \
+            --targets "[{\"Key\":\"InstanceIds\",\"Values\":[\"$EC2_INSTANCE_ID\"]}]" \
             --parameters '{
               "commands": [
                 "for file in $(ls /mnt/schema/*.sql | sort); do",
@@ -61,5 +65,6 @@ jobs:
               ]
             }' \
             --region $AWS_REGION
+
         
         
