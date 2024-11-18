@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
     <div class="survey-container">
-        <h2>Which song do you want to hear tonight?</h2>
+        <h2>Vote Now!</h2>
         <div class="list-group song-list">
             {% for song in songs %}
             <button type="button" class="list-group-item list-group-item-action song-option"
@@ -44,13 +44,13 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const confirmSelection = document.getElementById("confirmSelection");
-            const modalSongName = document.getElementById("modalSongName"); // Get the modal element
+            const modalSongName = document.getElementById("modalSongName");
             let selectedSong = null;
 
             document.querySelectorAll(".song-option").forEach(button => {
                 button.addEventListener("click", () => {
-                    selectedSong = button.getAttribute("data-song"); // Get the song name
-                    modalSongName.textContent = selectedSong; // Update the modal with the song name
+                    selectedSong = button.getAttribute("data-song");
+                    modalSongName.textContent = selectedSong;
                 });
             });
 
