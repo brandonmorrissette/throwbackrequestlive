@@ -11,6 +11,7 @@ from aws_cdk import (
     aws_iam as iam,
     aws_s3_assets as s3_assets,
     aws_cognito as cognito,
+    aws_secretsmanager as secretsmanager,
     aws_logs,
     Duration,
     CfnOutput,
@@ -20,15 +21,16 @@ from aws_cdk import (
 
 from constructs import Construct
 from pathlib import Path
-import os
 
 
 class ThrowbackRequestLiveStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        # vpc-construct.py
         vpc = ec2.Vpc(self, "ThrowbackRequestLiveVPC", max_azs=2)
 
+        # cluster-construct.py
         cluster = ecs.Cluster(self, "ThrowbackRequestLiveCluster", vpc=vpc)
 
         hosted_zone = route53.HostedZone.from_lookup(
@@ -152,6 +154,17 @@ class ThrowbackRequestLiveStack(Stack):
             self, "AdminGroup",
             group_name="Admin",
             user_pool_id=user_pool.user_pool_id
+        )
+
+        superuser_secret = secretsmanager.Secret(
+            self, "SuperuserSecret",
+            generate_secret_string=secretsmanager.SecretStringGenerator(
+                secret_string_template='{"username": "superuser"}',
+                generate_string_key="password",
+                password_length=16,
+                exclude_punctuation=False,
+            ),
+            description="Superuser credentials for admin access",
         )
 
         CfnOutput(
