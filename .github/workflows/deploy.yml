@@ -45,7 +45,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy CDK Stack
-      -  run: cdk deploy --app "python infra/app.py" --require-approval never
+      - run: cdk deploy --app "python infra/app.py" --require-approval never
 
       - name: Retrieve EC2 Instance ID
         run: |
