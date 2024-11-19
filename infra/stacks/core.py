@@ -8,5 +8,5 @@ class CoreStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
-        self.vpc = VpcConstruct(self, "Vpc")
-        self.cert = CertConstruct(self, "Cert")
+        self.vpcConstruct = VpcConstruct(self, "Vpc")
+        self.certConstruct = CertConstruct(self, "Cert")

@@ -7,4 +7,4 @@ class ClusterStack(Stack):
     def __init__(self, scope: Construct, id: str, vpc: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
-        self.cluster = ClusterConstruct(self, "Cluster", vpc=vpc).cluster
+        self.clusterConstruct = ClusterConstruct(self, "Cluster", vpc=vpc).cluster

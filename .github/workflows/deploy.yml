@@ -17,7 +17,6 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
 
   deploy-auth:
-    needs: deploy-core
     uses: ./.github/workflows/deployCDK.yml
     with:
       stack-name: AuthStack
