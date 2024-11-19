@@ -19,7 +19,7 @@ jobs:
 
   deploy-cluster:
     needs: deploy-core
-    uses: .github/workflows/deployCDK.yml
+    uses: ./.github/workflows/deployCDK.yml
     with:
       stack-name: ClusterStack
 
