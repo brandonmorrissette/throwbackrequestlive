@@ -26,7 +26,7 @@ cluster_stack = ClusterStack(
 database_stack = DatabaseStack(
     app,
     "DatabaseStack",
-    vpc_id=core_stack.vpc_output,
+    vpc=core_stack.vpc,
     env=cdk.Environment(account="140465999057", region="us-east-1"),
 )
 
