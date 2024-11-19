@@ -8,34 +8,29 @@ on:
 
 jobs:
   deploy-core:
-    uses: ./.github/workflows/setup.yml
-    steps:
-      - name: Deploy Core Stack
-        run: cdk deploy CoreStack --app "python infra/app.py" --require-approval never
+    uses: ./.github/workflows/deployCDK.yml
+    with:
+      stack-name: CoreStack
 
   deploy-auth:
-    uses: ./.github/workflows/setup.yml
-    steps:
-      - name: Deploy Auth Stack
-        run: cdk deploy AuthStack --app "python infra/app.py" --require-approval never
+    uses: ./.github/workflows/deployCDK.yml
+    with:
+      stack-name: AuthStack
 
   deploy-cluster:
     needs: deploy-core
-    uses: ./.github/workflows/setup.yml
-    steps:
-      - name: Deploy Cluster Stack
-        run: cdk deploy ClusterStack --app "python infra/app.py" --require-approval never
+    uses: ./.github/workflows/deployCDK.yml
+    with:
+      stack-name: ClusterStack
 
   deploy-database:
     needs: deploy-core
-    uses: ./.github/workflows/setup.yml
-    steps:
-      - name: Deploy Database Stack
-        run: cdk deploy DatabaseStack --app "python infra/app.py" --require-approval never
+    uses: ./.github/workflows/deployCDK.yml
+    with:
+      stack-name: DatabaseStack
 
   deploy-app:
     needs: [deploy-cluster, deploy-database, deploy-auth]
-    uses: ./.github/workflows/setup.yml
-    steps:
-      - name: Deploy App Stack
-        run: cdk deploy AppStack --app "python infra/app.py" --require-approval never
+    uses: ./.github/workflows/deployCDK.yml
+    with:
+      stack-name: AppStack
