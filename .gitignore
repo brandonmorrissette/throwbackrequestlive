@@ -4,6 +4,7 @@
 # Allow specific important files
 !.gitignore
 !.dockerignore
+!.github/
 
 # Ignore Python bytecode and cache files
 *.pyc
