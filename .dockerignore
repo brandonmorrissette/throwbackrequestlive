@@ -1,6 +1,27 @@
-.venv
-node_modules
-cdk.out
-.git
-.pytest_cache
-__pycache__
+# Ignore virtual environments
+.venv/
+env/
+venv/
+
+# Ignore Node.js dependencies
+node_modules/
+
+# Ignore AWS CDK output
+cdk.out/
+
+# Ignore Git repository files
+.git/
+.gitignore
+
+# Ignore Python cache and test artifacts
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log

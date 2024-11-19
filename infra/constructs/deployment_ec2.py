@@ -1,4 +1,4 @@
-from aws_cdk import aws_ec2 as ec2, aws_iam as iam, Size
+from aws_cdk import aws_ec2 as ec2, aws_iam as iam
 from constructs import Construct
 
 
@@ -7,12 +7,15 @@ class DeploymentEc2Construct(Construct):
         super().__init__(scope, id)
 
         ec2_role = iam.Role(
-            self, "EC2InstanceRole",
+            self,
+            "EC2InstanceRole",
             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"),
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "AmazonSSMManagedInstanceCore"
+                ),
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonRDSFullAccess"),
-            ]
+            ],
         )
 
         ec2_security_group = ec2.SecurityGroup(self, "EC2SecurityGroup", vpc=vpc)
@@ -24,11 +27,14 @@ class DeploymentEc2Construct(Construct):
         )
 
         self.deployment_ec2_instance = ec2.Instance(
-            self, "DeploymentInstance",
+            self,
+            "DeploymentInstance",
             instance_type=ec2.InstanceType("t3.micro"),
             machine_image=ec2.MachineImage.latest_amazon_linux(),
             vpc=vpc,
             role=ec2_role,
             security_group=ec2_security_group,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+            ),
         )

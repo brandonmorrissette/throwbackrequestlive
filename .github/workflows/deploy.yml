@@ -14,9 +14,10 @@ env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
 
 jobs:
-  deploy:
+  setup:
     runs-on: ubuntu-latest
-
+    outputs:
+      ec2_instance_id: ${{ steps.get_instance_id.outputs.ec2_instance_id }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -24,14 +25,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18" 
+          node-version: "18"
 
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.12" 
+          python-version: "3.12"
 
-      - name: Install CDK and project dependencies
+      - name: Install CDK and dependencies
         run: |
           npm install -g aws-cdk
           pip install -r requirements.txt
@@ -44,18 +45,55 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy CDK Stack
-        run: cdk deploy --app "python infra/app.py" --require-approval never
-
-      - name: Retrieve EC2 Instance ID
+      - name: Get EC2 Instance ID
+        id: get_instance_id
         run: |
-          echo "EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters 'Name=tag:Name,Values=DeploymentInstance*' --query 'Reservations[0].Instances[0].InstanceId' --output text)" >> $GITHUB_ENV
+          echo "::set-output name=ec2_instance_id::$(aws ec2 describe-instances --filters 'Name=tag:Name,Values=DeploymentInstance*' --query 'Reservations[0].Instances[0].InstanceId' --output text)"
 
+  deploy-core:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Core Stack
+        run: cdk deploy CoreStack --app "python infra/app.py" --require-approval never
+
+  deploy-cluster:
+    needs: deploy-core
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Cluster Stack
+        run: cdk deploy ClusterStack --app "python infra/app.py" --require-approval never
+
+  deploy-database:
+    needs: deploy-core
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Database Stack
+        run: cdk deploy DatabaseStack --app "python infra/app.py" --require-approval never
+
+  deploy-auth:
+    needs: deploy-core
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Auth Stack
+        run: cdk deploy AuthStack --app "python infra/app.py" --require-approval never
+
+  deploy-app:
+    needs: [deploy-cluster, deploy-database, deploy-auth]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy App Stack
+        run: cdk deploy AppStack --app "python infra/app.py" --require-approval never
+
+  apply-schema:
+    needs: deploy-app
+    runs-on: ubuntu-latest
+    steps:
       - name: Apply Schema via SSM
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "[{\"Key\":\"InstanceIds\",\"Values\":[\"$EC2_INSTANCE_ID\"]}]" \
+            --targets "[{\"Key\":\"InstanceIds\",\"Values\":[\"${{ needs.setup.outputs.ec2_instance_id }}\"]}]" \
             --parameters '{
               "commands": [
                 "for file in $(ls /mnt/schema/*.sql | sort); do",
@@ -65,4 +103,3 @@ jobs:
               ]
             }' \
             --region $AWS_REGION
-            

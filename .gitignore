@@ -1,3 +1,27 @@
+# Ignore everything by default
+.*
+
+# Allow specific important files
+!.gitignore
+!.dockerignore
+
+# Ignore Python bytecode and cache files
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignore CDK (AWS Cloud Development Kit) outputs
+cdk.out/
+cdk.context.json
+
+# Ignore virtual environment directories
 .venv/
-*pycache*
-cdk.out*
+env/
+venv/
+
+# Ignore logs
+*.log
+
+# Ignore OS-specific files
+.DS_Store  # macOS
+Thumbs.db  # Windows
