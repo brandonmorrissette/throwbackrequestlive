@@ -9,19 +9,19 @@ class AppStack(Stack):
         self,
         scope: Construct,
         id: str,
-        cluster_arn: str,
-        certificate_arn: str,
-        hosted_zone_id: str,
+        cluster: str,
+        certificate: str,
+        hosted_zone: str,
         **kwargs
     ):
         super().__init__(scope, id, **kwargs)
         fargate_service = RuntimeEcsConstruct(
-            self, "RuntimeEcs", cluster=cluster_arn, certificate=certificate_arn
+            self, "RuntimeEcs", cluster=cluster, certificate=certificate
         ).fargate_service
 
         Route53Construct(
             self,
             "Route53",
-            hosted_zone=hosted_zone_id,
+            hosted_zone=hosted_zone,
             load_balancer=fargate_service.load_balancer,
         )
