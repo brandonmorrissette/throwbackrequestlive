@@ -16,8 +16,6 @@ env:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    outputs:
-      ec2_instance_id: ${{ steps.get_instance_id.outputs.ec2_instance_id }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -32,11 +30,28 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install CDK and dependencies
+      - name: Install Dependencies
         run: |
           npm install -g aws-cdk
           pip install -r requirements.txt
           pip install aws-cdk-lib constructs
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pip
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-
+
+  deploy-core:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -45,22 +60,70 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Get EC2 Instance ID
-        id: get_instance_id
-        run: |
-          echo "::set-output name=ec2_instance_id::$(aws ec2 describe-instances --filters 'Name=tag:Name,Values=DeploymentInstance*' --query 'Reservations[0].Instances[0].InstanceId' --output text)"
+      - name: Restore Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pip
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-
 
-  deploy-core:
+      - name: Deploy Core Stack
+        run: cdk deploy CoreStack --app "python infra/app.py" --require-approval never
+
+  deploy-auth:
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy Core Stack
-        run: cdk deploy CoreStack --app "python infra/app.py" --require-approval never
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Restore Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pip
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-
+
+      - name: Deploy Auth Stack
+        run: cdk deploy AuthStack --app "python infra/app.py" --require-approval never
 
   deploy-cluster:
     needs: deploy-core
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Restore Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pip
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-
+
       - name: Deploy Cluster Stack
         run: cdk deploy ClusterStack --app "python infra/app.py" --require-approval never
 
@@ -68,38 +131,52 @@ jobs:
     needs: deploy-core
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Restore Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pip
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-
+
       - name: Deploy Database Stack
         run: cdk deploy DatabaseStack --app "python infra/app.py" --require-approval never
-
-  deploy-auth:
-    needs: deploy-core
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy Auth Stack
-        run: cdk deploy AuthStack --app "python infra/app.py" --require-approval never
 
   deploy-app:
     needs: [deploy-cluster, deploy-database, deploy-auth]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Restore Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pip
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-
+
       - name: Deploy App Stack
         run: cdk deploy AppStack --app "python infra/app.py" --require-approval never
-
-  apply-schema:
-    needs: deploy-app
-    runs-on: ubuntu-latest
-    steps:
-      - name: Apply Schema via SSM
-        run: |
-          aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
-            --targets "[{\"Key\":\"InstanceIds\",\"Values\":[\"${{ needs.setup.outputs.ec2_instance_id }}\"]}]" \
-            --parameters '{
-              "commands": [
-                "for file in $(ls /mnt/schema/*.sql | sort); do",
-                "  echo Applying $file",
-                "  PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -f $file",
-                "done"
-              ]
-            }' \
-            --region $AWS_REGION

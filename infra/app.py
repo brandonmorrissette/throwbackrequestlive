@@ -12,6 +12,10 @@ core_stack = CoreStack(
     app, "CoreStack", env=cdk.Environment(account="140465999057", region="us-east-1")
 )
 
+auth_stack = AuthStack(
+    app, "AuthStack", env=cdk.Environment(account="140465999057", region="us-east-1")
+)
+
 cluster_stack = ClusterStack(
     app,
     "ClusterStack",
@@ -26,9 +30,6 @@ database_stack = DatabaseStack(
     env=cdk.Environment(account="140465999057", region="us-east-1"),
 )
 
-auth_stack = AuthStack(
-    app, "AuthStack", env=cdk.Environment(account="140465999057", region="us-east-1")
-)
 
 app_stack = AppStack(
     app,
