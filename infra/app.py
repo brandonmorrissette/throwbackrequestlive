@@ -19,7 +19,7 @@ auth_stack = AuthStack(
 cluster_stack = ClusterStack(
     app,
     "ClusterStack",
-    vpc_id=core_stack.vpc_output,
+    vpc=core_stack.vpc,
     env=cdk.Environment(account="140465999057", region="us-east-1"),
 )
 
@@ -34,9 +34,9 @@ database_stack = DatabaseStack(
 app_stack = AppStack(
     app,
     "AppStack",
-    cluster_arn=cluster_stack.cluster_arn,
-    certificate_arn=core_stack.certificate_output,
-    hosted_zone_id=core_stack.hosted_zone_output,
+    cluster_arn=cluster_stack.cluster.cluster_arn,
+    certificate_arn=core_stack.cert,
+    hosted_zone_id=core_stack.cert.hosted_zone,
     env=cdk.Environment(account="140465999057", region="us-east-1"),
 )
 

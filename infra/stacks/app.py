@@ -18,6 +18,7 @@ class AppStack(Stack):
         fargate_service = RuntimeEcsConstruct(
             self, "RuntimeEcs", cluster=cluster_arn, certificate=certificate_arn
         ).fargate_service
+
         Route53Construct(
             self,
             "Route53",

@@ -4,7 +4,7 @@ from constructs.cluster import ClusterConstruct
 
 
 class ClusterStack(Stack):
-    def __init__(self, scope: Construct, id: str, vpc_id: str, **kwargs):
+    def __init__(self, scope: Construct, id: str, vpc: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
-        self.cluster = ClusterConstruct(self, "Cluster", vpc=vpc_id).cluster
+        self.cluster = ClusterConstruct(self, "Cluster", vpc=vpc).cluster
