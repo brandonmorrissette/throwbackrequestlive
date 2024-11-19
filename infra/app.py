@@ -36,7 +36,7 @@ app_stack = AppStack(
     "AppStack",
     cluster=cluster_stack.clusterConstruct.cluster,
     certificate=core_stack.certConstruct.certificate,
-    hosted_zone_id=core_stack.certConstruct.hosted_zone,
+    hosted_zone=core_stack.certConstruct.hosted_zone,
     env=cdk.Environment(account="140465999057", region="us-east-1"),
 )
 
