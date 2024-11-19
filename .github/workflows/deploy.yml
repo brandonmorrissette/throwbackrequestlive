@@ -8,12 +8,12 @@ on:
 
 jobs:
   deploy-core:
-    uses: .github/workflows/deployCDK.yml
+    uses: ./.github/workflows/deployCDK.yml
     with:
       stack-name: CoreStack
 
   deploy-auth:
-    uses: .github/workflows/deployCDK.yml
+    uses: ./.github/workflows/deployCDK.yml
     with:
       stack-name: AuthStack
 
@@ -25,12 +25,12 @@ jobs:
 
   deploy-database:
     needs: deploy-core
-    uses: .github/workflows/deployCDK.yml
+    uses: ./.github/workflows/deployCDK.yml
     with:
       stack-name: DatabaseStack
 
   deploy-app:
     needs: [deploy-cluster, deploy-database, deploy-auth]
-    uses: .github/workflows/deployCDK.yml
+    uses: ./.github/workflows/deployCDK.yml
     with:
       stack-name: AppStack
