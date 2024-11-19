@@ -4,179 +4,38 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: 
-
-env:
-  DB_HOST: ${{ secrets.DB_HOST }}
-  DB_USER: ${{ secrets.DB_USER }}
-  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-  DB_NAME: ${{ secrets.DB_NAME }}
-  AWS_REGION: ${{ secrets.AWS_REGION }}
+  workflow_dispatch:
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.12"
-
-      - name: Install Dependencies
-        run: |
-          npm install -g aws-cdk
-          pip install -r requirements.txt
-          pip install aws-cdk-lib constructs
-
-      - name: Cache Dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            ~/.cache/pip
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
-
   deploy-core:
-    needs: setup
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/setup.yml
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Restore Dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            ~/.cache/pip
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
-
       - name: Deploy Core Stack
         run: cdk deploy CoreStack --app "python infra/app.py" --require-approval never
 
   deploy-auth:
-    needs: setup
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/setup.yml
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Restore Dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            ~/.cache/pip
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
-
       - name: Deploy Auth Stack
         run: cdk deploy AuthStack --app "python infra/app.py" --require-approval never
 
   deploy-cluster:
     needs: deploy-core
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/setup.yml
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Restore Dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            ~/.cache/pip
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
-
       - name: Deploy Cluster Stack
         run: cdk deploy ClusterStack --app "python infra/app.py" --require-approval never
 
   deploy-database:
     needs: deploy-core
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/setup.yml
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Restore Dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            ~/.cache/pip
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
-
       - name: Deploy Database Stack
         run: cdk deploy DatabaseStack --app "python infra/app.py" --require-approval never
 
   deploy-app:
     needs: [deploy-cluster, deploy-database, deploy-auth]
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/setup.yml
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Restore Dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            ~/.cache/pip
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
-
       - name: Deploy App Stack
         run: cdk deploy AppStack --app "python infra/app.py" --require-approval never
