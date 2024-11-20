@@ -1,20 +1,20 @@
-from aws_cdk import Stack
 from constructs import Construct
 from constructs.runtime_ecs import RuntimeEcsConstruct
 from constructs.route_53 import Route53Construct
-
+from .stack import Stack
 
 class AppStack(Stack):
     def __init__(
         self,
         scope: Construct,
         id: str,
+        tags: dict,
         cluster: str,
         certificate: str,
         hosted_zone: str,
         **kwargs
     ):
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id, tags, **kwargs)
         fargate_service = RuntimeEcsConstruct(
             self, "RuntimeEcs", cluster=cluster, certificate=certificate
         ).fargate_service
