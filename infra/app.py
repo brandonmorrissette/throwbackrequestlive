@@ -8,7 +8,7 @@ from stacks.runtime import RuntimeStack
 from stacks.auth import AuthStack
 
 app = cdk.App()
-project_name = os.getenv("PROJECT_NAME", "DefaultProject")
+project_name = os.getenv("PROJECT_NAME")
 environment_name = os.getenv("ENVIRONMENT_NAME", "Production")
 account_id = os.getenv("AWS_ACCOUNT", "140465999057")
 region = os.getenv("AWS_REGION", "us-east-1")

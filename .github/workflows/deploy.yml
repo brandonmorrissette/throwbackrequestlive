@@ -47,7 +47,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-runtime:
-        needs: [deploy-cluster, deploy-storage, deploy-auth]
+        needs: [deploy-cluster, deploy-storage]
         uses: ./.github/workflows/deployCDK.yml
         with:
             stack-name: RuntimeStack
