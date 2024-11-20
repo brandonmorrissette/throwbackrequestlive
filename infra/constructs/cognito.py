@@ -75,10 +75,10 @@ class CognitoConstruct(Construct):
             user_pool_id=self.user_pool.user_pool_id,
             username="superuser",
             user_attributes=[
-                {"Name": "email", "Value": superuser_email}
+                {"Name": "email", "Value": superuser_email},
             ],
             desired_delivery_mediums=["EMAIL"],
-            force_alias_creation=False
+            force_alias_creation=False,
         )
 
         cognito.CfnUserPoolUserToGroupAttachment(
