@@ -3,8 +3,8 @@ import os
 import aws_cdk as cdk
 from stacks.core import CoreStack
 from stacks.cluster import ClusterStack
-from infra.stacks.storage import StorageStack
-from infra.stacks.runtime import RuntimeStack
+from stacks.storage import StorageStack
+from stacks.runtime import RuntimeStack
 from stacks.auth import AuthStack
 
 app = cdk.App()
