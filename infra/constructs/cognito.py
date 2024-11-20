@@ -55,7 +55,7 @@ class CognitoConstruct(Construct):
                         "rds-db:executeStatement",
                         "rds-db:batchExecuteStatement"
                     ],
-                    resources=[rds.db_instance_arn]
+                    resources=[rds.instance_arn]
                 )
             ]
         )
