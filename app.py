@@ -86,7 +86,7 @@ def thank_you():
     song_name = request.args.get('song_name', 'your song')
     return render_template('thank_you.html', song_name=song_name, events=get_events())
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     data = request.form 
     username = data.get('username')
@@ -104,24 +104,11 @@ def login():
         id_token = response['AuthenticationResult']['IdToken']
         access_token = create_access_token(identity=username)
 
-        return redirect(url_for('admin_dashboard', token=access_token))
+        return redirect(url_for('admin', token=access_token))
 
     except ClientError as e:
         app.logger.error(f"Login failed: {e}")
         return redirect(url_for('admin', error="Invalid username or password"))
-
-    
-@app.route('/admin', methods=['GET'])
-def admin():
-    return render_template('admin.html', error=request.args.get('error'))
-
-
-
-@app.route('/admin_dashboard', methods=['GET'])
-@jwt_required()
-def admin_dashboard():
-    current_user = get_jwt_identity()
-    return jsonify({"message": f"Hello, {current_user}!"}), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

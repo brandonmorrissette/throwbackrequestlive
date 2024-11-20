@@ -43,7 +43,6 @@ jobs:
                   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ secrets.AWS_REGION }}
-                  aws-account: ${{ secrets.AWS_ACCESS_KEY_ID }}
 
             - name: CDK Bootstrap (if needed)
               run: cdk bootstrap || echo "Bootstrap already complete"
@@ -56,3 +55,4 @@ jobs:
               env:
                   PROJECT_NAME: ${{ github.event.repository.name }}
                   ENVIRONMENT_NAME: ${{ env.ENVIRONMENT_NAME }}
+                  SUPERUSER_EMAIL: ${{ env.SUPERUSER_EMAIL }}

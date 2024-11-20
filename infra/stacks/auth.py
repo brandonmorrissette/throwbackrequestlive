@@ -1,11 +1,10 @@
+
+from aws_cdk import core
 from constructs import Construct
-from constructs.cognito import CognitoConstruct
-from constructs.superuser import SuperuserConstruct
-from .stack import Stack
+from infra.constructs.cognito import CognitoConstruct
 
-class AuthStack(Stack):
-    def __init__(self, scope: Construct, id: str, tags: dict, **kwargs):
-        super().__init__(scope, id, tags, **kwargs)
-        CognitoConstruct(self, "Cognito")
-        SuperuserConstruct(self, "Superuser")
+class AuthStack(core.Stack):
+    def __init__(self, scope: Construct, id: str, superuser_email: str, rds, **kwargs) -> None:
+        super().__init__(scope, id, **kwargs)
 
+        CognitoConstruct(self, "CognitoConstruct", superuser_email=superuser_email, rds=rds)

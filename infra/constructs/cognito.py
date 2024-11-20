@@ -1,10 +1,10 @@
 from aws_cdk import aws_cognito as cognito
+from aws_cdk import aws_iam as iam
 from constructs import Construct
 
-
 class CognitoConstruct(Construct):
-    def __init__(self, scope: Construct, id: str) -> None:
-        super().__init__(scope, id)
+    def __init__(self, scope: Construct, id: str, superuser_email: str, rds, **kwargs) -> None:
+        super().__init__(scope, id, **kwargs)
 
         self.user_pool = cognito.UserPool(
             self, "UserPool",
@@ -33,4 +33,57 @@ class CognitoConstruct(Construct):
             self, "AdminGroup",
             group_name="Admin",
             user_pool_id=self.user_pool.user_pool_id
+        )
+
+        self.superuser_group = cognito.CfnUserPoolGroup(
+            self, "SuperuserGroup",
+            group_name="Superuser",
+            user_pool_id=self.user_pool.user_pool_id
+        )
+
+        self.attach_permissions_to_groups(rds)
+
+        self.create_superuser(superuser_email)
+
+    def attach_permissions_to_groups(self, rds):
+        admin_policy = iam.Policy(
+            self, "AdminPolicy",
+            statements=[
+                iam.PolicyStatement(
+                    actions=[
+                        "rds-db:connect",
+                        "rds-db:executeStatement",
+                        "rds-db:batchExecuteStatement"
+                    ],
+                    resources=[rds.db_instance_arn]
+                )
+            ]
+        )
+
+        admin_role = iam.Role(
+            self, "AdminRole",
+            assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
+            inline_policies={"AdminPolicy": admin_policy.document}
+        )
+
+        self.admin_group.role_arn = admin_role.role_arn
+        self.superuser_group.role_arn = admin_role.role_arn
+
+    def create_superuser(self, superuser_email: str):
+        cognito.CfnUserPoolUser(
+            self, "Superuser",
+            user_pool_id=self.user_pool.user_pool_id,
+            username="superuser",
+            user_attributes=[
+                {"Name": "email", "Value": superuser_email}
+            ],
+            desired_delivery_mediums=["EMAIL"],
+            force_alias_creation=False
+        )
+
+        cognito.CfnUserPoolUserToGroupAttachment(
+            self, "SuperuserGroupAttachment",
+            user_pool_id=self.user_pool.user_pool_id,
+            username="superuser",
+            group_name="Superuser"
         )
