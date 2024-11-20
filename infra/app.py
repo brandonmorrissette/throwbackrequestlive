@@ -40,7 +40,7 @@ database_stack = DatabaseStack(
 )
 
 auth_stack = AuthStack(
-    app, f"{project_name}-AuthStack-{environment_name}", tags=default_tags, env=cdk.Environment(account=account_id, region=region), superuser_email=superuser_email, rds_instance=database_stack.rdsConstruct.db_instance
+    app, f"{project_name}-AuthStack-{environment_name}", tags=default_tags, env=cdk.Environment(account=account_id, region=region), superuser_email=superuser_email, rds=database_stack.rdsConstruct.db_instance
 )
 
 app_stack = AppStack(
