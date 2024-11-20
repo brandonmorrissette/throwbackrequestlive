@@ -70,7 +70,7 @@ class CognitoConstruct(Construct):
         self.superuser_group.role_arn = admin_role.role_arn
 
     def create_superuser(self, superuser_email: str):
-        cognito.CfnUserPoolUser(
+        superuser = cognito.CfnUserPoolUser(
             self, "Superuser",
             user_pool_id=self.user_pool.user_pool_id,
             username="superuser",
@@ -86,4 +86,4 @@ class CognitoConstruct(Construct):
             user_pool_id=self.user_pool.user_pool_id,
             username="superuser",
             group_name="Superuser"
-        )
+        ).node.add_dependency(superuser)

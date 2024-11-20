@@ -3,7 +3,7 @@ from constructs.runtime_ecs import RuntimeEcsConstruct
 from constructs.route_53 import Route53Construct
 from .stack import Stack
 
-class AppStack(Stack):
+class RuntimeStack(Stack):
     def __init__(
         self,
         scope: Construct,

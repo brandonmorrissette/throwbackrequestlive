@@ -3,8 +3,8 @@ import os
 import aws_cdk as cdk
 from stacks.core import CoreStack
 from stacks.cluster import ClusterStack
-from stacks.database import DatabaseStack
-from stacks.app import AppStack
+from infra.stacks.storage import StorageStack
+from infra.stacks.runtime import RuntimeStack
 from stacks.auth import AuthStack
 
 app = cdk.App()
@@ -31,9 +31,9 @@ cluster_stack = ClusterStack(
     env=cdk.Environment(account=account_id, region=region),
 )
 
-database_stack = DatabaseStack(
+database_stack = StorageStack(
     app,
-    f"{project_name}-DatabaseStack-{environment_name}",
+    f"{project_name}-StorageStack-{environment_name}",
     tags=default_tags,
     vpc=core_stack.vpcConstruct.vpc,
     env=cdk.Environment(account=account_id, region=region),
@@ -43,9 +43,9 @@ auth_stack = AuthStack(
     app, f"{project_name}-AuthStack-{environment_name}", tags=default_tags, env=cdk.Environment(account=account_id, region=region), superuser_email=superuser_email, rds=database_stack.rdsConstruct.db_instance
 )
 
-app_stack = AppStack(
+app_stack = RuntimeStack(
     app,
-    f"{project_name}-AppStack-{environment_name}",
+    f"{project_name}-RuntimeStack-{environment_name}",
     tags=default_tags,
     cluster=cluster_stack.clusterConstruct.cluster,
     certificate=core_stack.certConstruct.certificate,
