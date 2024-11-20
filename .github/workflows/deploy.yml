@@ -26,18 +26,18 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-database:
+    deploy-storage:
         needs: deploy-core
         uses: ./.github/workflows/deployCDK.yml
         with:
-            stack-name: DatabaseStack
+            stack-name: StorageStack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-auth:
-        needs: deploy-database
+        needs: deploy-storage
         uses: ./.github/workflows/deployCDK.yml
         with:
             stack-name: AuthStack
@@ -46,11 +46,11 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-app:
-        needs: [deploy-cluster, deploy-database, deploy-auth]
+    deploy-runtime:
+        needs: [deploy-cluster, deploy-storage, deploy-auth]
         uses: ./.github/workflows/deployCDK.yml
         with:
-            stack-name: AppStack
+            stack-name: RuntimeStack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
