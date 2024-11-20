@@ -6,7 +6,6 @@ from stacks.cluster import ClusterStack
 from stacks.database import DatabaseStack
 from stacks.app import AppStack
 from stacks.auth import AuthStack
-from constructs import RdsConstruct
 
 app = cdk.App()
 project_name = os.getenv("PROJECT_NAME", "DefaultProject")
