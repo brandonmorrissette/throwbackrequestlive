@@ -59,7 +59,7 @@ jobs:
         needs: deploy-setup
         runs-on: ubuntu-latest
         env:
-            SUPERUSER_EMAIL: ${{ env.SUPERUSER_EMAIL }}
+            SUPERUSER_EMAIL: ${{ secrets.SUPERUSER_EMAIL }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
