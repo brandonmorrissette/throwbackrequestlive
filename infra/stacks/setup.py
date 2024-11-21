@@ -35,5 +35,6 @@ class SetupStack(Stack):
             code=_lambda.Code.from_asset('infra/setup/lambda/create_superuser'),
             environment={
                 'USER_POOL_ID': user_pool_id,
-            }
+            },
+            function_name='create-superuser-lambda'
         )
