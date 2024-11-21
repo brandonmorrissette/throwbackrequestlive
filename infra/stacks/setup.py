@@ -26,7 +26,8 @@ class SetupStack(Stack):
                 break
 
         if not user_pool_exists:
-            CognitoConstruct(self, "CognitoConstruct", rds=rds, project_name=project_name)
+            cognitoConstruct = CognitoConstruct(self, "CognitoConstruct", rds=rds, project_name=project_name)
+            user_pool_id = cognitoConstruct.user_pool.user_pool_id
 
         create_superuser_lambda = _lambda.Function(
             self, 'CreateSuperuserLambda',
