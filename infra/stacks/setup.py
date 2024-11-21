@@ -19,17 +19,21 @@ class SetupStack(Stack):
         user_pools = cognito_client.list_user_pools(MaxResults=60)
         user_pool_exists = any(pool['Name'] == f"{project_name}-UserPool" for pool in user_pools['UserPools'])
 
+        user_pool_id = None
+        for pool in user_pools['UserPools']:
+            if pool['Name'] == f"{project_name}-UserPool":
+                user_pool_id = pool['Id']
+                break
+
         if not user_pool_exists:
-            cognito_construct = CognitoConstruct(self, "CognitoConstruct", rds=rds, project_name=project_name)
+            CognitoConstruct(self, "CognitoConstruct", rds=rds, project_name=project_name)
 
-            create_superuser_lambda = _lambda.Function(
-                self, 'CreateSuperuserLambda',
-                runtime=_lambda.Runtime.PYTHON_3_8,
-                handler='create-superuser-lambda.handler',
-                code=_lambda.Code.from_asset('infra/setup/lambda/create_superuser'),
-                environment={
-                    'USER_POOL_ID': cognito_construct.user_pool.user_pool_id,
-                }
-            )
-
-            create_superuser_lambda.node.add_dependency(cognito_construct.user_pool)
+        create_superuser_lambda = _lambda.Function(
+            self, 'CreateSuperuserLambda',
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            handler='create-superuser-lambda.handler',
+            code=_lambda.Code.from_asset('infra/setup/lambda/create_superuser'),
+            environment={
+                'USER_POOL_ID': user_pool_id,
+            }
+        )
