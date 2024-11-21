@@ -31,7 +31,7 @@ class SetupStack(Stack):
         create_superuser_lambda = _lambda.Function(
             self, 'CreateSuperuserLambda',
             runtime=_lambda.Runtime.PYTHON_3_8,
-            handler='create-superuser-lambda.handler',
+            handler='create_superuser.handler',
             code=_lambda.Code.from_asset('infra/setup/lambda/create_superuser'),
             environment={
                 'USER_POOL_ID': user_pool_id,
