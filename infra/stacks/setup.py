@@ -1,12 +1,12 @@
 from aws_cdk import (
-    aws_lambda as _lambda,
-    core
+    aws_lambda as _lambda
 )
+from constructs import Construct
 from stack import Stack
 
 class SetupStack(Stack):
 
-    def __init__(self, scope: core.Construct, id: str, superuser_email: str, user_pool, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, superuser_email: str, user_pool, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         create_superuser_lambda = _lambda.Function(
