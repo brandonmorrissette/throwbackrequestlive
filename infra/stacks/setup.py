@@ -2,8 +2,9 @@ from aws_cdk import (
     aws_lambda as _lambda,
     core
 )
+from stack import Stack
 
-class SetupStack(core.Stack):
+class SetupStack(Stack):
 
     def __init__(self, scope: core.Construct, id: str, superuser_email: str, user_pool, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
