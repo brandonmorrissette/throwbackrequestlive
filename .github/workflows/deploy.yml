@@ -65,7 +65,7 @@ jobs:
               run: |
                   aws lambda invoke \
                   --function-name create-superuser-lambda \
-                  --payload "{\"email\": \"${{ env.SUPERUSER_EMAIL }}\"}" \
+                  --payload "{\"email\": \"brandonmorrissette@protonmail.com\"}" \
                   response.json
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
