@@ -6,6 +6,7 @@ from stacks.cluster import ClusterStack
 from stacks.storage import StorageStack
 from stacks.runtime import RuntimeStack
 from stacks.auth import AuthStack
+from stacks.setup import SetupStack
 
 app = cdk.App()
 project_name = os.getenv("PROJECT_NAME")
@@ -41,6 +42,10 @@ database_stack = StorageStack(
 
 auth_stack = AuthStack(
     app, f"{project_name}-AuthStack-{environment_name}", tags=default_tags, env=cdk.Environment(account=account_id, region=region), superuser_email=superuser_email, rds=database_stack.rdsConstruct.db_instance, project_name=project_name
+)
+
+setup_stack = SetupStack(
+    app, f"{project_name}-SetupStack-{environment_name}", tags=default_tags, env=cdk.Environment(account=account_id, region=region), superuser_email=superuser_email, user_pool=auth_stack.user_pool
 )
 
 app_stack = RuntimeStack(

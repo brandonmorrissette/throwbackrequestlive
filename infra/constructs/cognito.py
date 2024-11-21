@@ -41,12 +41,10 @@ class CognitoConstruct(Construct):
             user_pool_id=self.user_pool.user_pool_id
         )
 
-        self.attach_admin_permissions_to_groups(rds)
+        self.attach_policies_to_groups([self.admin_group, self.superuser_group], [self.create_admin_policy(rds)])
 
-        self.create_superuser(superuser_email)
-
-    def attach_admin_permissions_to_groups(self, rds):
-        admin_policy = iam.Policy(
+    def create_admin_policy(self, rds):
+        return iam.Policy(
             self, "AdminPolicy",
             statements=[
                 iam.PolicyStatement(
@@ -60,22 +58,12 @@ class CognitoConstruct(Construct):
             ]
         )
 
-        admin_role = iam.Role(
-            self, "AdminRole",
-            assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
-            inline_policies={"AdminPolicy": admin_policy.document}
-        )
-
-        self.admin_group.role_arn = admin_role.role_arn
-        self.superuser_group.role_arn = admin_role.role_arn
-
-    def create_superuser(self, superuser_email: str):
-        superuser = cognito.CfnUserPoolUser(
-            self, "Superuser",
-            user_pool_id=self.user_pool.user_pool_id,
-            desired_delivery_mediums=["EMAIL"],
-            user_attributes=[cognito.CfnUserPoolUser.AttributeTypeProperty(
-                name="email",
-                value="brandonmorrissette@protonmail.com"
-            )],
-        )
+    def attach_policies_to_groups(self, groups, policies):
+        for group in groups:
+            for policy in policies:
+                role = iam.Role(
+                    self, f"{group.group_name}Role",
+                    assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
+                    inline_policies={f"{group.group_name}Policy": policy.document}
+                )
+                group.role_arn = role.role_arn
