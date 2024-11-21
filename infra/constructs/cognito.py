@@ -3,7 +3,7 @@ from aws_cdk import aws_iam as iam
 from constructs import Construct
 
 class CognitoConstruct(Construct):
-    def __init__(self, scope: Construct, id: str, superuser_email: str, rds, project_name: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, rds, project_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         self.user_pool = cognito.UserPool(
