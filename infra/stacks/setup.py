@@ -1,8 +1,6 @@
 from aws_cdk import (
     aws_lambda as _lambda,
     custom_resources as cr,
-    aws_iam as iam,
-    aws_cognito as cognito,
     aws_logs as logs
 )
 from constructs import Construct
