@@ -41,7 +41,10 @@ class SetupStack(Stack):
 
         create_superuser_lambda.add_to_role_policy(
             iam.PolicyStatement(
-                actions=["cognito-idp:AdminGetUser"],
+                actions=[
+                    "cognito-idp:AdminGetUser",
+                    "cognito-idp:AdminCreateUser",
+                ],
                 resources=[f"arn:aws:cognito-idp:us-east-1:{self.account}:userpool/{user_pool_id}"]
             )
         )
