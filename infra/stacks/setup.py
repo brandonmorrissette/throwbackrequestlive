@@ -1,7 +1,9 @@
+import boto3
 from aws_cdk import (
     aws_lambda as _lambda,
     custom_resources as cr,
-    aws_logs as logs
+    aws_logs as logs,
+    aws_iam as iam
 )
 from constructs import Construct
 from stacks.stack import Stack
@@ -12,28 +14,12 @@ class SetupStack(Stack):
     def __init__(self, scope: Construct, id: str, superuser_email: str, rds, project_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        check_user_pool_lambda = _lambda.Function(
-            self, 'CheckUserPoolLambda',
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            handler='check_user_pool.handler',
-            code=_lambda.Code.from_asset('infra/setup/lambda/check_user_pool'),
-            environment={
-                'USER_POOL_NAME': f"{project_name}-UserPool"
-            }
-        )
+        cognito_client = boto3.client('cognito-idp')
 
-        user_pool_exists_provider = cr.Provider(
-            self, 'UserPoolExistsProvider',
-            on_event_handler=check_user_pool_lambda,
-            log_retention=logs.RetentionDays.ONE_DAY
-        )
+        user_pools = cognito_client.list_user_pools(MaxResults=60)
+        user_pool_exists = any(pool['Name'] == f"{project_name}-UserPool" for pool in user_pools['UserPools'])
 
-        user_pool_exists = cr.AwsCustomResource(
-            self, 'UserPoolExists',
-            service_token=user_pool_exists_provider.service_token
-        )
-
-        if not user_pool_exists.get_att('Exists').to_string() == 'true':
+        if not user_pool_exists:
             cognito_construct = CognitoConstruct(self, "CognitoConstruct", rds=rds, project_name=project_name)
 
             create_superuser_lambda = _lambda.Function(
