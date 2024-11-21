@@ -4,7 +4,7 @@ import os
 def handler(event, context):
     client = boto3.client('cognito-idp')
     user_pool_id = os.environ['USER_POOL_ID']
-    superuser_email = os.environ['SUPERUSER_EMAIL']
+    superuser_email = event['email'] 
     
     try:
         client.admin_get_user(
