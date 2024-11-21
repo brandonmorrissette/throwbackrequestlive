@@ -2,7 +2,7 @@ from aws_cdk import (
     aws_lambda as _lambda
 )
 from constructs import Construct
-from stack import Stack
+from stacks.stack import Stack
 
 class SetupStack(Stack):
 
