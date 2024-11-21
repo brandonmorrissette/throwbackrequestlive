@@ -3,13 +3,12 @@ from aws_cdk import aws_iam as iam
 from constructs import Construct
 
 class CognitoConstruct(Construct):
-    def __init__(self, scope: Construct, id: str, superuser_email: str, rds, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, superuser_email: str, rds, project_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         self.user_pool = cognito.UserPool(
-            self, "UserPool",
+            self, f"{project_name}-UserPool",
             self_sign_up_enabled=False,
-            user_pool_name="UserPool",
             sign_in_aliases=cognito.SignInAliases(email=True),
             password_policy=cognito.PasswordPolicy(
                 min_length=12,
