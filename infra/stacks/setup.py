@@ -38,3 +38,10 @@ class SetupStack(Stack):
             },
             function_name='create-superuser-lambda'
         )
+
+        create_superuser_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["cognito-idp:AdminGetUser"],
+                resources=[f"arn:aws:cognito-idp:us-east-1:{self.account}:userpool/{user_pool_id}"]
+            )
+        )
