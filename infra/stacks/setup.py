@@ -20,14 +20,17 @@ class SetupStack(Stack):
         user_pool_exists = any(pool['Name'] == f"{project_name}-UserPool" for pool in user_pools['UserPools'])
 
         user_pool_id = None
-        for pool in user_pools['UserPools']:
-            if pool['Name'] == f"{project_name}-UserPool":
-                user_pool_id = pool['Id']
-                break
+        if user_pool_exists:
+            for pool in user_pools['UserPools']:
+                if pool['Name'] == f"{project_name}-UserPool":
+                    user_pool_id = pool['Id']
+                    break
+            print*("User pool already exists. ID: ", user_pool_id)
 
-        if not user_pool_exists:
+        else:
             cognitoConstruct = CognitoConstruct(self, "CognitoConstruct", rds=rds, project_name=project_name)
             user_pool_id = cognitoConstruct.user_pool.user_pool_id
+            print("User pool created. ID: ", user_pool_id)
 
         create_superuser_lambda = _lambda.Function(
             self, 'CreateSuperuserLambda',
