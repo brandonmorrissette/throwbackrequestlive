@@ -25,7 +25,7 @@ class SetupStack(Stack):
                 if pool['Name'] == f"{project_name}-UserPool":
                     user_pool_id = pool['Id']
                     break
-            print*("User pool already exists. ID: ", user_pool_id)
+            print("User pool already exists. ID: ", user_pool_id)
 
         else:
             cognitoConstruct = CognitoConstruct(self, "CognitoConstruct", rds=rds, project_name=project_name)
