@@ -40,7 +40,7 @@ class CognitoConstruct(Construct):
             user_pool_id=self.user_pool.user_pool_id
         )
 
-        self.attach_admin_permissions_to_groups()(rds)
+        self.attach_admin_permissions_to_groups(rds)
 
         self.create_superuser(superuser_email)
 
