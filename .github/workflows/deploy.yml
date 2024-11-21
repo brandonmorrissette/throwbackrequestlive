@@ -58,8 +58,6 @@ jobs:
     setup-environment:
         needs: deploy-setup
         runs-on: ubuntu-latest
-        env:
-            SUPERUSER_EMAIL: ${{ secrets.SUPERUSER_EMAIL }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
@@ -67,7 +65,7 @@ jobs:
               run: |
                   aws lambda invoke \
                   --function-name create-superuser-lambda \
-                  --payload '{"email": "${{ env.SUPERUSER_EMAIL}}"}' \
+                  --payload '{"email": "${{ vars.SUPERUSER_EMAIL}}"}' \
                   response.json \
                   --cli-binary-format raw-in-base64-out
               env:
