@@ -28,9 +28,10 @@ class SetupStack(Stack):
             log_retention=logs.RetentionDays.ONE_DAY
         )
 
-        user_pool_exists = cr.CustomResource(
+        user_pool_exists = cr.AwsCustomResource(
             self, 'UserPoolExists',
-            service_token=user_pool_exists_provider.service_token
+            on_event_handler=check_user_pool_lambda,
+            log_retention=logs.RetentionDays.ONE_DAY
         )
 
         if not user_pool_exists.get_att('Exists').to_string() == 'true':
