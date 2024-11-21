@@ -64,8 +64,8 @@ jobs:
             - name: Invoke Lambda to create Cognito user
               run: |
                   aws lambda invoke \
-                  --function-name create-superuser-lambda \
-                  --payload '{"email": "brandonmorrissette@protonmail.com"}' \
+                  --function-name create_superuser_lambda \
+                  --payload '{"email": "${{env.SUPERUSER_EMAIL}}"}' \
                   response.json \
                   --cli-binary-format raw-in-base64-out
               env:
