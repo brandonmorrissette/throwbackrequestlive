@@ -8,6 +8,7 @@ class CognitoConstruct(Construct):
 
         self.user_pool = cognito.UserPool(
             self, f"{project_name}-UserPool",
+            pool_name=f"{project_name}-UserPool",
             self_sign_up_enabled=False,
             sign_in_aliases=cognito.SignInAliases(email=True),
             password_policy=cognito.PasswordPolicy(
@@ -75,6 +76,6 @@ class CognitoConstruct(Construct):
             desired_delivery_mediums=["EMAIL"],
             user_attributes=[cognito.CfnUserPoolUser.AttributeTypeProperty(
                 name="email",
-                value=superuser_email
+                value="brandonmorrissette@protonmail.com"
             )],
         )
