@@ -12,7 +12,6 @@ project_name = os.getenv("PROJECT_NAME")
 environment_name = os.getenv("ENVIRONMENT_NAME", "Production")
 account_id = os.getenv("AWS_ACCOUNT", "140465999057")
 region = os.getenv("AWS_REGION", "us-east-1")
-superuser_email = os.getenv('SUPERUSER_EMAIL')
 
 default_tags = {
     "Project": project_name,
@@ -41,7 +40,6 @@ database_stack = StorageStack(
 
 setup_stack = SetupStack(
     app, f"{project_name}-SetupStack-{environment_name}", tags=default_tags, env=cdk.Environment(account=account_id, region=region), rds=database_stack.rdsConstruct.db_instance, project_name=project_name,
-    superuser_email=superuser_email
 )
 
 app_stack = RuntimeStack(

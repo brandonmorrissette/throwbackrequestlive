@@ -11,7 +11,7 @@ from constructs.cognito import CognitoConstruct
 
 class SetupStack(Stack):
 
-    def __init__(self, scope: Construct, id: str, superuser_email: str, rds, project_name: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, rds, project_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         cognito_client = boto3.client('cognito-idp')
@@ -29,7 +29,6 @@ class SetupStack(Stack):
                 code=_lambda.Code.from_asset('infra/setup/lambda/create_superuser'),
                 environment={
                     'USER_POOL_ID': cognito_construct.user_pool.user_pool_id,
-                    'SUPERUSER_EMAIL': superuser_email
                 }
             )
 
