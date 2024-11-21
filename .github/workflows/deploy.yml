@@ -65,7 +65,7 @@ jobs:
               run: |
                   aws lambda invoke \
                   --function-name create-superuser-lambda \
-                  --payload '{"email": "${{env.SUPERUSER_EMAIL}}"}' \
+                  --payload '{"email": "brandonmorrissette@protonmail.com"}' \
                   response.json \
                   --cli-binary-format raw-in-base64-out
               env:
