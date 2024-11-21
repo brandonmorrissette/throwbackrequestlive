@@ -40,11 +40,11 @@ class CognitoConstruct(Construct):
             user_pool_id=self.user_pool.user_pool_id
         )
 
-        self.attach_permissions_to_groups(rds)
+        self.attach_admin_permissions_to_groups()(rds)
 
         self.create_superuser(superuser_email)
 
-    def attach_permissions_to_groups(self, rds):
+    def attach_admin_permissions_to_groups(self, rds):
         admin_policy = iam.Policy(
             self, "AdminPolicy",
             statements=[
@@ -72,17 +72,9 @@ class CognitoConstruct(Construct):
         superuser = cognito.CfnUserPoolUser(
             self, "Superuser",
             user_pool_id=self.user_pool.user_pool_id,
-            username="superuser",
-            user_attributes=[
-                {"Name": "email", "Value": superuser_email},
-            ],
             desired_delivery_mediums=["EMAIL"],
-            force_alias_creation=False,
+            user_attributes=[cognito.CfnUserPoolUser.AttributeTypeProperty(
+                name="email",
+                value=superuser_email
+            )],
         )
-
-        cognito.CfnUserPoolUserToGroupAttachment(
-            self, "SuperuserGroupAttachment",
-            user_pool_id=self.user_pool.user_pool_id,
-            username="superuser",
-            group_name="Superuser"
-        ).node.add_dependency(superuser)
