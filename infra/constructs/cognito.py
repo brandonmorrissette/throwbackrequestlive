@@ -8,7 +8,7 @@ class CognitoConstruct(Construct):
 
         self.user_pool = cognito.UserPool(
             self, f"{project_name}-UserPool",
-            pool_name=f"{project_name}-UserPool",
+            user_pool_name=f"{project_name}-UserPool",
             self_sign_up_enabled=False,
             sign_in_aliases=cognito.SignInAliases(email=True),
             password_policy=cognito.PasswordPolicy(
