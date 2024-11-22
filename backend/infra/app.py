@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import os
 import aws_cdk as cdk
-from backend.infra.stacks.network import NetworkStack
+from stacks.network import NetworkStack
 from stacks.cluster import ClusterStack
 from stacks.storage import StorageStack
-from backend.infra.stacks.frontend import RuntimeStack
-from backend.infra.stacks.user import UserStack
+from stacks.runtime import RuntimeStack
+from stacks.user import UserStack
 
 app = cdk.App()
 project_name = os.getenv("PROJECT_NAME")
