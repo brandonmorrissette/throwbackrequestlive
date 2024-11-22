@@ -7,15 +7,12 @@ import boto3
 class CognitoConstruct(Construct):
     def __init__(self, scope: Construct, id: str, rds, project_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-        env = kwargs.get('env')
 
         cognito_client = boto3.client('cognito-idp')
 
-        self.user_pool = self._get_user_pool_by_name(cognito_client, f"{project_name}-UserPool")
-        if self.user_pool:
-            self.groups = self._get_groups_by_user_pool_id(cognito_client, self.user_pool['Id'])
-        else:
-            self.user_pool = cognito.UserPool(
+        user_pool_id = self._get_user_pool_by_name(cognito_client, f"{project_name}-UserPool")['Id']
+        if not user_pool_id:
+            user_pool_id = cognito.UserPool(
                 self, f"{project_name}-UserPool",
                 user_pool_name=f"{project_name}-UserPool",
                 self_sign_up_enabled=False,
@@ -28,7 +25,7 @@ class CognitoConstruct(Construct):
                     require_symbols=True
                 ),
                 account_recovery=cognito.AccountRecovery.EMAIL_ONLY
-            )
+            ).user_pool_id
 
             self.app_client = self.user_pool.add_client(
                 "UserPoolAppClient",
@@ -41,7 +38,7 @@ class CognitoConstruct(Construct):
             self.groups = self._create_groups()
             self._attach_policies_to_groups(self.groups, [self._create_admin_policy(rds)])
             
-        self.create_superuser_lambda(self.user_pool)
+        self.create_superuser_lambda(user_pool_id)
 
     def _create_groups(self):
         admin_group = cognito.CfnUserPoolGroup(
@@ -94,14 +91,14 @@ class CognitoConstruct(Construct):
         groups = client.list_groups(UserPoolId=user_pool_id)
         return groups['Groups']
 
-    def create_superuser_lambda(self, user_pool):
+    def create_superuser_lambda(self, user_pool_id):
         create_superuser_lambda = _lambda.Function(
             self, 'CreateSuperuserLambda',
             runtime=_lambda.Runtime.PYTHON_3_8,
             handler='create_superuser.handler',
             code=_lambda.Code.from_asset('infra/setup/lambda/create_superuser'),
             environment={
-                'USER_POOL_ID': user_pool.user_pool_id,
+                'USER_POOL_ID': user_pool_id,
                 'SUPERUSER_GROUP_NAME': "Superuser"
             },
             function_name='create-superuser-lambda'
@@ -114,6 +111,6 @@ class CognitoConstruct(Construct):
                     "cognito-idp:AdminCreateUser",
                     "cognito-idp:AdminAddUserToGroup"
                 ],
-                resources=[f"arn:aws:cognito-idp:{self.region}:{self.account}:userpool/{user_pool.user_pool_id}"]
+                resources=[f"arn:aws:cognito-idp:{self.region}:{self.account}:userpool/{user_pool_id.user_pool_id}"]
             )
         )
