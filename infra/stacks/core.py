@@ -1,7 +1,7 @@
 from constructs import Construct
 from constructs.vpc import VpcConstruct
 from constructs.cert import CertConstruct
-from .stack import Stack
+from aws_cdk import Stack
 
 class CoreStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs):

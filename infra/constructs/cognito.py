@@ -5,10 +5,11 @@ from constructs import Construct
 import boto3
 
 class CognitoConstruct(Construct):
-    def __init__(self, scope: Construct, id: str, rds, project_name: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, rds, env, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         cognito_client = boto3.client('cognito-idp')
+        project_name = kwargs['project_name']
 
         user_pool_id = self._get_user_pool_by_name(cognito_client, f"{project_name}-UserPool")['Id']
         if not user_pool_id:

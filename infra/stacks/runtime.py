@@ -1,7 +1,7 @@
 from constructs import Construct
 from constructs.runtime_ecs import RuntimeEcsConstruct
 from constructs.route_53 import Route53Construct
-from .stack import Stack
+from aws_cdk import Stack
 
 class RuntimeStack(Stack):
     def __init__(
