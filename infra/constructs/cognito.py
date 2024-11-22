@@ -19,11 +19,11 @@ class CognitoConstruct(Construct):
                 self_sign_up_enabled=False,
                 sign_in_aliases=cognito.SignInAliases(email=True),
                 password_policy=cognito.PasswordPolicy(
-                    min_length=12,
-                    require_lowercase=True,
-                    require_uppercase=True,
-                    require_digits=True,
-                    require_symbols=True
+                    min_length=8,
+                    require_lowercase=False,
+                    require_uppercase=False,
+                    require_digits=False,
+                    require_symbols=False
                 ),
                 account_recovery=cognito.AccountRecovery.EMAIL_ONLY
             )

@@ -69,7 +69,6 @@ a,
     z-index: 1030;
 }
 
-
 .footer a {
     color: var(--color-primary-opacity);
     text-decoration: none;
@@ -287,9 +286,9 @@ a,
     color: var(--color-primary);
 }
 
-.form-group input[type="text"],
-.form-group input[type="email"],
-.form-group input[type="phone"],
+.form-group input[type='text'],
+.form-group input[type='email'],
+.form-group input[type='phone'],
 .form-group textarea {
     flex: 1;
     padding: 8px;

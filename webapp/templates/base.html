@@ -17,7 +17,7 @@
     <body>
         <header>
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-                <a class="navbar-brand" href="{{ url_for('home') }}">
+                <a class="navbar-brand" href="{{ url_for('routes.home') }}">
                     <img
                         src="/static/logo.jpg"
                         alt="Throwback Request Live"
@@ -34,8 +34,8 @@
         </main>
 
         <footer class="footer">
-            <a href="{{ url_for('tip') }}" class="mx-3 subtle">Tip</a>
-            <a href="{{ url_for('book') }}" class="mx-3 subtle">Book</a>
+            <a href="{{ url_for('routes.tip') }}" class="mx-3 subtle">Tip</a>
+            <a href="{{ url_for('routes.book') }}" class="mx-3 subtle">Book</a>
         </footer>
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
