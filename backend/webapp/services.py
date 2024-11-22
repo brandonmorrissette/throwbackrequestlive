@@ -3,6 +3,7 @@ import boto3
 from botocore.exceptions import ClientError
 import csv
 from datetime import datetime
+import os
 
 def record_vote_logic(data):
     song_name = data.get('song')
@@ -37,7 +38,8 @@ def admin_login_logic(data):
 
 def get_events():
     events = []
-    with open('data/events.csv', mode='r') as file:
+    file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'events.csv')
+    with open(file_path, mode='r') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             event_datetime = datetime.strptime(f"{row['date']} {row['time']}", '%m-%d-%Y %I:%M %p')
@@ -55,7 +57,8 @@ def get_events():
 
 def get_songs():
     songs = []
-    with open('data/songs.csv', mode='r') as file:
+    file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'songs.csv')
+    with open(file_path, mode='r') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             songs.append({
