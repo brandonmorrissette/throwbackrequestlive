@@ -41,7 +41,7 @@ class CognitoConstruct(Construct):
             self.groups = self._create_groups()
             self._attach_policies_to_groups(self.groups, [self._create_admin_policy(rds)])
             
-        self.create_superuser_lambda(self.user_pool, next(group for group in self.groups if group.group_name == "Superuser"))
+        self.create_superuser_lambda(self.user_pool)
 
     def _create_groups(self):
         admin_group = cognito.CfnUserPoolGroup(
@@ -94,7 +94,7 @@ class CognitoConstruct(Construct):
         groups = client.list_groups(UserPoolId=user_pool_id)
         return groups['Groups']
 
-    def create_superuser_lambda(self, user_pool, super_group):
+    def create_superuser_lambda(self, user_pool):
         create_superuser_lambda = _lambda.Function(
             self, 'CreateSuperuserLambda',
             runtime=_lambda.Runtime.PYTHON_3_8,
@@ -102,7 +102,7 @@ class CognitoConstruct(Construct):
             code=_lambda.Code.from_asset('infra/setup/lambda/create_superuser'),
             environment={
                 'USER_POOL_ID': user_pool.user_pool_id,
-                'SUPERUSER_GROUP_NAME': super_group.group_name
+                'SUPERUSER_GROUP_NAME': "Superuser"
             },
             function_name='create-superuser-lambda'
         )
