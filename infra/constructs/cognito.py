@@ -111,6 +111,6 @@ class CognitoConstruct(Construct):
                     "cognito-idp:AdminCreateUser",
                     "cognito-idp:AdminAddUserToGroup"
                 ],
-                resources=[f"arn:aws:cognito-idp:{env['region']}:{env['account']}:userpool/{user_pool_id.user_pool_id}"]
+                resources=[f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{user_pool_id}"]
             )
         )
