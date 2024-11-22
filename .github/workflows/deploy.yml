@@ -7,28 +7,28 @@ on:
     workflow_dispatch:
 
 jobs:
-    deploy-core-stack:
-        uses: ./.github/workflows/deployBackend.yml
+    deploy-network-stack:
+        uses: ./.github/workflows/deployStack.yml
         with:
-            stack-name: CoreStack
+            stack-name: NetworkStack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-cluster-stack:
-        needs: deploy-core-stack
-        uses: ./.github/workflows/deployBackend.yml
+    deploy-compute-stack:
+        needs: deploy-network-stack
+        uses: ./.github/workflows/deployStack.yml
         with:
-            stack-name: ClusterStack
+            stack-name: ComputeStack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-storage-stack:
-        needs: deploy-core-stack
-        uses: ./.github/workflows/deployBackend.yml
+        needs: deploy-network-stack
+        uses: ./.github/workflows/deployStack.yml
         with:
             stack-name: StorageStack
         secrets:
@@ -36,18 +36,18 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-setup-stack:
-        uses: ./.github/workflows/deployBackend.yml
+    deploy-user-stack:
+        uses: ./.github/workflows/deployStack.yml
         with:
-            stack-name: SetupStack
+            stack-name: UserStack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-runtime-stack:
-        needs: [deploy-cluster-stack, deploy-storage-stack]
-        uses: ./.github/workflows/deployFrontend.yml
+        needs: [deploy-compute-stack, deploy-storage-stack]
+        uses: ./.github/workflows/deployReactStack.yml
         with:
             stack-name: RuntimeStack
         secrets:
@@ -55,8 +55,8 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    setup-runtime-environment:
-        needs: deploy-setup-stack
+    create-superuser:
+        needs: deploy-user-stack
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code

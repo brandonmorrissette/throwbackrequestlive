@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import os
 import aws_cdk as cdk
-from stacks.core import CoreStack
+from backend.infra.stacks.network import NetworkStack
 from stacks.cluster import ClusterStack
 from stacks.storage import StorageStack
-from stacks.runtime import RuntimeStack
-from stacks.setup import SetupStack
+from backend.infra.stacks.frontend import RuntimeStack
+from backend.infra.stacks.user import UserStack
 
 app = cdk.App()
 project_name = os.getenv("PROJECT_NAME")
@@ -28,16 +28,16 @@ def apply_tags(resource, tags):
 apply_tags(app, {key: value for key, value in vars(env).items() if isinstance(value, str)})
 apply_tags(app, tags)
 
-core_stack = CoreStack(
+core_stack = NetworkStack(
     app, 
-    f"{project_name}-CoreStack-{environment_name}",
+    f"{project_name}-NetworkStack-{environment_name}",
     env=env
 )
 apply_tags(core_stack, tags=tags)
 
 cluster_stack = ClusterStack(
     app,
-    f"{project_name}-ClusterStack-{environment_name}",
+    f"{project_name}-ComputeStack-{environment_name}",
     env=env,
     vpc=core_stack.vpcConstruct.vpc,
     
@@ -54,14 +54,14 @@ database_stack = StorageStack(
 )
 apply_tags(database_stack,tags=tags)
 
-setup_stack = SetupStack(
+user_stack = UserStack(
     app, 
-    f"{project_name}-SetupStack-{environment_name}", 
+    f"{project_name}-UserStack-{environment_name}", 
     env=env, 
     rds=database_stack.rdsConstruct.db_instance, 
     project_name=project_name
 )
-apply_tags(setup_stack, tags=tags)
+apply_tags(user_stack, tags=tags)
 
 app_stack = RuntimeStack(
     app,
