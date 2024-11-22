@@ -9,7 +9,7 @@ class CognitoConstruct(Construct):
         super().__init__(scope, id, **kwargs)
 
         cognito_client = boto3.client('cognito-idp')
-        project_name = kwargs['project_name']
+        project_name = env['project_name']
 
         user_pool_id = self._get_user_pool_by_name(cognito_client, f"{project_name}-UserPool")['Id']
         if not user_pool_id:
@@ -112,6 +112,6 @@ class CognitoConstruct(Construct):
                     "cognito-idp:AdminCreateUser",
                     "cognito-idp:AdminAddUserToGroup"
                 ],
-                resources=[f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{user_pool_id.user_pool_id}"]
+                resources=[f"arn:aws:cognito-idp:{env['region']}:{env['account']}:userpool/{user_pool_id.user_pool_id}"]
             )
         )
