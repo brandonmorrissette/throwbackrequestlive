@@ -7,4 +7,4 @@ class SetupStack(Stack):
     def __init__(self, scope: Construct, id: str, rds, project_name: str, env, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        CognitoConstruct(self, f"{project_name}-CognitoConstruct", rds, env, **kwargs)
+        CognitoConstruct(self, f"{project_name}-CognitoConstruct", rds, project_name, env, **kwargs)

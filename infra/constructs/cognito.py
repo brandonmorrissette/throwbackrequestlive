@@ -5,11 +5,10 @@ from constructs import Construct
 import boto3
 
 class CognitoConstruct(Construct):
-    def __init__(self, scope: Construct, id: str, rds, env, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, rds, project_name, env, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         cognito_client = boto3.client('cognito-idp')
-        project_name = env['project_name']
 
         user_pool_id = self._get_user_pool_by_name(cognito_client, f"{project_name}-UserPool")['Id']
         if not user_pool_id:
@@ -39,7 +38,7 @@ class CognitoConstruct(Construct):
             self.groups = self._create_groups()
             self._attach_policies_to_groups(self.groups, [self._create_admin_policy(rds)])
             
-        self.create_superuser_lambda(user_pool_id, kwargs['env'])
+        self.create_superuser_lambda(user_pool_id, env)
 
     def _create_groups(self):
         admin_group = cognito.CfnUserPoolGroup(
