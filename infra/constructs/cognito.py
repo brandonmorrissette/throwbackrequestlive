@@ -11,6 +11,7 @@ class CognitoConstruct(Construct):
         cognito_client = boto3.client('cognito-idp')
 
         user_pool = self._get_user_pool_by_name(cognito_client, f"{project_name}-UserPool")
+        user_pool_id = user_pool['Id'] if user_pool else None
         if not user_pool:
             user_pool = cognito.UserPool(
                 self, f"{project_name}-UserPool",
@@ -26,8 +27,9 @@ class CognitoConstruct(Construct):
                 ),
                 account_recovery=cognito.AccountRecovery.EMAIL_ONLY
             )
+            user_pool_id = user_pool.user_pool_id
 
-        app_client = self._get_app_client_by_name(cognito_client, user_pool.user_pool_id, f"{project_name}-UserPool-AppClient")
+        app_client = self._get_app_client_by_name(cognito_client, user_pool_id, f"{project_name}-UserPool-AppClient")
         if not app_client:
             app_client = user_pool.add_client(
                 f"{project_name}-UserPool-AppClient",
@@ -39,10 +41,10 @@ class CognitoConstruct(Construct):
 
         self.app_client = app_client
 
-        self.groups = self._create_groups(cognito_client, user_pool.user_pool_id)
+        self.groups = self._create_groups(cognito_client, user_pool_id)
         self._attach_policies_to_groups(self.groups, [self._create_admin_policy(rds)])
             
-        self.create_superuser_lambda(user_pool.user_pool_id, env)
+        self.create_superuser_lambda(user_pool_id, env)
 
     def _create_groups(self, client, user_pool_id):
         groups = []
