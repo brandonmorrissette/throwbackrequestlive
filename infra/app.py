@@ -12,8 +12,8 @@ project_name = os.getenv("PROJECT_NAME")
 environment_name = os.getenv("ENVIRONMENT_NAME", "Production")
 
 tags = {
-    "Project": project_name,
-    "Environment": environment_name
+    "project_name": project_name,
+    "environment_name": environment_name
 }
 
 env = cdk.Environment(
