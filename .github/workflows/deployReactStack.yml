@@ -1,4 +1,4 @@
-name: Deploy Frontend
+name: Deploy Stack with React instantiated
 
 on:
     workflow_call:
