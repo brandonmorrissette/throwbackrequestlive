@@ -19,6 +19,16 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
+    deploy-user-stack:
+        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'NetworkStack') }}
+        uses: ./.github/workflows/deployStack.yml
+        with:
+            stack-name: NetworkStack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
     deploy-compute-stack:
         if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'ComputeStack') }}
         needs: deploy-network-stack
@@ -54,7 +64,7 @@ jobs:
 
     create-superuser:
         if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'CreateSuperuser') }}
-        needs: deploy-runtime-stack
+        needs: deploy-user-stack
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
