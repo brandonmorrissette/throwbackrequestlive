@@ -1,13 +1,16 @@
 name: Deploy App
 
 on:
-    push:
-        branches:
-            - main
     workflow_dispatch:
+        inputs:
+            deploy-steps:
+                description: 'Comma-separated list of steps to run (default: None to run all)'
+                required: false
+                default: 'None'
 
 jobs:
     deploy-network-stack:
+        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'NetworkStack') }}
         uses: ./.github/workflows/deployStack.yml
         with:
             stack-name: NetworkStack
@@ -17,6 +20,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-compute-stack:
+        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'ComputeStack') }}
         needs: deploy-network-stack
         uses: ./.github/workflows/deployStack.yml
         with:
@@ -27,6 +31,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-storage-stack:
+        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'StorageStack') }}
         needs: deploy-network-stack
         uses: ./.github/workflows/deployStack.yml
         with:
@@ -36,16 +41,8 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-user-stack:
-        uses: ./.github/workflows/deployStack.yml
-        with:
-            stack-name: UserStack
-        secrets:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-
     deploy-runtime-stack:
+        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'RuntimeStack') }}
         needs: [deploy-compute-stack, deploy-storage-stack]
         uses: ./.github/workflows/deployReactStack.yml
         with:
@@ -56,7 +53,8 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     create-superuser:
-        needs: deploy-user-stack
+        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'CreateSuperuser') }}
+        needs: deploy-runtime-stack
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
