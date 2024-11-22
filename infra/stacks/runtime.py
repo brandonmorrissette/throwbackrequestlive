@@ -8,13 +8,12 @@ class RuntimeStack(Stack):
         self,
         scope: Construct,
         id: str,
-        tags: dict,
         cluster: str,
         certificate: str,
         hosted_zone: str,
         **kwargs
     ):
-        super().__init__(scope, id, tags, **kwargs)
+        super().__init__(scope, id, **kwargs)
         fargate_service = RuntimeEcsConstruct(
             self, "RuntimeEcs", cluster=cluster, certificate=certificate
         ).fargate_service

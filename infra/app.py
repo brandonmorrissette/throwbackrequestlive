@@ -17,25 +17,30 @@ env = cdk.Environment(
 )
 
 core_stack = CoreStack(
-    app, f"{project_name}-CoreStack-{environment_name}", env=env
+    app, 
+    f"{project_name}-CoreStack-{environment_name}",
+    env=env
 )
 
 cluster_stack = ClusterStack(
     app,
     f"{project_name}-ClusterStack-{environment_name}",
-    vpc=core_stack.vpcConstruct.vpc,
     env=env,
+    vpc=core_stack.vpcConstruct.vpc,
+    
 )
 
 database_stack = StorageStack(
     app,
     f"{project_name}-StorageStack-{environment_name}",
-    vpc=core_stack.vpcConstruct.vpc,
     env=env,
+    vpc=core_stack.vpcConstruct.vpc,
+    
 )
 
 setup_stack = SetupStack(
-    app, f"{project_name}-SetupStack-{environment_name}", 
+    app, 
+    f"{project_name}-SetupStack-{environment_name}", 
     env=env, 
     rds=database_stack.rdsConstruct.db_instance, 
     project_name=project_name
@@ -44,10 +49,10 @@ setup_stack = SetupStack(
 app_stack = RuntimeStack(
     app,
     f"{project_name}-RuntimeStack-{environment_name}",
+    env=env,
     cluster=cluster_stack.clusterConstruct.cluster,
     certificate=core_stack.certConstruct.certificate,
     hosted_zone=core_stack.certConstruct.hosted_zone,
-    env=env,
 )
 
 app.synth()
