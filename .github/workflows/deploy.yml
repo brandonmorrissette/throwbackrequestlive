@@ -4,13 +4,13 @@ on:
     workflow_dispatch:
         inputs:
             deploy-steps:
-                description: 'Comma-separated list of steps to run (default: None to run all)'
+                description: 'Comma-separated list of steps to run (default: Empty to run all)'
                 required: false
-                default: 'None'
+                default: ''
 
 jobs:
     deploy-network-stack:
-        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'NetworkStack') }}
+        if: ${{ github.event.inputs.deploy-steps == '' || contains(github.event.inputs.deploy-steps, 'NetworkStack') }}
         uses: ./.github/workflows/deployStack.yml
         with:
             stack-name: NetworkStack
@@ -20,7 +20,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-user-stack:
-        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'NetworkStack') }}
+        if: ${{ github.event.inputs.deploy-steps == '' || contains(github.event.inputs.deploy-steps, 'NetworkStack') }}
         uses: ./.github/workflows/deployStack.yml
         with:
             stack-name: NetworkStack
@@ -30,7 +30,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-compute-stack:
-        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'ComputeStack') }}
+        if: ${{ github.event.inputs.deploy-steps == '' || contains(github.event.inputs.deploy-steps, 'ComputeStack') }}
         needs: deploy-network-stack
         uses: ./.github/workflows/deployStack.yml
         with:
@@ -41,7 +41,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-storage-stack:
-        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'StorageStack') }}
+        if: ${{ github.event.inputs.deploy-steps == '' || contains(github.event.inputs.deploy-steps, 'StorageStack') }}
         needs: deploy-network-stack
         uses: ./.github/workflows/deployStack.yml
         with:
@@ -52,7 +52,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-runtime-stack:
-        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'RuntimeStack') }}
+        if: ${{ github.event.inputs.deploy-steps == '' || contains(github.event.inputs.deploy-steps, 'RuntimeStack') }}
         needs: [deploy-compute-stack, deploy-storage-stack]
         uses: ./.github/workflows/deployReactStack.yml
         with:
@@ -63,7 +63,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     create-superuser:
-        if: ${{ github.event.inputs.deploy-steps == 'None' || contains(github.event.inputs.deploy-steps, 'CreateSuperuser') }}
+        if: ${{ github.event.inputs.deploy-steps == '' || contains(github.event.inputs.deploy-steps, 'CreateSuperuser') }}
         needs: deploy-user-stack
         runs-on: ubuntu-latest
         steps:
