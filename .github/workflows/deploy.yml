@@ -1,4 +1,4 @@
-name: Deploy CDK Stack and Trigger Schema Deployment
+name: Deploy App
 
 on:
     push:
@@ -7,8 +7,8 @@ on:
     workflow_dispatch:
 
 jobs:
-    deploy-core:
-        uses: ./.github/workflows/deployCDK.yml
+    deploy-core-stack:
+        uses: ./.github/workflows/deployBackend.yml
         with:
             stack-name: CoreStack
         secrets:
@@ -16,9 +16,9 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-cluster:
-        needs: deploy-core
-        uses: ./.github/workflows/deployCDK.yml
+    deploy-cluster-stack:
+        needs: deploy-core-stack
+        uses: ./.github/workflows/deployBackend.yml
         with:
             stack-name: ClusterStack
         secrets:
@@ -26,9 +26,9 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-storage:
-        needs: deploy-core
-        uses: ./.github/workflows/deployCDK.yml
+    deploy-storage-stack:
+        needs: deploy-core-stack
+        uses: ./.github/workflows/deployBackend.yml
         with:
             stack-name: StorageStack
         secrets:
@@ -36,8 +36,8 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-setup:
-        uses: ./.github/workflows/deployCDK.yml
+    deploy-setup-stack:
+        uses: ./.github/workflows/deployBackend.yml
         with:
             stack-name: SetupStack
         secrets:
@@ -45,9 +45,8 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-runtime:
-        needs: [deploy-cluster, deploy-storage]
-        uses: ./.github/workflows/deployCDK.yml
+    deploy-runtime-stack:
+        uses: ./.github/workflows/deployFrontend.yml
         with:
             stack-name: RuntimeStack
         secrets:
@@ -55,8 +54,8 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    setup-environment:
-        needs: deploy-setup
+    setup-runtime-environment:
+        needs: deploy-setup-stack
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code

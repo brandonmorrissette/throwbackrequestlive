@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, request, url_for, jsonify, current_app as app
-from services import get_events, get_songs, record_vote_logic, admin_login_logic
+from backend.webapp.services import get_events, get_songs, record_vote_logic, admin_login_logic
 
 bp = Blueprint('routes', __name__)
 

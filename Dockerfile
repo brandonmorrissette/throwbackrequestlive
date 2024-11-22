@@ -4,8 +4,10 @@ WORKDIR /app
 
 COPY . /app
 
+ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
+
 RUN pip install -r requirements.txt
 
 EXPOSE 5000
 
-CMD ["python", "-m", "app"]
+CMD ["python", "backend/app.py"]
