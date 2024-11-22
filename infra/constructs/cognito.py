@@ -10,9 +10,9 @@ class CognitoConstruct(Construct):
 
         cognito_client = boto3.client('cognito-idp')
 
-        user_pool_id = self._get_user_pool_by_name(cognito_client, f"{project_name}-UserPool")['Id']
-        if not user_pool_id:
-            user_pool_id = cognito.UserPool(
+        user_pool = self._get_user_pool_by_name(cognito_client, f"{project_name}-UserPool")
+        if not user_pool:
+            user_pool = cognito.UserPool(
                 self, f"{project_name}-UserPool",
                 user_pool_name=f"{project_name}-UserPool",
                 self_sign_up_enabled=False,
@@ -25,35 +25,47 @@ class CognitoConstruct(Construct):
                     require_symbols=True
                 ),
                 account_recovery=cognito.AccountRecovery.EMAIL_ONLY
-            ).user_pool_id
+            )
 
-            self.app_client = self.user_pool.add_client(
-                "UserPoolAppClient",
+        app_client = self._get_app_client_by_name(cognito_client, user_pool.user_pool_id, f"{project_name}-UserPool-AppClient")
+        if not app_client:
+            app_client = user_pool.add_client(
+                f"{project_name}-UserPool-AppClient",
                 auth_flows=cognito.AuthFlow(
                     admin_user_password=True,
                     user_password=True
                 )
             )
 
-            self.groups = self._create_groups()
-            self._attach_policies_to_groups(self.groups, [self._create_admin_policy(rds)])
+        self.app_client = app_client
+
+        self.groups = self._create_groups(cognito_client, user_pool.user_pool_id)
+        self._attach_policies_to_groups(self.groups, [self._create_admin_policy(rds)])
             
-        self.create_superuser_lambda(user_pool_id, env)
+        self.create_superuser_lambda(user_pool.user_pool_id, env)
 
-    def _create_groups(self):
-        admin_group = cognito.CfnUserPoolGroup(
-            self, "AdminGroup",
-            group_name="Admin",
-            user_pool_id=self.user_pool.user_pool_id
-        )
+    def _create_groups(self, client, user_pool_id):
+        groups = []
 
-        superuser_group = cognito.CfnUserPoolGroup(
-            self, "SuperuserGroup",
-            group_name="Superuser",
-            user_pool_id=self.user_pool.user_pool_id
-        )
+        admin_group = self._get_group_by_name(client, user_pool_id, "Admin")
+        if not admin_group:
+            admin_group = cognito.CfnUserPoolGroup(
+                self, "AdminGroup",
+                group_name="Admin",
+                user_pool_id=user_pool_id
+            )
+            groups.append(admin_group)
 
-        return [admin_group, superuser_group]
+        superuser_group = self._get_group_by_name(client, user_pool_id, "Superuser")
+        if not superuser_group:
+            superuser_group = cognito.CfnUserPoolGroup(
+                self, "SuperuserGroup",
+                group_name="Superuser",
+                user_pool_id=user_pool_id
+            )
+            groups.append(superuser_group)
+
+        return groups
 
     def _create_admin_policy(self, rds):
         return iam.Policy(
@@ -87,9 +99,19 @@ class CognitoConstruct(Construct):
                 return pool
         return None
 
-    def _get_groups_by_user_pool_id(self, client, user_pool_id):
+    def _get_app_client_by_name(self, client, user_pool_id, app_client_name):
+        app_clients = client.list_user_pool_clients(UserPoolId=user_pool_id, MaxResults=60)
+        for client in app_clients['UserPoolClients']:
+            if client['ClientName'] == app_client_name:
+                return client
+        return None
+
+    def _get_group_by_name(self, client, user_pool_id, group_name):
         groups = client.list_groups(UserPoolId=user_pool_id)
-        return groups['Groups']
+        for group in groups['Groups']:
+            if group['GroupName'] == group_name:
+                return group
+        return None
 
     def create_superuser_lambda(self, user_pool_id, env):
         create_superuser_lambda = _lambda.Function(
