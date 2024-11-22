@@ -10,46 +10,43 @@ from stacks.setup import SetupStack
 app = cdk.App()
 project_name = os.getenv("PROJECT_NAME")
 environment_name = os.getenv("ENVIRONMENT_NAME", "Production")
-account_id = os.getenv("AWS_ACCOUNT", "140465999057")
-region = os.getenv("AWS_REGION", "us-east-1")
 
-default_tags = {
-    "Project": project_name,
-    "Environment": environment_name
-}
+env = cdk.Environment(
+    account=os.getenv("AWS_ACCOUNT", "140465999057"), 
+    region=os.getenv("AWS_REGION", "us-east-1"), 
+    project_name=project_name, 
+    environment_name=environment_name
+)
 
 core_stack = CoreStack(
-    app, f"{project_name}-CoreStack-{environment_name}", tags=default_tags, env=cdk.Environment(account=account_id, region=region)
+    app, f"{project_name}-CoreStack-{environment_name}", env=env
 )
 
 cluster_stack = ClusterStack(
     app,
     f"{project_name}-ClusterStack-{environment_name}",
-    tags=default_tags,
     vpc=core_stack.vpcConstruct.vpc,
-    env=cdk.Environment(account=account_id, region=region),
+    env=env,
 )
 
 database_stack = StorageStack(
     app,
     f"{project_name}-StorageStack-{environment_name}",
-    tags=default_tags,
     vpc=core_stack.vpcConstruct.vpc,
-    env=cdk.Environment(account=account_id, region=region),
+    env=env,
 )
 
 setup_stack = SetupStack(
-    app, f"{project_name}-SetupStack-{environment_name}", tags=default_tags, env=cdk.Environment(account=account_id, region=region), rds=database_stack.rdsConstruct.db_instance, project_name=project_name,
+    app, f"{project_name}-SetupStack-{environment_name}", env=env, rds=database_stack.rdsConstruct.db_instance
 )
 
 app_stack = RuntimeStack(
     app,
     f"{project_name}-RuntimeStack-{environment_name}",
-    tags=default_tags,
     cluster=cluster_stack.clusterConstruct.cluster,
     certificate=core_stack.certConstruct.certificate,
     hosted_zone=core_stack.certConstruct.hosted_zone,
-    env=cdk.Environment(account=account_id, region=region),
+    env=env,
 )
 
 app.synth()
