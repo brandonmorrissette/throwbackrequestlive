@@ -119,10 +119,10 @@ class CognitoConstruct(Construct):
             self, 'CreateSuperuserLambda',
             runtime=_lambda.Runtime.PYTHON_3_8,
             handler='create_superuser.handler',
-            code=_lambda.Code.from_asset('infra/setup/lambda/create_superuser'),
+            code=_lambda.Code.from_asset('./setup/lambda/create_superuser'),
             environment={
-                'USER_POOL_ID': user_pool_id,
-                'SUPERUSER_GROUP_NAME': "Superuser"
+            'USER_POOL_ID': user_pool_id,
+            'SUPERUSER_GROUP_NAME': "Superuser"
             },
             function_name='create-superuser-lambda'
         )
