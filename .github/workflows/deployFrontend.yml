@@ -52,7 +52,7 @@ jobs:
 
             - name: Install and Build React
               run: |
-                  cd react-frontend
+                  cd frontend
                   npm install
                   npm run build
                   mv dist ../backend/webapp/static/react
