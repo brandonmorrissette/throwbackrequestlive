@@ -5,10 +5,9 @@ from constructs import Construct
 import boto3
 
 class CognitoConstruct(Construct):
-    def __init__(self, scope: Construct, id: str, rds, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, rds, project_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
         env = kwargs.get('env')
-        project_name = env.project_name if env else "default_project_name"
 
         cognito_client = boto3.client('cognito-idp')
 

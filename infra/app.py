@@ -13,9 +13,7 @@ environment_name = os.getenv("ENVIRONMENT_NAME", "Production")
 
 env = cdk.Environment(
     account=os.getenv("AWS_ACCOUNT", "140465999057"), 
-    region=os.getenv("AWS_REGION", "us-east-1"), 
-    project_name=project_name, 
-    environment_name=environment_name
+    region=os.getenv("AWS_REGION", "us-east-1")
 )
 
 core_stack = CoreStack(
@@ -37,7 +35,10 @@ database_stack = StorageStack(
 )
 
 setup_stack = SetupStack(
-    app, f"{project_name}-SetupStack-{environment_name}", env=env, rds=database_stack.rdsConstruct.db_instance
+    app, f"{project_name}-SetupStack-{environment_name}", 
+    env=env, 
+    rds=database_stack.rdsConstruct.db_instance, 
+    project_name=project_name
 )
 
 app_stack = RuntimeStack(
