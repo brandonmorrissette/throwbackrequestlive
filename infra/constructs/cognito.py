@@ -38,7 +38,7 @@ class CognitoConstruct(Construct):
             self.groups = self._create_groups()
             self._attach_policies_to_groups(self.groups, [self._create_admin_policy(rds)])
             
-        self.create_superuser_lambda(user_pool_id)
+        self.create_superuser_lambda(user_pool_id, kwargs['env'])
 
     def _create_groups(self):
         admin_group = cognito.CfnUserPoolGroup(
@@ -91,7 +91,7 @@ class CognitoConstruct(Construct):
         groups = client.list_groups(UserPoolId=user_pool_id)
         return groups['Groups']
 
-    def create_superuser_lambda(self, user_pool_id):
+    def create_superuser_lambda(self, user_pool_id, env):
         create_superuser_lambda = _lambda.Function(
             self, 'CreateSuperuserLambda',
             runtime=_lambda.Runtime.PYTHON_3_8,
@@ -111,6 +111,6 @@ class CognitoConstruct(Construct):
                     "cognito-idp:AdminCreateUser",
                     "cognito-idp:AdminAddUserToGroup"
                 ],
-                resources=[f"arn:aws:cognito-idp:{self.region}:{self.account}:userpool/{user_pool_id.user_pool_id}"]
+                resources=[f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{user_pool_id.user_pool_id}"]
             )
         )
