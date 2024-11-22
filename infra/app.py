@@ -49,6 +49,7 @@ database_stack = StorageStack(
     f"{project_name}-StorageStack-{environment_name}",
     env=env,
     vpc=core_stack.vpcConstruct.vpc,
+    project_name=project_name
     
 )
 apply_tags(database_stack,tags=tags)

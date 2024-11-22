@@ -3,7 +3,7 @@ from constructs import Construct
 
 
 class RdsConstruct(Construct):
-    def __init__(self, scope: Construct, id: str, vpc) -> None:
+    def __init__(self, scope: Construct, id: str, vpc, project_name: str) -> None:
         super().__init__(scope, id)
 
         rds_security_group = ec2.SecurityGroup(self, "RDSSecurityGroup", vpc=vpc)
@@ -26,5 +26,6 @@ class RdsConstruct(Construct):
             publicly_accessible=False,
             backup_retention=Duration.days(7),
             database_name="throwback",
-            security_groups=[rds_security_group]
+            security_groups=[rds_security_group],
+            instance_identifier=f"{project_name}-rds-instance"
         )
