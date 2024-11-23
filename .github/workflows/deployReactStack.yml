@@ -56,6 +56,7 @@ jobs:
                   cd frontend
                   npm install
                   npm run build
+                  mkdir -p ../backend/static/react
                   mv dist ../backend/static/react
 
             - name: Deploy Stack
