@@ -68,7 +68,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     create-superuser:
-        if: ${{ inputs.stack-name != '' || contains(inputs.stack-name, 'create-superuser') }}
+        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'create-superuser') }}
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -86,7 +86,7 @@ jobs:
                   AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-sql-files:
-        if: ${{ inputs.stack-name != '' || contains(inputs.stack-name, 'deploy-sql-files') }}
+        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-sql-files') }}
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
