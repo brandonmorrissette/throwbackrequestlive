@@ -25,7 +25,7 @@ class RdsConstruct(Construct):
             multi_az=False,
             publicly_accessible=False,
             backup_retention=Duration.days(7),
-            database_name="throwback",
+            database_name="throwbackrequestlive",
             security_groups=[rds_security_group],
             instance_identifier=f"{project_name}-rds-instance"
         )
