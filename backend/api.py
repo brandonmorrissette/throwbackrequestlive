@@ -1,9 +1,25 @@
-from flask import current_app as app
+from flask import Blueprint, current_app as app, jsonify
 import boto3
 from botocore.exceptions import ClientError
 import csv
 from datetime import datetime
 import os
+
+bp = Blueprint('routes', __name__)
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react_app(path):
+    app.logger.debug(f"Request received for path: {path}")
+    
+    if not path or not os.path.exists(os.path.join(app.static_folder, path)):
+        app.logger.debug("Serving React index.html")
+        return app.send_static_file('index.html')
+
+
+    app.logger.debug(f"Serving static file: {path}")
+    return app.send_static_file(path)
+
 
 def record_vote_logic(data):
     song_name = data.get('song')
@@ -36,15 +52,16 @@ def admin_login_logic(data):
         app.logger.error(f"Login failed: {e}")
         return {'success': False, 'error': "Invalid credentials. Please try again.", 'response': str(e)}
 
-def get_events():
-    events = []
-    file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'events.csv')
+@bp.route('/api/shows', methods=['GET'])
+def get_shows():
+    shows = []
+    file_path = os.path.join(os.path.dirname(__file__), 'data', 'shows.csv')
     with open(file_path, mode='r') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
-            event_datetime = datetime.strptime(f"{row['date']} {row['time']}", '%m-%d-%Y %I:%M %p')
-            if event_datetime >= datetime.now():
-                events.append({
+            show_datetime = datetime.strptime(f"{row['date']} {row['time']}", '%m-%d-%Y %I:%M %p')
+            if show_datetime >= datetime.now():
+                shows.append({
                     'name': row['name'],
                     'date': row['date'],
                     'time': row['time'],
@@ -53,8 +70,9 @@ def get_events():
                     'city': row['city'],
                     'state': row['state']
                 })
-    return events
+    return jsonify(shows)
 
+@bp.route('/api/songs', methods=['GET'])
 def get_songs():
     songs = []
     file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'songs.csv')
@@ -67,4 +85,4 @@ def get_songs():
                 'total_votes': int(row['Total Votes']),
                 'votes_per_show': int(row['Votes Per Show'])
             })
-    return songs
+    return jsonify(songs)

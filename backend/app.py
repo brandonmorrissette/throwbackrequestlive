@@ -7,23 +7,16 @@ import logging
 def create_app():
     app = Flask(
             __name__, 
-            template_folder='webapp/templates', static_folder='webapp/static'
+            static_folder='../frontend/dist',
+            static_url_path='/'
         )
 
     app.logger.addHandler(logging.StreamHandler())
     app.logger.setLevel(logging.DEBUG)
 
-    app.config['COGNITO_REGION'] = os.getenv('AWS_REGION', 'us-east-1')  
-    app.config['COGNITO_USER_POOL_ID'] = os.getenv('COGNITO_USER_POOL_ID')
-    app.config['COGNITO_APP_CLIENT_ID'] = os.getenv('COGNITO_APP_CLIENT_ID')
-
-    jwt = JWTManager(app)  
-
-    cognito = boto3.client('cognito-idp', region_name=app.config['COGNITO_REGION'])
-
     with app.app_context():
-        from webapp import routes
-        app.register_blueprint(routes.bp)
+        import api
+        app.register_blueprint(api.bp)
 
     return app
 
