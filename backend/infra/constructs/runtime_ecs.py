@@ -33,7 +33,8 @@ class RuntimeEcsConstruct(Construct):
             ),
             public_load_balancer=True,
             certificate=certificate,
-            redirect_http=True
+            redirect_http=True,
+            health_check_grace_period=Duration.minutes(5)
         )
 
         self.fargate_service.target_group.configure_health_check(
