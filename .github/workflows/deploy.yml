@@ -94,12 +94,9 @@ jobs:
             - name: Deploy SQL files
               run: |
                   for file in backend/infra/schema/*.sql; do
-                      psql postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:5432/throwbackrequestlive -f $file
+                      psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file
                   done
               env:
                   DB_USER: ${{ secrets.DB_USER }}
                   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
                   DB_HOST: ${{ secrets.DB_HOST }}
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
