@@ -56,7 +56,7 @@ jobs:
                   cd frontend
                   npm install
                   npm run build
-                  mv dist ../backend/webapp/static/react
+                  mv dist ../backend/static/react
 
             - name: Deploy Stack
               run: cdk deploy ${{ github.event.repository.name }}-${{ inputs.stack-name }}-${{ env.ENVIRONMENT_NAME }} --app "python backend/infra/app.py" --require-approval never
