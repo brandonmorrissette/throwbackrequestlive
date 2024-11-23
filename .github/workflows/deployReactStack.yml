@@ -15,7 +15,7 @@ on:
                 required: true
 
 jobs:
-    deploy-frontend:
+    deploy-runtime-stack:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
