@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Book from './Book';
+import styles from './Footer.module.css';
 import Tip from './Tip';
-import styles from './Footer.module.css'; // Import your CSS module
 
 const Footer: React.FC = () => {
     const [isTipOpen, setIsTipOpen] = useState(false);
@@ -24,13 +24,9 @@ const Footer: React.FC = () => {
     };
 
     return (
-        <footer className={styles.footer}>
-            <button onClick={handleOpenTip} className="button">
-                Tip
-            </button>
-            <button onClick={handleOpenBook} className="button">
-                Book
-            </button>
+        <footer className={`${styles.footer} button-group`}>
+            <button onClick={handleOpenTip}>Tip</button>
+            <button onClick={handleOpenBook}>Book</button>
             {isTipOpen && <Tip onClose={handleCloseTip} />}
             {isBookOpen && <Book onClose={handleCloseBook} />}
         </footer>

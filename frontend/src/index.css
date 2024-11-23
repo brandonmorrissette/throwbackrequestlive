@@ -17,6 +17,7 @@ body {
     font-family: 'Arial', sans-serif;
     display: flex;
     flex-direction: column;
+    text-align: center;
 }
 
 body {
@@ -32,12 +33,7 @@ a {
     text-decoration: none;
 }
 
-.subtle {
-    color: var(--color-primary-opacity);
-    font-size: 1rem;
-}
-
-.button {
+button {
     background-color: var(--color-accent-darker);
     color: #ffffff;
     border: none;
@@ -46,12 +42,26 @@ a {
     padding: 10px 20px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    text-align: center;
 }
 
-.button:hover {
+button:hover {
     background-color: var(--color-accent);
 }
+
+.subtle {
+    color: var(--color-primary-opacity);
+    font-size: 1rem;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/****************************************************
+ * Boostrap
+ ****************************************************/
 
 .list-group-item {
     display: flex;
@@ -63,6 +73,7 @@ a {
     padding: 15px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    justify-content: space-between;
 }
 
 .list-group-item:hover {

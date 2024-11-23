@@ -4,6 +4,7 @@ import Content from './components/Content';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import Home from './pages/Home';
+import Vote from './pages/Vote';
 
 const App: React.FC = () => {
     return (
@@ -13,6 +14,7 @@ const App: React.FC = () => {
                 <Content>
                     <Routes>
                         <Route path="/" element={<Home />} />
+                        <Route path="/vote" element={<Vote />} />
                     </Routes>
                 </Content>
                 <Footer />

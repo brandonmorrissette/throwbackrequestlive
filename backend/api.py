@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app as app, jsonify
+from flask import Blueprint, current_app as app, jsonify, request, redirect
 import boto3
 from botocore.exceptions import ClientError
 import csv
@@ -7,26 +7,20 @@ import os
 
 bp = Blueprint('routes', __name__)
 
+@app.route('/vote')
+def render_vote():
+    return app.send_static_file('index.html')
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def serve_react_app(path):
-    app.logger.debug(f"Request received for path: {path}")
-    
-    if not path or not os.path.exists(os.path.join(app.static_folder, path)):
-        app.logger.debug("Serving React index.html")
-        return app.send_static_file('index.html')
+def render_main(path):
+    return app.send_static_file('index.html')
 
 
-    app.logger.debug(f"Serving static file: {path}")
-    return app.send_static_file(path)
-
-
-def record_vote_logic(data):
-    song_name = data.get('song')
-
-def admin_login_logic(data):
+def login(data):
     username = data.get('username')
     password = data.get('password')
+    response_dict = {'success': False}
 
     try:
         response = boto3.client('cognito-idp', region_name=app.config['COGNITO_REGION']).initiate_auth(
@@ -37,20 +31,31 @@ def admin_login_logic(data):
                 'PASSWORD': password
             }
         )
+        response_dict.update({'response': response})
         
         if response['ResponseMetadata']['HTTPStatusCode'] == 200 and 'AuthenticationResult' in response:
-            access_token = response['AuthenticationResult']['AccessToken']
-            id_token = response['AuthenticationResult']['IdToken']
-            refresh_token = response['AuthenticationResult'].get('RefreshToken')
-
-            return {'success': True, 'access_token': access_token, 'id_token': id_token, 'refresh_token': refresh_token}
+            response_dict.update({
+            'success': True,
+            'access_token': response['AuthenticationResult']['AccessToken'],
+            'id_token': response['AuthenticationResult']['IdToken'],
+            'refresh_token': response['AuthenticationResult'].get('RefreshToken')
+            })
         else:
             app.logger.error(f"Authentication failed or AuthenticationResult not in response: {response}")
-            return {'success': False, 'error': "Authentication failed. Please try again.", 'response': response}
-    
+        
+        return response_dict
+        
     except ClientError as e:
         app.logger.error(f"Login failed: {e}")
-        return {'success': False, 'error': "Invalid credentials. Please try again.", 'response': str(e)}
+        response_dict.update({'error': str(e)})
+        return response_dict
+    
+@app.route('/api/vote', methods=['POST'])
+def handle_vote():
+    vote_data = request.get_json()
+    print("Vote data received:", vote_data)
+    song_name = vote_data.get('song')
+    return redirect(f"/?song={song_name}")
 
 @bp.route('/api/shows', methods=['GET'])
 def get_shows():
@@ -75,7 +80,7 @@ def get_shows():
 @bp.route('/api/songs', methods=['GET'])
 def get_songs():
     songs = []
-    file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'songs.csv')
+    file_path = os.path.join(os.path.dirname(__file__), 'data', 'songs.csv')
     with open(file_path, mode='r') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
