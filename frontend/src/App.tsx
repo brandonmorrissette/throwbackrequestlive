@@ -1,8 +1,8 @@
 import React from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import Content from './components/Content';
-import Footer from './components/Footer';
-import Header from './components/Header';
+import Content from './components/app/content/Content';
+import Footer from './components/app/footer/Footer';
+import Header from './components/app/header/Header';
 import Home from './pages/Home';
 import Vote from './pages/Vote';
 

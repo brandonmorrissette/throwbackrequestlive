@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Book from './Book';
+import Book from '../../pages/home/Book';
+import Tip from '../../pages/home/Tip';
 import styles from './Footer.module.css';
-import Tip from './Tip';
 
 const Footer: React.FC = () => {
     const [isTipOpen, setIsTipOpen] = useState(false);

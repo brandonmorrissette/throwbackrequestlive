@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Modal from './Modal'; // Import your custom modal
+import Modal from '../../app/modal/Modal'; // Import your custom modal
 import styles from './Vote.module.css';
 
 interface Song {
