@@ -36,6 +36,7 @@ jobs:
                   npm install -g aws-cdk
                   pip install -r requirements.txt
                   pip install aws-cdk-lib constructs
+                  npm install react-router-dom@6.2.1
 
             - name: Configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v1
