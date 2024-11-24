@@ -13,6 +13,7 @@ on:
 jobs:
     deploy-network-stack:
         uses: ./.github/workflows/deploy_stack.yml
+        name: Deploy Network Stack
         with:
             stack-name: NetworkStack
         secrets:
@@ -22,6 +23,7 @@ jobs:
 
     deploy-user-stack:
         uses: ./.github/workflows/deploy_stack.yml
+        name: Deploy User Stack
         with:
             stack-name: UserStack
         secrets:
@@ -31,6 +33,7 @@ jobs:
 
     deploy-compute-stack:
         needs: deploy-network-stack
+        name: Deploy Compute Stack
         uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: ComputeStack
@@ -41,6 +44,7 @@ jobs:
 
     deploy-storage-stack:
         needs: deploy-network-stack
+        name: Deploy Storage Stack
         uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: StorageStack
@@ -51,6 +55,7 @@ jobs:
 
     deploy-runtime-stack:
         needs: [deploy-compute-stack, deploy-storage-stack]
+        name: Deploy Runtime Stack
         uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: RuntimeStack
@@ -59,39 +64,29 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    create-superuser:
-        needs: deploy-user-stack
+    deploy-superuser:
+        name: Deploy Super User
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
-            - name: Invoke Lambda to create Cognito user
-              run: |
-                  aws lambda invoke \
-                  --function-name create-superuser-lambda \
-                  --payload '{"email": "${{ vars.SUPERUSER_EMAIL}}"}' \
-                  response.json \
-                  --cli-binary-format raw-in-base64-out
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
+            - name: Deploy Superuser
+            uses: ./.github/workflows/deploy_superuser.yml
+            with:
+                environment: production
+                superuser_email: ${{ vars.SUPERUSER_EMAIL }}
+            env:
+                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-sql-files:
-        needs: deploy-storage-stack
+        name: Deploy SQL Files
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
-            - name: Deploy SQL files
-              run: |
-                  for file in backend/infra/schema/*.sql; do
-                      psql postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:5432/throwbackrequestlive -f $file
-                  done
-              env:
-                  DB_USER: ${{ secrets.DB_USER }}
-                  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-                  DB_HOST: ${{ secrets.DB_HOST }}
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
+            - name: Deploy SQL Files
+            uses: ./.github/workflows/deploy_sql.yml
+            with:
+                environment: production
+            env:
+                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                AWS_REGION: ${{ secrets.AWS_REGION }}
