@@ -28,21 +28,25 @@ class CognitoConstruct(Construct):
                 account_recovery=cognito.AccountRecovery.EMAIL_ONLY
             )
             self.user_pool_id = user_pool.user_pool_id
-            
-        app_client = self._get_app_client_by_name(cognito_client, self.user_pool_id, f"{project_name}-user-pool-app-client")
-        if not app_client:
-            app_client = cognito.CfnUserPoolClient(
-                self, f"{project_name}-user-pool-app-client",
-                user_pool_id=self.user_pool_id,
-                client_name=f"{project_name}-user-pool-app-client",
-                explicit_auth_flows=[
-                    "ALLOW_ADMIN_USER_PASSWORD_AUTH",
-                    "ALLOW_USER_PASSWORD_AUTH",
-                    "ALLOW_REFRESH_TOKEN_AUTH"
-                ]
-            )
+            app_client = self._create_app_client(self.user_pool_id)
+        else:    
+            app_client = self._get_app_client_by_name(cognito_client, self.user_pool_id, f"{project_name}-user-pool-app-client")
+            if not app_client:
+                app_client = self._create_app_client(self.user_pool_id)
 
         self._attach_policies_to_groups(self._create_groups(cognito_client, self.user_pool_id), [self._create_admin_policy(rds)])
+
+    def _create_app_client(self, user_pool_id):
+        return cognito.CfnUserPoolClient(
+            self, "user-pool-app-client",
+            user_pool_id=user_pool_id,
+            client_name="user-pool-app-client",
+            explicit_auth_flows=[
+                "ALLOW_ADMIN_USER_PASSWORD_AUTH",
+                "ALLOW_USER_PASSWORD_AUTH",
+                "ALLOW_REFRESH_TOKEN_AUTH"
+            ]
+        )
 
     def _create_groups(self, client, user_pool_id):
         groups = []
