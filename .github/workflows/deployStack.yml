@@ -34,7 +34,7 @@ jobs:
             - name: Install Dependencies
               run: |
                   npm install -g aws-cdk
-                  pip install -r requirements.txt
+                  pip install -r backend/requirements.txt
                   pip install aws-cdk-lib constructs
 
             - name: Configure AWS credentials
