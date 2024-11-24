@@ -10,7 +10,7 @@ RUN npm run build
 FROM python:3.9-slim
 WORKDIR /app
 COPY backend/ ./backend
-COPY --from=react-build /frontend/build ./backend/static/react
+COPY --from=react-build /frontend/dist ./backend/static/
 ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
 RUN pip install -r backend/requirements.txt
 

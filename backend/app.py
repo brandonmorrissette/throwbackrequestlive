@@ -1,15 +1,8 @@
 from flask import Flask
-from flask_jwt_extended import JWTManager
-import os
-import boto3
 import logging
 
 def create_app():
-    app = Flask(
-            __name__, 
-            static_folder='../frontend/dist',
-            static_url_path='/'
-        )
+    app = Flask(__name__)
 
     app.logger.addHandler(logging.StreamHandler())
     app.logger.setLevel(logging.DEBUG)
