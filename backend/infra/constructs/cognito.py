@@ -12,7 +12,7 @@ class CognitoConstruct(Construct):
 
         user_pool = self._get_user_pool_by_name(cognito_client, f"{project_name}-user-pool")
         self.user_pool_id = user_pool['Id'] if user_pool else None
-        if not user_pool:
+        if not self.user_pool_id:
             user_pool = cognito.UserPool(
                 self, f"{project_name}-user-pool",
                 user_pool_name=f"{project_name}-user-pool",
