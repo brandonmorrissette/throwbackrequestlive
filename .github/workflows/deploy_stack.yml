@@ -16,6 +16,7 @@ on:
 
 jobs:
     deploy-stack:
+        name: Deploy Stack
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code

@@ -43,7 +43,6 @@ class CognitoConstruct(Construct):
             )
 
         self._attach_policies_to_groups(self._create_groups(cognito_client, user_pool_id), [self._create_admin_policy(rds)])
-        self.create_superuser_lambda(user_pool_id, env)
 
     def _create_groups(self, client, user_pool_id):
         groups = []
@@ -113,27 +112,3 @@ class CognitoConstruct(Construct):
             if group['GroupName'] == group_name:
                 return group
         return None
-
-    def create_superuser_lambda(self, user_pool_id, env):
-        create_superuser_lambda = _lambda.Function(
-            self, 'CreateSuperuserLambda',
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            handler='create_superuser.handler',
-            code=_lambda.Code.from_asset('backend/infra/setup/lambda/create_superuser'),
-            environment={
-            'USER_POOL_ID': user_pool_id,
-            'SUPERUSER_GROUP_NAME': "Superuser"
-            },
-            function_name='create-superuser-lambda'
-        )
-
-        create_superuser_lambda.add_to_role_policy(
-            iam.PolicyStatement(
-                actions=[
-                    "cognito-idp:AdminGetUser",
-                    "cognito-idp:AdminCreateUser",
-                    "cognito-idp:AdminAddUserToGroup"
-                ],
-                resources=[f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{user_pool_id}"]
-            )
-        )

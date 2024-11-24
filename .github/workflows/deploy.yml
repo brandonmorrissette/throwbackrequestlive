@@ -75,6 +75,7 @@ jobs:
 
     deploy-superuser:
         if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-superuser') }}
+        name: Deploy Super User
         runs-on: ubuntu-latest
         steps:
             - name: Deploy Superuser
@@ -89,6 +90,7 @@ jobs:
 
     deploy-sql-files:
         if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-sql-files') }}
+        name: Deploy SQL Files
         runs-on: ubuntu-latest
         steps:
             - name: Deploy SQL Files
