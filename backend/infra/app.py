@@ -2,7 +2,7 @@
 import os
 import aws_cdk as cdk
 from stacks.network import NetworkStack
-from stacks.cluster import ClusterStack
+from stacks.compute import ComputeStack
 from stacks.storage import StorageStack
 from stacks.runtime import RuntimeStack
 from stacks.user import UserStack
@@ -36,16 +36,16 @@ core_stack = NetworkStack(
 )
 apply_tags(core_stack, tags=tags)
 
-cluster_stack = ClusterStack(
+compute_stack = ComputeStack(
     app,
     f"{project_name}-ComputeStack-{environment_name}",
     env=env,
     vpc=core_stack.vpcConstruct.vpc,
     
 )
-apply_tags(cluster_stack, tags=tags)
+apply_tags(compute_stack, tags=tags)
 
-database_stack = StorageStack(
+storage_stack = StorageStack(
     app,
     f"{project_name}-StorageStack-{environment_name}",
     env=env,
@@ -53,13 +53,13 @@ database_stack = StorageStack(
     project_name=project_name
     
 )
-apply_tags(database_stack,tags=tags)
+apply_tags(storage_stack,tags=tags)
 
 user_stack = UserStack(
     app, 
     f"{project_name}-UserStack-{environment_name}", 
     env=env, 
-    rds=database_stack.rdsConstruct.db_instance, 
+    rds=storage_stack.rdsConstruct.db_instance, 
     project_name=project_name
 )
 apply_tags(user_stack, tags=tags)
@@ -68,7 +68,7 @@ app_stack = RuntimeStack(
     app,
     f"{project_name}-RuntimeStack-{environment_name}",
     env=env,
-    cluster=cluster_stack.clusterConstruct.cluster,
+    cluster=compute_stack.clusterConstruct.cluster,
     certificate=core_stack.certConstruct.certificate,
     hosted_zone=core_stack.certConstruct.hosted_zone,
 )
@@ -78,8 +78,8 @@ environment_setup_stack = EnvironmentSetupStack(
     app,
     f"{project_name}-EnvironmentSetupStack-{environment_name}",
     env=env,
-    cluster=cluster_stack.clusterConstruct.cluster,
-    rds_secret=database_stack.rdsConstruct.db_instance.secret,
+    cluster=compute_stack.clusterConstruct.cluster,
+    rds_secret=storage_stack.rdsConstruct.db_instance.secret,
     user_pool_id=user_stack.cognitoConstruct.user_pool_id,
 )
 apply_tags(environment_setup_stack, tags=tags)
