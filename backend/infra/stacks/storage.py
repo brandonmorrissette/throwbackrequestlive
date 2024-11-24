@@ -6,4 +6,4 @@ from constructs.rds import RdsConstruct
 class StorageStack(Stack):
     def __init__(self, scope: Construct, id: str, vpc: ec2.Vpc, project_name: str, **kwargs):
         super().__init__(scope, id, **kwargs)
-        self.rdsConstruct = RdsConstruct(self, "rds", vpc=vpc, project_name=project_name)
+        self.rds_construct = RdsConstruct(self, "rds", vpc=vpc, project_name=project_name)

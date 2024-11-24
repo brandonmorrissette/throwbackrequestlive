@@ -6,7 +6,7 @@ from stacks.compute import ComputeStack
 from stacks.storage import StorageStack
 from stacks.runtime import RuntimeStack
 from stacks.user import UserStack
-from backend.infra.stacks.environment_setup import EnvironmentSetupStack
+from stacks.environment_setup import EnvironmentSetupStack
 
 app = cdk.App()
 project_name = os.getenv("PROJECT_NAME")
@@ -40,7 +40,7 @@ compute_stack = ComputeStack(
     app,
     f"{project_name}-compute-stack-{environment_name}",
     env=env,
-    vpc=core_stack.vpcConstruct.vpc,
+    vpc=core_stack.vpc_constrcut.vpc,
     
 )
 apply_tags(compute_stack, tags=tags)
@@ -49,7 +49,7 @@ storage_stack = StorageStack(
     app,
     f"{project_name}-storage-stack-{environment_name}",
     env=env,
-    vpc=core_stack.vpcConstruct.vpc,
+    vpc=core_stack.vpc_constrcut.vpc,
     project_name=project_name
     
 )
@@ -59,7 +59,7 @@ user_stack = UserStack(
     app, 
     f"{project_name}-user-stack-{environment_name}", 
     env=env, 
-    rds=storage_stack.rdsConstruct.db_instance, 
+    rds=storage_stack.rds_construct.db_instance, 
     project_name=project_name
 )
 apply_tags(user_stack, tags=tags)
@@ -68,9 +68,9 @@ app_stack = RuntimeStack(
     app,
     f"{project_name}-runtime-stack-{environment_name}",
     env=env,
-    cluster=compute_stack.clusterConstruct.cluster,
-    certificate=core_stack.certConstruct.certificate,
-    hosted_zone=core_stack.certConstruct.hosted_zone,
+    cluster=compute_stack.cluster_construct.cluster,
+    certificate=core_stack.cert_construct.certificate,
+    hosted_zone=core_stack.cert_construct.hosted_zone,
 )
 apply_tags(app_stack, tags=tags)
 
@@ -78,9 +78,9 @@ environment_setup_stack = EnvironmentSetupStack(
     app,
     f"{project_name}-environment-setup-stack-{environment_name}",
     env=env,
-    cluster=compute_stack.clusterConstruct.cluster,
-    rds_secret=storage_stack.rdsConstruct.db_instance.secret,
-    user_pool_id=user_stack.cognitoConstruct.user_pool_id,
+    cluster=compute_stack.cluster_construct.cluster,
+    rds_secret=storage_stack.rds_construct.db_instance.secret,
+    user_pool_id=user_stack.cognito_construct.user_pool_id,
 )
 apply_tags(environment_setup_stack, tags=tags)
 
