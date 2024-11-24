@@ -6,5 +6,5 @@ from aws_cdk import Stack
 class NetworkStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs):
         super().__init__(scope, id, **kwargs)
-        self.vpcConstruct = VpcConstruct(self, "Vpc")
-        self.certConstruct = CertConstruct(self, "Cert")
+        self.vpcConstruct = VpcConstruct(self, "vpc")
+        self.certConstruct = CertConstruct(self, "cert")

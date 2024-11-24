@@ -26,12 +26,12 @@ jobs:
             - name: Fetch CDK Outputs
               id: fetch
               run: |
-                  STACK_NAME=${{ github.event.repository.name }}-EnvironmentSetupStack-${{ inputs.environment }}
+                  STACK_NAME=${{ github.event.repository.name }}-environment-setup-stack-${{ inputs.environment }}
                   OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
-                  ECS_CLUSTER_NAME=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="ECSClusterName").OutputValue')
-                  TASK_DEF_ARN=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="TaskDefinitionArn").OutputValue')
-                  SUBNET_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SubnetId").OutputValue')
-                  SECURITY_GROUP_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SecurityGroupId").OutputValue')
+                  ECS_CLUSTER_NAME=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="ecs-cluster-name").OutputValue')
+                  TASK_DEF_ARN=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="task-def-arn").OutputValue')
+                  SUBNET_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="subnet-id").OutputValue')
+                  SECURITY_GROUP_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="security-group-id").OutputValue')
                   echo "::set-output name=ecs_cluster_name::$ECS_CLUSTER_NAME"
                   echo "::set-output name=task_def_arn::$TASK_DEF_ARN"
                   echo "::set-output name=subnet_id::$SUBNET_ID"

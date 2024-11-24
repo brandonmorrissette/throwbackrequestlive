@@ -15,7 +15,7 @@ jobs:
         uses: ./.github/workflows/deploy_stack.yml
         name: Deploy Network Stack
         with:
-            stack-name: NetworkStack
+            stack-name: network-stack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -25,7 +25,7 @@ jobs:
         uses: ./.github/workflows/deploy_stack.yml
         name: Deploy User Stack
         with:
-            stack-name: UserStack
+            stack-name: user-stack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -36,7 +36,7 @@ jobs:
         name: Deploy Compute Stack
         uses: ./.github/workflows/deploy_stack.yml
         with:
-            stack-name: ComputeStack
+            stack-name: compute-stack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -47,7 +47,7 @@ jobs:
         name: Deploy Storage Stack
         uses: ./.github/workflows/deploy_stack.yml
         with:
-            stack-name: StorageStack
+            stack-name: storage-stack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -58,7 +58,7 @@ jobs:
         name: Deploy Runtime Stack
         uses: ./.github/workflows/deploy_stack.yml
         with:
-            stack-name: RuntimeStack
+            stack-name: runtime-stack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -69,7 +69,7 @@ jobs:
         name: Deploy Environment Setup Stack
         uses: ./.github/workflows/deploy_stack.yml
         with:
-            stack-name: EnvironmentSetupStack
+            stack-name: environment-setup-stack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

@@ -6,4 +6,4 @@ from aws_cdk import Stack
 class ComputeStack(Stack):
     def __init__(self, scope: Construct, id: str, vpc: str, **kwargs):
         super().__init__(scope, id, **kwargs)
-        self.clusterConstruct = ClusterConstruct(self, "Cluster", vpc=vpc)
+        self.clusterConstruct = ClusterConstruct(self, "cluster", vpc=vpc)

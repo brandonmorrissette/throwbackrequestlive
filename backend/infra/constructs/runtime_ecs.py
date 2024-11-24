@@ -10,12 +10,12 @@ class RuntimeEcsConstruct(Construct):
         super().__init__(scope, id)
 
         docker_image = ecr_assets.DockerImageAsset(
-            self, "LocalThrowbackRequestLiveImage",
+            self, "throwback-request-live-image",
             directory="."
         )
 
         self.fargate_service = ecs_patterns.ApplicationLoadBalancedFargateService(
-            self, "FargateService",
+            self, "fargate-service",
             cluster=cluster,
             cpu=256,
             memory_limit_mib=512,
@@ -24,9 +24,9 @@ class RuntimeEcsConstruct(Construct):
                 image=ecs.ContainerImage.from_docker_image_asset(docker_image),
                 container_port=5000,
                 log_driver=ecs.LogDrivers.aws_logs(
-                    stream_prefix="ThrowbackRequestLive",
+                    stream_prefix="throwback-request-live",
                     log_group=aws_logs.LogGroup(
-                        self, "LogGroup",
+                        self, "log-group",
                         retention=aws_logs.RetentionDays.ONE_WEEK
                     )
                 )

@@ -5,13 +5,13 @@ class EnvironmentSetupStack(Stack):
     def __init__(self, scope: Construct, id: str, cluster: ecs.Cluster, rds_secret: secretsmanager.ISecret, user_pool_id: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
-        cognito_secrets = secretsmanager.Secret.from_secret_name_v2(self, "CognitoSecrets", "cognito_secrets")
+        cognito_secrets = secretsmanager.Secret.from_secret_name_v2(self, "cognito-secrets", "cognito_secrets")
 
-        sql_task_definition = ecs.FargateTaskDefinition(self, "SQLTaskDefinition",
+        sql_task_definition = ecs.FargateTaskDefinition(self, "sql-task-definition",
             memory_limit_mib=512,
             cpu=256
         )
-        sql_task_definition.add_container("SQLContainer",
+        sql_task_definition.add_container("sql-container",
             image=ecs.ContainerImage.from_registry("amazonlinux"),
             secrets={
                 "DB_HOST": ecs.Secret.from_secrets_manager(rds_secret, "host"),
@@ -19,29 +19,29 @@ class EnvironmentSetupStack(Stack):
                 "DB_PASSWORD": ecs.Secret.from_secrets_manager(rds_secret, "password")
             },
             command=["sh", "-c", "for file in /schema/*.sql; do psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file; done"],
-            logging=ecs.LogDrivers.aws_logs(stream_prefix="SQLDeployment")
+            logging=ecs.LogDrivers.aws_logs(stream_prefix="sql-deployment")
         )
-        security_group = ec2.SecurityGroup(self, "TaskSecurityGroup",
+        security_group = ec2.SecurityGroup(self, "task-security-group",
             vpc=cluster.vpc,
             description="Allow ECS tasks to communicate with RDS",
             allow_all_outbound=True
         )
         security_group.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(5432), "Allow PostgreSQL access")
         
-        CfnOutput(self, "SecurityGroupId", value=security_group.security_group_id)
-        CfnOutput(self, "SQLTaskDefinitionArn", value=sql_task_definition.task_definition_arn)
-        CfnOutput(self, "ECSClusterName", value=cluster.cluster_name)
+        CfnOutput(self, "security-group-id", value=security_group.security_group_id)
+        CfnOutput(self, "sql-task-definition-arn", value=sql_task_definition.task_definition_arn)
+        CfnOutput(self, "ecs-cluster-name", value=cluster.cluster_name)
 
-        superuser_task_definition = ecs.FargateTaskDefinition(self, "SuperuserTaskDefinition",
+        superuser_task_definition = ecs.FargateTaskDefinition(self, "superuser-task-definition",
             memory_limit_mib=512,
             cpu=256
         )
-        superuser_task_definition.add_container("SuperuserContainer",
+        superuser_task_definition.add_container("superuser-container",
             image=ecs.ContainerImage.from_registry("amazonlinux"),
             environment={
                 "USER_POOL_ID": user_pool_id,
             },
             command=["sh", "-c", "python /infra/setup/create_superuser.py"],
-            logging=ecs.LogDrivers.aws_logs(stream_prefix="SuperuserCreation")
+            logging=ecs.LogDrivers.aws_logs(stream_prefix="superuser-creation")
         )
-        CfnOutput(self, "SuperuserTaskDefinitionArn", value=superuser_task_definition.task_definition_arn)
+        CfnOutput(self, "superuser-task-definition-arn", value=superuser_task_definition.task_definition_arn)

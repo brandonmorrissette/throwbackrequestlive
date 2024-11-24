@@ -6,13 +6,13 @@ class RdsConstruct(Construct):
     def __init__(self, scope: Construct, id: str, vpc, project_name: str) -> None:
         super().__init__(scope, id)
 
-        rds_security_group = ec2.SecurityGroup(self, "RDSSecurityGroup", vpc=vpc)
+        rds_security_group = ec2.SecurityGroup(self, "rds-security-group", vpc=vpc)
         rds_security_group.add_ingress_rule(
             ec2.Peer.ipv4(vpc.vpc_cidr_block), ec2.Port.tcp(5432), "Allow ECS to access RDS"
         )
 
         self.db_instance = rds.DatabaseInstance(
-            self, "RDSInstance",
+            self, "rds-instance",
             engine=rds.DatabaseInstanceEngine.postgres(
                 version=rds.PostgresEngineVersion.VER_16_4
             ),

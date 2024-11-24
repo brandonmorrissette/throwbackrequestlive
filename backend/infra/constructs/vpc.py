@@ -6,5 +6,5 @@ class VpcConstruct(Construct):
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
-        self.vpc = ec2.Vpc(self, "ThrowbackRequestLiveVPC", max_azs=2)
-        CfnOutput(self, "SubnetId", value=self.vpc.select_subnets(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT).subnet_ids[0])
+        self.vpc = ec2.Vpc(self, "throwback-request-live-vpc", max_azs=2)
+        CfnOutput(self, "subnet-id", value=self.vpc.select_subnets(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT).subnet_ids[0])
