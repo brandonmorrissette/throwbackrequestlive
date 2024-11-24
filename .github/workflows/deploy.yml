@@ -94,9 +94,5 @@ jobs:
             - name: Deploy SQL files
               run: |
                   for file in backend/infra/schema/*.sql; do
-                      psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file
+                      psql postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:5432/throwbackrequestlive -f $file
                   done
-              env:
-                  DB_USER: ${{ secrets.DB_USER }}
-                  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-                  DB_HOST: ${{ secrets.DB_HOST }}
