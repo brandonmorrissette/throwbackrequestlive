@@ -12,7 +12,7 @@ on:
 
 jobs:
     deploy-network-stack:
-        uses: ./.github/workflows/deployStack.yml
+        uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: NetworkStack
         secrets:
@@ -21,7 +21,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-user-stack:
-        uses: ./.github/workflows/deployStack.yml
+        uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: UserStack
         secrets:
@@ -31,7 +31,7 @@ jobs:
 
     deploy-compute-stack:
         needs: deploy-network-stack
-        uses: ./.github/workflows/deployStack.yml
+        uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: ComputeStack
         secrets:
@@ -41,7 +41,7 @@ jobs:
 
     deploy-storage-stack:
         needs: deploy-network-stack
-        uses: ./.github/workflows/deployStack.yml
+        uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: StorageStack
         secrets:
@@ -51,7 +51,7 @@ jobs:
 
     deploy-runtime-stack:
         needs: [deploy-compute-stack, deploy-storage-stack]
-        uses: ./.github/workflows/deployStack.yml
+        uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: RuntimeStack
         secrets:

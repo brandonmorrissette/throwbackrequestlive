@@ -20,7 +20,10 @@ class RdsConstruct(Construct):
                 ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO
             ),
             vpc=vpc,
-            credentials=rds.Credentials.from_generated_secret("db_master_user"),
+            credentials=rds.Credentials.from_generated_secret(
+                "db_master_user",
+                secret_name=f"{project_name}-db-credentials"
+            ),
             allocated_storage=20,
             multi_az=False,
             publicly_accessible=False,

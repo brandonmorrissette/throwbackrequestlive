@@ -1,4 +1,5 @@
-from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_ecs as ecs, CfnOutput
+
 from constructs import Construct
 
 
@@ -7,3 +8,4 @@ class ClusterConstruct(Construct):
         super().__init__(scope, id)
 
         self.cluster = ecs.Cluster(self, "ThrowbackRequestLiveCluster", vpc=vpc)
+        CfnOutput(self, "ECSClusterName", value=self.cluster.cluster_name)

@@ -6,6 +6,7 @@ from stacks.cluster import ClusterStack
 from stacks.storage import StorageStack
 from stacks.runtime import RuntimeStack
 from stacks.user import UserStack
+from stacks.environment_setup_stack import EnvironmentSetupStack
 
 app = cdk.App()
 project_name = os.getenv("PROJECT_NAME")
@@ -72,5 +73,15 @@ app_stack = RuntimeStack(
     hosted_zone=core_stack.certConstruct.hosted_zone,
 )
 apply_tags(app_stack, tags=tags)
+
+environment_setup_stack = EnvironmentSetupStack(
+    app,
+    f"{project_name}-EnvironmentSetupStack-{environment_name}",
+    env=env,
+    cluster=cluster_stack.clusterConstruct.cluster,
+    rds_secret=database_stack.rdsConstruct.db_instance.secret,
+    user_pool_id=user_stack.user_pool.user_pool_id
+)
+apply_tags(environment_setup_stack, tags=tags)
 
 app.synth()

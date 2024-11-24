@@ -1,4 +1,4 @@
-from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_ec2 as ec2, CfnOutput
 from constructs import Construct
 
 
@@ -7,3 +7,4 @@ class VpcConstruct(Construct):
         super().__init__(scope, id)
 
         self.vpc = ec2.Vpc(self, "ThrowbackRequestLiveVPC", max_azs=2)
+        CfnOutput(self, "SubnetId", value=self.vpc.select_subnets(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT).subnet_ids[0])

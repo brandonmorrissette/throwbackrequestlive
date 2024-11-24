@@ -1,0 +1,41 @@
+name: Deploy SQL Files
+
+on:
+    workflow_call:
+        inputs:
+            environment:
+                required: true
+                type: string
+
+jobs:
+    run-sql-task:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch CDK Outputs
+              run: |
+                  STACK_NAME=${{ github.repository }}-EnvironmentSetupStack-${{ inputs.environment }}
+                  OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
+                  ECS_CLUSTER_NAME=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="ECSClusterName").OutputValue')
+                  TASK_DEF_ARN=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SQLTaskDefinitionArn").OutputValue')
+                  SUBNET_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SubnetId").OutputValue')
+                  SECURITY_GROUP_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SecurityGroupId").OutputValue')
+                  echo "ECS_CLUSTER_NAME=$ECS_CLUSTER_NAME" >> $GITHUB_ENV
+                  echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+                  echo "SUBNET_ID=$SUBNET_ID" >> $GITHUB_ENV
+                  echo "SECURITY_GROUP_ID=$SECURITY_GROUP_ID" >> $GITHUB_ENV
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+            - name: Run Fargate Task
+              run: |
+                  aws ecs run-task \
+                    --cluster $ECS_CLUSTER_NAME \
+                    --task-definition $TASK_DEF_ARN \
+                    --launch-type FARGATE \
+                    --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}"
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
