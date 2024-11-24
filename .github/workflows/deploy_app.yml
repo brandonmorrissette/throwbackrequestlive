@@ -34,17 +34,14 @@ jobs:
     deploy-superuser:
         name: Deploy Super User
         needs: deploy-user-stack
-        runs-on: ubuntu-latest
-        steps:
-            - name: Deploy Superuser
-              uses: ./.github/workflows/deploy_superuser.yml
-              with:
-                  environment: production
-                  superuser_email: ${{ vars.SUPERUSER_EMAIL }}
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
+        uses: ./.github/workflows/deploy_superuser.yml
+        with:
+            environment: production
+            superuser_email: ${{ vars.SUPERUSER_EMAIL }}
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-compute-stack:
         needs: deploy-network-stack
@@ -71,16 +68,13 @@ jobs:
     deploy-sql-files:
         name: Deploy SQL Files
         needs: deploy-storage-stack
-        runs-on: ubuntu-latest
-        steps:
-            - name: Deploy SQL Files
-              uses: ./.github/workflows/deploy_sql.yml
-              with:
-                  environment: production
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
+        uses: ./.github/workflows/deploy_sql.yml
+        with:
+            environment: production
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-runtime-stack:
         needs: [deploy-compute-stack, deploy-storage-stack]
