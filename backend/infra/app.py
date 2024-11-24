@@ -80,7 +80,7 @@ environment_setup_stack = EnvironmentSetupStack(
     env=env,
     cluster=compute_stack.cluster_construct.cluster,
     rds_secret=storage_stack.rds_construct.db_instance.secret,
-    user_pool_id=user_stack.cognito_construct.user_pool_id,
+    user_pool_id=user_stack.cognito_construct.user_pool.user_pool_id,
 )
 apply_tags(environment_setup_stack, tags=tags)
 
