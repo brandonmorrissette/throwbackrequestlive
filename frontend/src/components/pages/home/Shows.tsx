@@ -45,7 +45,7 @@ const Shows: React.FC = () => {
     return (
         <div className="container">
             <center>
-                <h2>Where to catch us next</h2>
+                <h2>Come See Us Play</h2>
             </center>
             <div className="list-group">
                 {shows.map((show, index) => (

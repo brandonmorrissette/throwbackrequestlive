@@ -31,18 +31,6 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-superuser:
-        name: Deploy Super User
-        needs: deploy-user-stack
-        uses: ./.github/workflows/deploy_superuser.yml
-        with:
-            environment: production
-            superuser_email: ${{ vars.SUPERUSER_EMAIL }}
-        secrets:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-
     deploy-compute-stack:
         needs: deploy-network-stack
         name: Deploy Compute Stack
@@ -65,17 +53,6 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-sql-files:
-        name: Deploy SQL Files
-        needs: deploy-storage-stack
-        uses: ./.github/workflows/deploy_sql.yml
-        with:
-            environment: production
-        secrets:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-
     deploy-runtime-stack:
         needs: [deploy-compute-stack, deploy-storage-stack]
         name: Deploy Runtime Stack
@@ -93,6 +70,29 @@ jobs:
         uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: EnvironmentSetupStack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    deploy-sql-files:
+        name: Deploy SQL Files
+        needs: [deploy-storage-stack, deploy-environment-setup-stack]
+        uses: ./.github/workflows/deploy_sql.yml
+        with:
+            environment: production
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    deploy-superuser:
+        name: Deploy Super User
+        needs: [deploy-user-stack, deploy-environment-setup-stack]
+        uses: ./.github/workflows/deploy_superuser.yml
+        with:
+            environment: production
+            superuser_email: ${{ vars.SUPERUSER_EMAIL }}
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
