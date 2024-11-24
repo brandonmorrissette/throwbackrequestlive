@@ -11,6 +11,9 @@ jobs:
     run-sql-task:
         runs-on: ubuntu-latest
         steps:
+            - name: Checkout repository
+              uses: actions/checkout@v2
+
             - name: Fetch CDK Outputs
               run: |
                   STACK_NAME=${{ github.repository }}-EnvironmentSetupStack-${{ inputs.environment }}

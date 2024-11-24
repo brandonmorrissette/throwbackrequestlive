@@ -40,6 +40,21 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
+    deploy-superuser:
+        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-superuser') }}
+        name: Deploy Super User
+        runs-on: ubuntu-latest
+        steps:
+            - name: Deploy Superuser
+              uses: ./.github/workflows/deploy_superuser.yml
+              with:
+                  environment: production
+                  superuser_email: ${{ vars.SUPERUSER_EMAIL }}
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
+
     deploy-compute-stack:
         if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-compute-stack') }}
         name: Deploy Compute Stack
@@ -62,32 +77,6 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-runtime-stack:
-        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-runtime-stack') }}
-        name: Deploy Runtime Stack
-        uses: ./.github/workflows/deploy_stack.yml
-        with:
-            stack-name: RuntimeStack
-        secrets:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-
-    deploy-superuser:
-        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-superuser') }}
-        name: Deploy Super User
-        runs-on: ubuntu-latest
-        steps:
-            - name: Deploy Superuser
-              uses: ./.github/workflows/deploy_superuser.yml
-              with:
-                  environment: production
-                  superuser_email: ${{ vars.SUPERUSER_EMAIL }}
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-
     deploy-sql-files:
         if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-sql-files') }}
         name: Deploy SQL Files
@@ -101,3 +90,14 @@ jobs:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    deploy-runtime-stack:
+        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-runtime-stack') }}
+        name: Deploy Runtime Stack
+        uses: ./.github/workflows/deploy_stack.yml
+        with:
+            stack-name: RuntimeStack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
