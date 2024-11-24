@@ -1,0 +1,42 @@
+name: Fetch CDK Outputs
+
+on:
+    workflow_call:
+        inputs:
+            environment:
+                required: true
+                type: string
+        secrets:
+            AWS_ACCESS_KEY_ID:
+                required: true
+            AWS_SECRET_ACCESS_KEY:
+                required: true
+            AWS_REGION:
+                required: true
+
+jobs:
+    fetch-outputs:
+        runs-on: ubuntu-latest
+        outputs:
+            ecs_cluster_name: ${{ steps.set-outputs.outputs.ecs_cluster_name }}
+            task_def_arn: ${{ steps.set-outputs.outputs.task_def_arn }}
+            subnet_id: ${{ steps.set-outputs.outputs.subnet_id }}
+            security_group_id: ${{ steps.set-outputs.outputs.security_group_id }}
+        steps:
+            - name: Fetch CDK Outputs
+              id: fetch
+              run: |
+                  STACK_NAME=${{ github.event.repository.name }}-EnvironmentSetupStack-${{ inputs.environment }}
+                  OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
+                  ECS_CLUSTER_NAME=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="ECSClusterName").OutputValue')
+                  TASK_DEF_ARN=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="TaskDefinitionArn").OutputValue')
+                  SUBNET_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SubnetId").OutputValue')
+                  SECURITY_GROUP_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SecurityGroupId").OutputValue')
+                  echo "::set-output name=ecs_cluster_name::$ECS_CLUSTER_NAME"
+                  echo "::set-output name=task_def_arn::$TASK_DEF_ARN"
+                  echo "::set-output name=subnet_id::$SUBNET_ID"
+                  echo "::set-output name=security_group_id::$SECURITY_GROUP_ID"
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}

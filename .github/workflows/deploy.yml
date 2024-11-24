@@ -43,7 +43,6 @@ jobs:
     deploy-superuser:
         if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-superuser') }}
         name: Deploy Super User
-        needs: deploy-user-stack
         uses: ./.github/workflows/deploy_superuser.yml
         with:
             environment: production
@@ -78,7 +77,6 @@ jobs:
     deploy-sql-files:
         if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-sql-files') }}
         name: Deploy SQL Files
-        needs: deploy-storage-stack
         uses: ./.github/workflows/deploy_sql.yml
         with:
             environment: production

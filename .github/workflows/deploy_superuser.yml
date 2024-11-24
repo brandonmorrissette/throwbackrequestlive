@@ -18,38 +18,29 @@ on:
                 required: true
 
 jobs:
+    fetch-cdk-outputs:
+        name: Fetch CDK Outputs
+        uses: ./.github/workflows/fetch_cdk_outputs.yml
+        with:
+            environment: ${{ inputs.environment }}
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
     run-superuser-task:
+        needs: fetch-cdk-outputs
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v2
-
-            - name: Fetch CDK Outputs
-              run: |
-                  STACK_NAME=${{ github.repository }}-EnvironmentSetupStack-${{ inputs.environment }}
-                  OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
-                  ECS_CLUSTER_NAME=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="ECSClusterName").OutputValue')
-                  TASK_DEF_ARN=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SuperuserTaskDefinitionArn").OutputValue')
-                  SUBNET_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SubnetId").OutputValue')
-                  SECURITY_GROUP_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SecurityGroupId").OutputValue')
-                  echo "ECS_CLUSTER_NAME=$ECS_CLUSTER_NAME" >> $GITHUB_ENV
-                  echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
-                  echo "SUBNET_ID=$SUBNET_ID" >> $GITHUB_ENV
-                  echo "SECURITY_GROUP_ID=$SECURITY_GROUP_ID" >> $GITHUB_ENV
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-
             - name: Run Fargate Task
-              run: |
-                  aws ecs run-task \
-                    --cluster $ECS_CLUSTER_NAME \
-                    --task-definition $TASK_DEF_ARN \
+            run: |
+                aws ecs run-task \
+                    --cluster ${{ steps.fetch-cdk.outputs.ecs_cluster_name }} \
+                    --task-definition ${{ steps.fetch-cdk.outputs.task_def_arn }} \
                     --launch-type FARGATE \
-                    --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}" \
+                    --network-configuration "awsvpcConfiguration={subnets=[${{ steps.fetch-cdk.outputs.subnet_id }}],securityGroups=[${{ steps.fetch-cdk.outputs.security_group_id }}],assignPublicIp=ENABLED}" \
                     --overrides '{"containerOverrides":[{"name":"SuperuserContainer","environment":[{"name":"SUPERUSER_EMAIL","value":"${{ inputs.superuser_email }}"}]}]}'
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
+            env:
+                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                AWS_REGION: ${{ secrets.AWS_REGION }}

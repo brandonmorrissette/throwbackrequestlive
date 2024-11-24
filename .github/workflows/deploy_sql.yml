@@ -15,29 +15,18 @@ on:
                 required: true
 
 jobs:
+    deploy-sql-files:
+        name: Deploy SQL Files
+        uses: ./.github/workflows/fetch_cdk_outputs.yml
+        with:
+            environment: ${{ inputs.environment }}
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
     run-sql-task:
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v2
-
-            - name: Fetch CDK Outputs
-              run: |
-                  STACK_NAME=${{ github.repository }}-EnvironmentSetupStack-${{ inputs.environment }}
-                  OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
-                  ECS_CLUSTER_NAME=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="ECSClusterName").OutputValue')
-                  TASK_DEF_ARN=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SQLTaskDefinitionArn").OutputValue')
-                  SUBNET_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SubnetId").OutputValue')
-                  SECURITY_GROUP_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="SecurityGroupId").OutputValue')
-                  echo "ECS_CLUSTER_NAME=$ECS_CLUSTER_NAME" >> $GITHUB_ENV
-                  echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
-                  echo "SUBNET_ID=$SUBNET_ID" >> $GITHUB_ENV
-                  echo "SECURITY_GROUP_ID=$SECURITY_GROUP_ID" >> $GITHUB_ENV
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-
             - name: Run Fargate Task
               run: |
                   aws ecs run-task \
