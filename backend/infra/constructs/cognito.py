@@ -11,7 +11,7 @@ class CognitoConstruct(Construct):
         cognito_client = boto3.client('cognito-idp')
 
         user_pool = self._get_user_pool_by_name(cognito_client, f"{project_name}-UserPool")
-        user_pool_id = user_pool['Id'] if user_pool else None
+        self.user_pool_id = user_pool['Id'] if user_pool else None
         if not user_pool:
             user_pool = cognito.UserPool(
                 self, f"{project_name}-UserPool",
@@ -27,7 +27,7 @@ class CognitoConstruct(Construct):
                 ),
                 account_recovery=cognito.AccountRecovery.EMAIL_ONLY
             )
-            user_pool_id = user_pool.user_pool_id
+            self.user_pool_id = user_pool.user_pool_id
             
         app_client = self._get_app_client_by_name(cognito_client, user_pool_id, f"{project_name}-UserPool-AppClient")
         if not app_client:
