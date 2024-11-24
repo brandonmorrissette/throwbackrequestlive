@@ -51,7 +51,7 @@ jobs:
 
     deploy-runtime-stack:
         needs: [deploy-compute-stack, deploy-storage-stack]
-        uses: ./.github/workflows/deployReactStack.yml
+        uses: ./.github/workflows/deployStack.yml
         with:
             stack-name: RuntimeStack
         secrets:
