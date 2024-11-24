@@ -59,7 +59,7 @@ jobs:
 
     deploy-runtime-stack:
         if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'RuntimeStack') }}
-        uses: ./.github/workflows/deployReactStack.yml
+        uses: ./.github/workflows/deployStack.yml
         with:
             stack-name: RuntimeStack
         secrets:
