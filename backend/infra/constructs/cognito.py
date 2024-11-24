@@ -1,5 +1,6 @@
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_iam as iam
+from aws_cdk import Token
 from constructs import Construct
 import boto3
 
@@ -8,18 +9,17 @@ class CognitoConstruct(Construct):
         super().__init__(scope, id, **kwargs)
 
         cognito_client = boto3.client('cognito-idp')
-        user_pool = self._user_pool(cognito_client, project_name)
-        self.user_pool_id = user_pool.user_pool_id
+        self.user_pool = self._user_pool(cognito_client, project_name)
 
-        self._app_client(cognito_client, self.user_pool_id, project_name)
+        self._app_client(cognito_client, project_name)
 
-        groups = self._groups(cognito_client, self.user_pool_id, ["admin", "superuser"])
+        groups = self._groups(cognito_client, ["admin", "superuser"])
         self._attach_policies_to_groups(groups, [self._admin_policy(rds)])
 
     def _user_pool(self, client, project_name):
-        existing_pool = self._get_user_pool_by_name(client, project_name + "-user-pool")
-        if existing_pool:
-            return cognito.UserPool.from_user_pool_id(self, "ExistingUserPool", existing_pool['Id'])
+        user_pool = self._get_user_pool_by_name(client, project_name + "-user-pool")
+        if user_pool:
+            return cognito.UserPool.from_user_pool_id(self, f"{project_name}-user-pool", user_pool['Id'])
         return cognito.UserPool(
             self, f"{project_name}-user-pool",
             user_pool_name=f"{project_name}-user-pool",
@@ -35,13 +35,15 @@ class CognitoConstruct(Construct):
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY
         )
 
-    def _app_client(self, client, user_pool_id, project_name):
-        existing_client = self._get_app_client_by_name(client, user_pool_id, project_name + "-user-pool-app-client")
-        if existing_client:
-            return cognito.CfnUserPoolClient.from_user_pool_client_id(self, "ExistingAppClient", existing_client['ClientId'])
+    def _app_client(self, client, project_name):
+        if not Token.is_unresolved(self.user_pool.user_pool_id):
+            client = self._get_app_client_by_name(client, project_name + "-user-pool-app-client")
+            if client:
+                return cognito.CfnUserPoolClient.from_user_pool_client_id(self, project_name + "-user-pool-app-client", client['ClientId'])
+        
         return cognito.CfnUserPoolClient(
             self, "UserPoolAppClient",
-            user_pool_id=user_pool_id,
+            user_pool_id=self.user_pool.user_pool_id,
             client_name=f"{project_name}-user-pool-app-client",
             explicit_auth_flows=[
                 "ALLOW_ADMIN_USER_PASSWORD_AUTH",
@@ -50,19 +52,21 @@ class CognitoConstruct(Construct):
             ]
         )
 
-    def _groups(self, client, user_pool_id, group_names):
+    def _groups(self, client, group_names):
         groups = []
         for group_name in group_names:
-            existing_group = self._get_group_by_name(client, user_pool_id, group_name)
-            if existing_group:
-                groups.append(cognito.CfnUserPoolGroup.from_group_name(self, f"Existing{group_name.capitalize()}Group", group_name))
-            else:
-                group = cognito.CfnUserPoolGroup(
-                    self, f"{group_name}-group",
-                    group_name=group_name,
-                    user_pool_id=user_pool_id
-                )
-                groups.append(group)
+            if not Token.is_unresolved(self.user_pool.user_pool_id):
+                existing_group = self._get_group_by_name(client, group_name)
+                if existing_group:
+                    groups.append(cognito.CfnUserPoolGroup.from_group_name(self, f"{group_name.capitalize()}", group_name))
+                    continue
+            
+            group = cognito.CfnUserPoolGroup(
+                self, f"{group_name}",
+                group_name=group_name,
+                user_pool_id=self.user_pool.user_pool_id
+            )
+            groups.append(group)
         return groups
 
     def _admin_policy(self, rds):
@@ -97,15 +101,15 @@ class CognitoConstruct(Construct):
                 return pool
         return None
 
-    def _get_app_client_by_name(self, client, user_pool_id, app_client_name):
-        app_clients = client.list_user_pool_clients(UserPoolId=user_pool_id, MaxResults=60)
+    def _get_app_client_by_name(self, client, app_client_name):
+        app_clients = client.list_user_pool_clients(UserPoolId=self.user_pool.user_pool_id, MaxResults=60)
         for client in app_clients.get('UserPoolClients', []):
             if client['ClientName'] == app_client_name:
                 return client
         return None
 
-    def _get_group_by_name(self, client, user_pool_id, group_name):
-        groups = client.list_groups(UserPoolId=user_pool_id)
+    def _get_group_by_name(self, client, group_name):
+        groups = client.list_groups(UserPoolId=self.user_pool.user_pool_id)
         for group in groups.get('Groups', []):
             if group['GroupName'] == group_name:
                 return group
