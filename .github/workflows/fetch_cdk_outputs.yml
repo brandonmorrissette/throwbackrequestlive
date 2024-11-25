@@ -15,6 +15,7 @@ on:
                 required: true
 
 jobs:
+    # OUTPUTS DO NOT WORK. I CANNOT SOLVE CURRENTLY BUT DID NOT WANT TO DITCH THIS EFFORT
     fetch-outputs:
         runs-on: ubuntu-latest
         outputs:
