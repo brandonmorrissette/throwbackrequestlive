@@ -31,7 +31,7 @@ jobs:
         steps:
             - name: Run Fargate Task
               run: |
-                  echo "ECS Cluster: $ECS_CLUSTER_NAME"
+                  echo "ECS Cluster: ${{ needs.fetch-cdk-outputs.outputs.ecsclustername }}"
                   echo "SQL Task Definition ARN: $SQL_TASK_DEFINITION_ARN"
                   echo "Subnet ID: $SUBNET_ID"
                   echo "Security Group ID: $SECURITY_GROUP_ID"
