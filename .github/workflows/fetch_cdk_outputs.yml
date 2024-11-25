@@ -35,15 +35,14 @@ jobs:
 
                       OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]_')
                       echo "Setting $OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE"
-                      echo "$OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE" >> "$GITHUB_OUTPUT"
-                      echo "Written to $GITHUB_OUTPUT: $OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE"
+                      echo "::set-output name=$OUTPUT_KEY_FORMATTED::$OUTPUT_VALUE"
                   done
 
-                    echo "Validation: Fetching outputs after setting them"
-                    echo "ecsclustername=${{ steps.fetch.outputs.ecsclustername }}"
-                    echo "sqltaskdefarn=${{ steps.fetch.outputs.sqltaskdefarn }}"
-                    echo "subnetid=${{ steps.fetch.outputs.subnetid }}"
-                    echo "securitygroupid=${{ steps.fetch.outputs.securitygroupid }}"
+                  echo "Validation: Fetching outputs after setting them"
+                  echo "ecsclustername=${{ steps.fetch.outputs.ecsclustername }}"
+                  echo "sqltaskdefarn=${{ steps.fetch.outputs.sqltaskdefarn }}"
+                  echo "subnetid=${{ steps.fetch.outputs.subnetid }}"
+                  echo "securitygroupid=${{ steps.fetch.outputs.securitygroupid }}"
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
