@@ -31,8 +31,7 @@ jobs:
         steps:
             - name: Run Fargate Task
               run: |
-                  bash -c '
-                  STACK_NAME=${{ github.event.repository.name }}-environment-setup-stack-${{ inputs.environment }}
+                  STACK_NAME=throwbackrequestlive-environment-setup-stack-production
                   OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
 
                   # Declare an associative array
@@ -49,13 +48,17 @@ jobs:
                       echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
                   done
 
+                  # Debug: Print out the keys and values
+                  for key in "${!CFN_OUTPUTS[@]}"; do
+                      echo "Key: $key, Value: ${CFN_OUTPUTS[$key]}"
+                  done
+
                   # Access the values directly from the dictionary for deployment
                   aws ecs run-task \
                       --cluster "${CFN_OUTPUTS[ecsclustername]}" \
                       --task-definition "${CFN_OUTPUTS[sqltaskdefarn]}" \
                       --launch-type FARGATE \
                       --network-configuration "awsvpcConfiguration={subnets=[${CFN_OUTPUTS[subnetid]}],securityGroups=[${CFN_OUTPUTS[securitygroupid]}],assignPublicIp=ENABLED}"
-                  '
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
