@@ -1,0 +1,57 @@
+name: Deploy SQL Files
+
+on:
+    workflow_call:
+        inputs:
+            environment:
+                required: true
+                type: string
+        secrets:
+            AWS_ACCESS_KEY_ID:
+                required: true
+            AWS_SECRET_ACCESS_KEY:
+                required: true
+            AWS_REGION:
+                required: true
+
+jobs:
+    fetch-cdk-outputs:
+        name: Fetch CDK Outputs
+        uses: ./.github/workflows/fetch_cdk_outputs.yml
+        with:
+            environment: ${{ inputs.environment }}
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    run-sql-task:
+        needs: fetch-cdk-outputs
+        runs-on: ubuntu-latest
+        steps:
+            - name: Run Fargate Task
+              run: |
+                  STACK_NAME=throwbackrequestlive-environment-setup-stack-production
+                  OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
+
+                  declare -A CFN_OUTPUTS
+
+                  for row in $(echo "$OUTPUTS" | jq -c ".[]"); do
+                      OUTPUT_KEY=$(echo "$row" | jq -r ".OutputKey")
+                      OUTPUT_VALUE=$(echo "$row" | jq -r ".OutputValue")
+
+                      OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
+                      CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
+
+                      echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
+                  done
+
+                  aws ecs run-task \
+                      --cluster "${CFN_OUTPUTS[ecsclustername]}" \
+                      --task-definition "${CFN_OUTPUTS[sqltaskdefinitionarn]}" \
+                      --launch-type FARGATE \
+                      --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}"
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}

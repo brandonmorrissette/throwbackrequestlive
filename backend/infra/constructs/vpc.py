@@ -6,4 +6,4 @@ class VpcConstruct(Construct):
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
-        self.vpc = ec2.Vpc(self, "ThrowbackRequestLiveVPC", max_azs=2)
+        self.vpc = ec2.Vpc(self, "throwback-request-live-vpc", max_azs=2)

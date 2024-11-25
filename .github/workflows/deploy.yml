@@ -1,25 +1,27 @@
-name: Deployment Workflow
+name: Deployment Orchestration
 
 on:
     workflow_dispatch:
         inputs:
-            stack-name:
-                description: 'Comma-separated list of stacks to deploy (default: Empty to run all)'
+            jobs:
+                description: 'Comma-separated list of jobs to run (default: Empty to run all)'
                 required: false
                 default: ''
 
 jobs:
     deploy-app:
-        if: ${{ inputs.stack-name == '' }}
-        uses: ./.github/workflows/deployApp.yml
+        if: ${{ inputs.jobs == '' }}
+        name: Deploy All Stacks and Stand up the Application Environment
+        uses: ./.github/workflows/deploy_app.yml
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-network-stack:
-        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'NetworkStack') }}
-        uses: ./.github/workflows/deployStack.yml
+        if: ${{ inputs.jobs != '' && contains(inputs.jobs, 'deploy-network-stack') }}
+        name: Deploy Network Stack
+        uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: NetworkStack
         secrets:
@@ -28,8 +30,9 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-user-stack:
-        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'UserStack') }}
-        uses: ./.github/workflows/deployStack.yml
+        if: ${{ inputs.jobs != '' && contains(inputs.jobs, 'deploy-user-stack') }}
+        name: Deploy User Stack
+        uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: UserStack
         secrets:
@@ -37,9 +40,22 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
+    deploy-superuser:
+        if: ${{ inputs.jobs != '' && contains(inputs.jobs, 'deploy-superuser') }}
+        name: Deploy Super User
+        uses: ./.github/workflows/deploy_superuser.yml
+        with:
+            environment: production
+            superuser_email: ${{ vars.SUPERUSER_EMAIL }}
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
     deploy-compute-stack:
-        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'ComputeStack') }}
-        uses: ./.github/workflows/deployStack.yml
+        if: ${{ inputs.jobs != '' && contains(inputs.jobs, 'deploy-compute-stack') }}
+        name: Deploy Compute Stack
+        uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: ComputeStack
         secrets:
@@ -48,8 +64,9 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-storage-stack:
-        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'StorageStack') }}
-        uses: ./.github/workflows/deployStack.yml
+        if: ${{ inputs.jobs != '' && contains(inputs.jobs, 'deploy-storage-stack') }}
+        name: Deploy Storage Stack
+        uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: StorageStack
         secrets:
@@ -57,9 +74,21 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
+    deploy-sql-files:
+        if: ${{ inputs.jobs != '' && contains(inputs.jobs, 'deploy-sql-files') }}
+        name: Deploy SQL Files
+        uses: ./.github/workflows/deploy_sql.yml
+        with:
+            environment: production
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
     deploy-runtime-stack:
-        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'RuntimeStack') }}
-        uses: ./.github/workflows/deployStack.yml
+        if: ${{ inputs.jobs != '' && contains(inputs.jobs, 'deploy-runtime-stack') }}
+        name: Deploy Runtime Stack
+        uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: RuntimeStack
         secrets:
@@ -67,32 +96,13 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    create-superuser:
-        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'create-superuser') }}
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
-            - name: Invoke Lambda to create Cognito user
-              run: |
-                  aws lambda invoke \
-                  --function-name create-superuser-lambda \
-                  --payload '{"email": "${{ vars.SUPERUSER_EMAIL}}"}' \
-                  response.json \
-                  --cli-binary-format raw-in-base64-out
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-
-    deploy-sql-files:
-        if: ${{ inputs.stack-name != '' && contains(inputs.stack-name, 'deploy-sql-files') }}
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
-            - name: Deploy SQL files
-              run: |
-                  for file in backend/infra/schema/*.sql; do
-                      psql postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:5432/throwbackrequestlive -f $file
-                  done
+    deploy-environment-setup-stack:
+        if: ${{ inputs.jobs != '' && contains(inputs.jobs, 'deploy-environment-setup-stack') }}
+        name: Deploy Environment Setup Stack
+        uses: ./.github/workflows/deploy_stack.yml
+        with:
+            stack-name: EnvironmentSetupStack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}

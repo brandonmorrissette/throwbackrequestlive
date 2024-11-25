@@ -7,13 +7,13 @@ class Route53Construct(Construct):
         super().__init__(scope, id)
 
         route53.ARecord(
-            self, "AliasRecord",
+            self, "alias-record",
             zone=hosted_zone,
             target=route53.RecordTarget.from_alias(targets.LoadBalancerTarget(load_balancer))
         )
 
         route53.ARecord(
-            self, "AliasRecordWWW",
+            self, "alias-record-www",
             zone=hosted_zone,
             record_name="www",
             target=route53.RecordTarget.from_alias(targets.LoadBalancerTarget(load_balancer))

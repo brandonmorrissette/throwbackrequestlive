@@ -8,7 +8,7 @@ class DeploymentEc2Construct(Construct):
 
         ec2_role = iam.Role(
             self,
-            "EC2InstanceRole",
+            "ec2-instance-role",
             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name(
@@ -18,7 +18,7 @@ class DeploymentEc2Construct(Construct):
             ],
         )
 
-        ec2_security_group = ec2.SecurityGroup(self, "EC2SecurityGroup", vpc=vpc)
+        ec2_security_group = ec2.SecurityGroup(self, "ec2-security-group", vpc=vpc)
         ec2_security_group.add_ingress_rule(
             ec2.Peer.ipv4(vpc.vpc_cidr_block), ec2.Port.tcp(22), "Allow SSH within VPC"
         )
@@ -28,7 +28,7 @@ class DeploymentEc2Construct(Construct):
 
         self.deployment_ec2_instance = ec2.Instance(
             self,
-            "DeploymentInstance",
+            "deployment-instance",
             instance_type=ec2.InstanceType("t3.micro"),
             machine_image=ec2.MachineImage.latest_amazon_linux(),
             vpc=vpc,

@@ -2,14 +2,15 @@
 import os
 import aws_cdk as cdk
 from stacks.network import NetworkStack
-from stacks.cluster import ClusterStack
+from stacks.compute import ComputeStack
 from stacks.storage import StorageStack
 from stacks.runtime import RuntimeStack
 from stacks.user import UserStack
+from stacks.environment_setup import EnvironmentSetupStack
 
 app = cdk.App()
-project_name = os.getenv("PROJECT_NAME")
-environment_name = os.getenv("ENVIRONMENT_NAME", "Production")
+project_name = os.getenv("PROJECT_NAME", os.path.basename(os.path.dirname(os.path.dirname(__file__))))
+environment_name = os.getenv("ENVIRONMENT_NAME", "no-env")
 
 tags = {
     "project_name": project_name,
@@ -30,47 +31,57 @@ apply_tags(app, tags)
 
 core_stack = NetworkStack(
     app, 
-    f"{project_name}-NetworkStack-{environment_name}",
+    f"{project_name}-network-stack-{environment_name}",
     env=env
 )
 apply_tags(core_stack, tags=tags)
 
-cluster_stack = ClusterStack(
+compute_stack = ComputeStack(
     app,
-    f"{project_name}-ComputeStack-{environment_name}",
+    f"{project_name}-compute-stack-{environment_name}",
     env=env,
-    vpc=core_stack.vpcConstruct.vpc,
+    vpc=core_stack.vpc_constrcut.vpc,
     
 )
-apply_tags(cluster_stack, tags=tags)
+apply_tags(compute_stack, tags=tags)
 
-database_stack = StorageStack(
+storage_stack = StorageStack(
     app,
-    f"{project_name}-StorageStack-{environment_name}",
+    f"{project_name}-storage-stack-{environment_name}",
     env=env,
-    vpc=core_stack.vpcConstruct.vpc,
+    vpc=core_stack.vpc_constrcut.vpc,
     project_name=project_name
     
 )
-apply_tags(database_stack,tags=tags)
+apply_tags(storage_stack,tags=tags)
 
 user_stack = UserStack(
     app, 
-    f"{project_name}-UserStack-{environment_name}", 
+    f"{project_name}-user-stack-{environment_name}", 
     env=env, 
-    rds=database_stack.rdsConstruct.db_instance, 
+    rds=storage_stack.rds_construct.db_instance, 
     project_name=project_name
 )
 apply_tags(user_stack, tags=tags)
 
 app_stack = RuntimeStack(
     app,
-    f"{project_name}-RuntimeStack-{environment_name}",
+    f"{project_name}-runtime-stack-{environment_name}",
     env=env,
-    cluster=cluster_stack.clusterConstruct.cluster,
-    certificate=core_stack.certConstruct.certificate,
-    hosted_zone=core_stack.certConstruct.hosted_zone,
+    cluster=compute_stack.cluster_construct.cluster,
+    certificate=core_stack.cert_construct.certificate,
+    hosted_zone=core_stack.cert_construct.hosted_zone,
 )
 apply_tags(app_stack, tags=tags)
+
+environment_setup_stack = EnvironmentSetupStack(
+    app,
+    f"{project_name}-environment-setup-stack-{environment_name}",
+    env=env,
+    cluster=compute_stack.cluster_construct.cluster,
+    rds_secret=storage_stack.rds_construct.db_instance.secret,
+    project_name=project_name,
+)
+apply_tags(environment_setup_stack, tags=tags)
 
 app.synth()
