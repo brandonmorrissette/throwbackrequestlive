@@ -39,8 +39,8 @@ class EnvironmentSetupStack(Stack):
             environment={
                 "USER_POOL_ID": ssm.StringParameter.from_string_parameter_name(
                     self,
-                    f"{project_name}-user-pool-id-param",
-                    string_parameter_name=f"/{project_name}/user-pool-id"
+                    f"{project_name}-user-pool-id",
+                    string_parameter_name=f"/{project_name}/{project_name}-user-pool-id"
                 ).string_value,
             },
             command=["sh", "-c", "python /infra/setup/create_superuser.py"],
