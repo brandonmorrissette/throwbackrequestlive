@@ -106,6 +106,19 @@ class CognitoConstruct(Construct):
                         "rds-db:batchExecuteStatement"
                     ],
                     resources=[rds.instance_arn]
+                ),
+                iam.PolicyStatement(
+                    actions=[
+                        "cognito-idp:AdminCreateUser",
+                        "cognito-idp:AdminDeleteUser",
+                        "cognito-idp:AdminUpdateUserAttributes",
+                        "cognito-idp:AdminAddUserToGroup",
+                        "cognito-idp:AdminRemoveUserFromGroup",
+                        "cognito-idp:AdminCreateGroup",
+                        "cognito-idp:AdminDeleteGroup",
+                        "cognito-idp:AdminUpdateGroup"
+                    ],
+                    resources=[f"arn:aws:cognito-idp:*:*:userpool/{self.user_pool.user_pool_id}"]
                 )
             ]
         )
