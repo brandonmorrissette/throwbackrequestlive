@@ -31,11 +31,16 @@ jobs:
         steps:
             - name: Run Fargate Task
               run: |
+                  echo "ECS Cluster: ${{ env.ecsclustername }}"
+                  echo "SQL Task Definition ARN: ${{ env.sqltaskdefarn }}"
+                  echo "Subnet ID: ${{ env.subnetid }}"
+                  echo "Security Group ID: ${{ env.securitygroupid }}"
+
                   aws ecs run-task \
-                    --cluster ${{ env.ecsclustername }} \
-                    --task-definition ${{ env.sqltaskdefarn }}  \
-                    --launch-type FARGATE \
-                    --network-configuration "awsvpcConfiguration={subnets=[${{ env.subnetid }}],securityGroups=[${{ env.securitygroupid }}],assignPublicIp=ENABLED}"
+                      --cluster ${{ env.ecsclustername }} \
+                      --task-definition ${{ env.sqltaskdefarn }}  \
+                      --launch-type FARGATE \
+                      --network-configuration "awsvpcConfiguration={subnets=[${{ env.subnetid }}],securityGroups=[${{ env.securitygroupid }}],assignPublicIp=ENABLED}"
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
