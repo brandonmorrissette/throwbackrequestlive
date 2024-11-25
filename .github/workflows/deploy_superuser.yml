@@ -21,43 +21,29 @@ jobs:
     run-superuser-task:
         runs-on: ubuntu-latest
         steps:
-            - name: Fetch CDK Outputs
-              id: fetch-cdk-outputs
+            - name: Run Superuser Fargate Task
               run: |
-                  # Define the stack name dynamically
-                  STACK_NAME=${{ github.event.repository.name }}-environment-setup-stack-${{ inputs.environment }}
-
-                  # Fetch the CloudFormation outputs
+                  STACK_NAME=throwbackrequestlive-environment-setup-stack-production
                   OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
 
-                  # Declare an associative array to hold the outputs
                   declare -A CFN_OUTPUTS
 
-                  # Parse the outputs and store them in the array
-                  for row in $(echo "$OUTPUTS" | jq -c '.[]'); do
-                      OUTPUT_KEY=$(echo "$row" | jq -r '.OutputKey')
-                      OUTPUT_VALUE=$(echo "$row" | jq -r '.OutputValue')
+                  for row in $(echo "$OUTPUTS" | jq -c ".[]"); do
+                      OUTPUT_KEY=$(echo "$row" | jq -r ".OutputKey")
+                      OUTPUT_VALUE=$(echo "$row" | jq -r ".OutputValue")
 
-                      OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]_')
+                      OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
                       CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
 
                       echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
                   done
 
-                  # Export values as environment variables for subsequent steps
-                  echo "export ECS_CLUSTER_NAME=${CFN_OUTPUTS[ecsclustername]}" >> $GITHUB_ENV
-                  echo "export SUPERUSER_TASK_DEF_ARN=${CFN_OUTPUTS[superusertaskdefarn]}" >> $GITHUB_ENV
-                  echo "export SUBNET_ID=${CFN_OUTPUTS[subnetid]}" >> $GITHUB_ENV
-                  echo "export SECURITY_GROUP_ID=${CFN_OUTPUTS[securitygroupid]}" >> $GITHUB_ENV
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-
-            - name: Run Superuser Fargate Task
-              run: |
                   aws ecs run-task \
-                      --cluster "$ECS_CLUSTER_NAME" \
-                      --task-definition "$SUPERUSER_TASK_DEF_ARN" \
+                      --cluster "${CFN_OUTPUTS[ecsclustername]}" \
+                      --task-definition "${CFN_OUTPUTS[superusertaskdefinitionarn]}" \
                       --launch-type FARGATE \
-                      --network-configuration "awsvpcConfiguration={subnets=
+                      --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}"
+            env:
+                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                AWS_REGION: ${{ secrets.AWS_REGION }}
