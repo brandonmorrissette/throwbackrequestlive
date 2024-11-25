@@ -9,7 +9,7 @@ from stacks.user import UserStack
 from stacks.environment_setup import EnvironmentSetupStack
 
 app = cdk.App()
-project_name = os.getenv("PROJECT_NAME")
+project_name = os.getenv("PROJECT_NAME", os.path.basename(os.path.dirname(os.path.dirname(__file__))))
 environment_name = os.getenv("ENVIRONMENT_NAME", "production")
 
 tags = {
@@ -80,7 +80,7 @@ environment_setup_stack = EnvironmentSetupStack(
     env=env,
     cluster=compute_stack.cluster_construct.cluster,
     rds_secret=storage_stack.rds_construct.db_instance.secret,
-    user_pool_id=user_stack.cognito_construct.user_pool.user_pool_id,
+    project_name=project_name,
 )
 apply_tags(environment_setup_stack, tags=tags)
 

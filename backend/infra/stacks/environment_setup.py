@@ -1,9 +1,11 @@
-from aws_cdk import Stack, aws_ecs as ecs, aws_ec2 as ec2, aws_iam as iam, CfnOutput, aws_secretsmanager as secretsmanager
+from aws_cdk import Stack, aws_ecs as ecs, aws_ec2 as ec2, aws_iam as iam, CfnOutput, aws_secretsmanager as secretsmanager, Fn
 from constructs import Construct
 
 class EnvironmentSetupStack(Stack):
-    def __init__(self, scope: Construct, id: str, cluster: ecs.Cluster, rds_secret: secretsmanager.ISecret, user_pool_id: str, **kwargs):
+    def __init__(self, scope: Construct, id: str, cluster: ecs.Cluster, rds_secret: secretsmanager.ISecret, project_name: str, **kwargs):
         super().__init__(scope, id, **kwargs)
+
+        user_pool_id = Fn.import_value(f"{project_name}-user-pool-id")
 
         cognito_secrets = secretsmanager.Secret.from_secret_name_v2(self, "cognito-secrets", "cognito_secrets")
 
