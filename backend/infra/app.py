@@ -10,7 +10,7 @@ from stacks.environment_setup import EnvironmentSetupStack
 
 app = cdk.App()
 project_name = os.getenv("PROJECT_NAME", os.path.basename(os.path.dirname(os.path.dirname(__file__))))
-environment_name = os.getenv("ENVIRONMENT_NAME", "production")
+environment_name = os.getenv("ENVIRONMENT_NAME", "no-env")
 
 tags = {
     "project_name": project_name,

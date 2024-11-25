@@ -48,11 +48,8 @@ jobs:
             - name: CDK Bootstrap (if needed)
               run: cdk bootstrap || echo "Bootstrap already complete"
 
-            - name: Set environment variables
-              run: echo "ENVIRONMENT_NAME=Production" >> $GITHUB_ENV
-
             - name: Deploy Stack
               run: cdk deploy ${{ github.event.repository.name }}-${{ inputs.stack-name }}-${{ env.ENVIRONMENT_NAME }} --app "python backend/infra/app.py" --require-approval never
               env:
                   PROJECT_NAME: ${{ github.event.repository.name }}
-                  ENVIRONMENT_NAME: ${{ env.ENVIRONMENT_NAME }}
+                  ENVIRONMENT_NAME: 'production'
