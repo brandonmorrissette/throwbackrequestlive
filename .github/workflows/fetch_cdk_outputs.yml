@@ -31,6 +31,7 @@ jobs:
                       # Convert key to lowercase and replace invalid characters for GitHub Actions outputs
                       OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]_')
                       echo "$OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE" >> $GITHUB_ENV
+                      echo "Setting $OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE"
                   done
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
