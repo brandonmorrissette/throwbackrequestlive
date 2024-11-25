@@ -1,16 +1,9 @@
-from aws_cdk import Stack, aws_ecs as ecs, aws_ec2 as ec2, aws_iam as iam, CfnOutput, aws_secretsmanager as secretsmanager, Fn
+from aws_cdk import Stack, aws_ecs as ecs, aws_ec2 as ec2, aws_iam as iam, CfnOutput, aws_secretsmanager as secretsmanager, aws_ssm as ssm
 from constructs import Construct
 
 class EnvironmentSetupStack(Stack):
     def __init__(self, scope: Construct, id: str, cluster: ecs.Cluster, rds_secret: secretsmanager.ISecret, project_name: str, **kwargs):
         super().__init__(scope, id, **kwargs)
-
-        user_pool_id = secretsmanager.Secret.from_secret_name_v2(
-            self,
-            f"{project_name}-user-pool-id-secret",
-            secret_name=f"/{project_name}/{project_name}-user-pool-id"
-        ).secret_value.to_string()
-
         sql_task_definition = ecs.FargateTaskDefinition(self, "sql-task-definition",
             memory_limit_mib=512,
             cpu=256
@@ -44,7 +37,11 @@ class EnvironmentSetupStack(Stack):
         superuser_task_definition.add_container("superuser-container",
             image=ecs.ContainerImage.from_registry("amazonlinux"),
             environment={
-                "USER_POOL_ID": user_pool_id,
+                "USER_POOL_ID": ssm.StringParameter.from_string_parameter_name(
+                    self,
+                    f"{project_name}-user-pool-id-param",
+                    string_parameter_name=f"/{project_name}/user-pool-id"
+                ).string_value,
             },
             command=["sh", "-c", "python /infra/setup/create_superuser.py"],
             logging=ecs.LogDrivers.aws_logs(stream_prefix="superuser-creation")
