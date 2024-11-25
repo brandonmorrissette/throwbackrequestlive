@@ -17,25 +17,21 @@ on:
 jobs:
     fetch-outputs:
         runs-on: ubuntu-latest
-        outputs:
-            ecs_cluster_name: ${{ steps.set-outputs.outputs.ecs_cluster_name }}
-            task_def_arn: ${{ steps.set-outputs.outputs.task_def_arn }}
-            subnet_id: ${{ steps.set-outputs.outputs.subnet_id }}
-            security_group_id: ${{ steps.set-outputs.outputs.security_group_id }}
         steps:
-            - name: Fetch CDK Outputs
+            - name: Fetch CDK Outputs Dynamically
               id: fetch
               run: |
                   STACK_NAME=${{ github.event.repository.name }}-environment-setup-stack-${{ inputs.environment }}
                   OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
-                  ECS_CLUSTER_NAME=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="ecs-cluster-name").OutputValue')
-                  TASK_DEF_ARN=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="task-def-arn").OutputValue')
-                  SUBNET_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="subnet-id").OutputValue')
-                  SECURITY_GROUP_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="security-group-id").OutputValue')
-                  echo "::set-output name=ecs_cluster_name::$ECS_CLUSTER_NAME"
-                  echo "::set-output name=task_def_arn::$TASK_DEF_ARN"
-                  echo "::set-output name=subnet_id::$SUBNET_ID"
-                  echo "::set-output name=security_group_id::$SECURITY_GROUP_ID"
+
+                  # Loop through each output and dynamically set them
+                  for row in $(echo "$OUTPUTS" | jq -c '.[]'); do
+                      OUTPUT_KEY=$(echo "$row" | jq -r '.OutputKey')
+                      OUTPUT_VALUE=$(echo "$row" | jq -r '.OutputValue')
+                      # Convert key to lowercase and replace invalid characters for GitHub Actions outputs
+                      OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]_')
+                      echo "::set-output name=${OUTPUT_KEY_FORMATTED}::$OUTPUT_VALUE"
+                  done
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

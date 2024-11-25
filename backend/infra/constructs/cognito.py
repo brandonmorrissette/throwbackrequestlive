@@ -15,7 +15,6 @@ class CognitoConstruct(Construct):
             self, 
             f"{project_name}-user-pool-id",
             value=self.user_pool.user_pool_id,
-            export_name=f"{project_name}-user-pool-id"
         )
 
         app_client = self._app_client(project_name)

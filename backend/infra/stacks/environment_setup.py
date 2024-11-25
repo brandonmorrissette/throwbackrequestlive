@@ -31,10 +31,8 @@ class EnvironmentSetupStack(Stack):
         security_group.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(5432), "Allow PostgreSQL access")
         
         CfnOutput(self, "security-group-id", 
-                  export_name="security-group-id",
                   value=security_group.security_group_id)
         CfnOutput(self, "sql-task-definition-arn",
-                   export_name="sql-task-definition-arn",
                    value=sql_task_definition.task_definition_arn)
 
         superuser_task_definition = ecs.FargateTaskDefinition(self, "superuser-task-definition",
@@ -50,5 +48,4 @@ class EnvironmentSetupStack(Stack):
             logging=ecs.LogDrivers.aws_logs(stream_prefix="superuser-creation")
         )
         CfnOutput(self, "superuser-task-definition-arn", 
-                  export_name="superuser-task-definition-arn",
                   value=superuser_task_definition.task_definition_arn)

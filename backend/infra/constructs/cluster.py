@@ -11,6 +11,5 @@ class ClusterConstruct(Construct):
         CfnOutput(
             self, 
             "ecs-cluster-name", 
-            export_name="ecs-cluster-name",
             value=self.cluster.cluster_name
             )

@@ -29,12 +29,13 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Run Fargate Task
+              # CDK Output keys are forced to "lowercase smash case"
               run: |
                   aws ecs run-task \
-                    --cluster ${{ needs.fetch-cdk-outputs.outputs.ecs_cluster_name }} \
-                    --task-definition ${{ needs.fetch-cdk-outputs.outputs.task_def_arn }}  \
+                    --cluster ${{ needs.fetch-cdk-outputs.outputs.ecsclustername }} \
+                    --task-definition ${{ needs.fetch-cdk-outputs.outputs.sqltaskdefarn }}  \
                     --launch-type FARGATE \
-                    --network-configuration "awsvpcConfiguration={subnets=[${{ needs.fetch-cdk-outputs.outputs.subnet_id }}],securityGroups=[${{ needs.fetch-cdk-outputs.outputs.security_group_id }}],assignPublicIp=ENABLED}"
+                    --network-configuration "awsvpcConfiguration={subnets=[${{ needs.fetch-cdk-outputs.outputs.subnetid }}],securityGroups=[${{ needs.fetch-cdk-outputs.outputs.securitygroupid }}],assignPublicIp=ENABLED}"
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
