@@ -24,18 +24,18 @@ jobs:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
+
     run-sql-task:
         needs: fetch-cdk-outputs
         runs-on: ubuntu-latest
         steps:
             - name: Run Fargate Task
-              # CDK Output keys are forced to "lowercase smash case"
               run: |
                   aws ecs run-task \
-                    --cluster ${{ needs.fetch-cdk-outputs.outputs.ecsclustername }} \
-                    --task-definition ${{ needs.fetch-cdk-outputs.outputs.sqltaskdefarn }}  \
+                    --cluster ${{ env.ecsclustername }} \
+                    --task-definition ${{ env.sqltaskdefarn }}  \
                     --launch-type FARGATE \
-                    --network-configuration "awsvpcConfiguration={subnets=[${{ needs.fetch-cdk-outputs.outputs.subnetid }}],securityGroups=[${{ needs.fetch-cdk-outputs.outputs.securitygroupid }}],assignPublicIp=ENABLED}"
+                    --network-configuration "awsvpcConfiguration={subnets=[${{ env.subnetid }}],securityGroups=[${{ env.securitygroupid }}],assignPublicIp=ENABLED}"
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
