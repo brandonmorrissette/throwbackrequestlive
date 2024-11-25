@@ -1,7 +1,6 @@
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_iam as iam
 from aws_cdk import Token
-from aws_cdk import CfnOutput
 from aws_cdk import aws_ssm as ssm
 from constructs import Construct
 import boto3
