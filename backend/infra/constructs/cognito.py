@@ -2,6 +2,7 @@ from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_iam as iam
 from aws_cdk import Token
 from aws_cdk import CfnOutput
+from aws_cdk import aws_ssm as ssm
 from constructs import Construct
 import boto3
 
@@ -11,11 +12,6 @@ class CognitoConstruct(Construct):
 
         self._cognito_client = boto3.client('cognito-idp')
         self.user_pool = self._user_pool(project_name)
-        CfnOutput(
-            self, 
-            f"{project_name}-user-pool-id",
-            value=self.user_pool.user_pool_id,
-        )
 
         app_client = self._app_client(project_name)
         admin_group = self._admin_group(rds)
@@ -23,23 +19,31 @@ class CognitoConstruct(Construct):
 
     def _user_pool(self, project_name):
         user_pool = self._get_user_pool_by_name(project_name + "-user-pool")
-        if user_pool:
-            return user_pool
-        
-        return cognito.UserPool(
-            self, f"{project_name}-user-pool",
-            user_pool_name=f"{project_name}-user-pool",
-            self_sign_up_enabled=False,
-            sign_in_aliases=cognito.SignInAliases(email=True),
-            password_policy=cognito.PasswordPolicy(
-                min_length=8,
-                require_lowercase=False,
-                require_uppercase=False,
-                require_digits=False,
-                require_symbols=False
-            ),
-            account_recovery=cognito.AccountRecovery.EMAIL_ONLY
+        if not user_pool:
+            user_pool = cognito.UserPool(
+                self, f"{project_name}-user-pool",
+                user_pool_name=f"{project_name}-user-pool",
+                self_sign_up_enabled=False,
+                sign_in_aliases=cognito.SignInAliases(email=True),
+                password_policy=cognito.PasswordPolicy(
+                    min_length=8,
+                    require_lowercase=False,
+                    require_uppercase=False,
+                    require_digits=False,
+                    require_symbols=False
+                ),
+                account_recovery=cognito.AccountRecovery.EMAIL_ONLY
+            )
+        ssm.StringParameter(
+            self,
+            f"{project_name}-user-pool-id",
+            string_value=self.user_pool.user_pool_id,
+            parameter_name=f"/{project_name}/{project_name}-user-pool-id", 
+            description="The user pool ID for the Cognito pool",
+            tier=ssm.ParameterTier.STANDARD, 
         )
+        return user_pool
+    
 
     def _app_client(self, project_name):
         if not Token.is_unresolved(self.user_pool.user_pool_id):

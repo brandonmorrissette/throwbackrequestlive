@@ -5,9 +5,11 @@ class EnvironmentSetupStack(Stack):
     def __init__(self, scope: Construct, id: str, cluster: ecs.Cluster, rds_secret: secretsmanager.ISecret, project_name: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
-        user_pool_id = Fn.import_value(f"{project_name}-user-pool-id")
-
-        cognito_secrets = secretsmanager.Secret.from_secret_name_v2(self, "cognito-secrets", "cognito_secrets")
+        user_pool_id = secretsmanager.Secret.from_secret_name_v2(
+            self,
+            f"{project_name}-user-pool-id-secret",
+            secret_name=f"/{project_name}/{project_name}-user-pool-id"
+        ).secret_value.to_string()
 
         sql_task_definition = ecs.FargateTaskDefinition(self, "sql-task-definition",
             memory_limit_mib=512,
