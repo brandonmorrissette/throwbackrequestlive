@@ -29,16 +29,13 @@ jobs:
                   STACK_NAME=${{ github.event.repository.name }}-environment-setup-stack-${{ inputs.environment }}
                   OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
 
-                  # Loop through each output and dynamically set them
                   for row in $(echo "$OUTPUTS" | jq -c '.[]'); do
                       OUTPUT_KEY=$(echo "$row" | jq -r '.OutputKey')
                       OUTPUT_VALUE=$(echo "$row" | jq -r '.OutputValue')
-                      # Convert key to lowercase and replace invalid characters for GitHub Actions outputs
+
                       OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]_')
-                      echo "$OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE" >> $GITHUB_ENV
                       echo "Setting $OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE"
-                      # Set outputs for use in other jobs
-                      echo "::set-output name=$OUTPUT_KEY_FORMATTED::$OUTPUT_VALUE"
+                      echo "$OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE" >> "$GITHUB_OUTPUT"
                   done
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
