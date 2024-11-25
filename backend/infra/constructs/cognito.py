@@ -1,6 +1,7 @@
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_iam as iam
 from aws_cdk import Token
+from aws_cdk import CfnOutput
 from constructs import Construct
 import boto3
 
@@ -10,6 +11,12 @@ class CognitoConstruct(Construct):
 
         self._cognito_client = boto3.client('cognito-idp')
         self.user_pool = self._user_pool(project_name)
+        CfnOutput(
+            self, 
+            f"{project_name}-user-pool-id",
+            value=self.user_pool.user_pool_id,
+            export_name=f"{project_name}-user-pool-id"
+        )
 
         app_client = self._app_client(project_name)
         admin_group = self._admin_group(rds)
