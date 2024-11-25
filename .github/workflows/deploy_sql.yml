@@ -35,6 +35,7 @@ jobs:
                   echo "SQL Task Definition ARN: ${{ needs.fetch-cdk-outputs.outputs.sqltaskdefarn }}"
                   echo "Subnet ID: ${{ needs.fetch-cdk-outputs.outputs.subnetid }}"
                   echo "Security Group ID: ${{ needs.fetch-cdk-outputs.outputs.securitygroupid }}"
+                  echo "Hard Code Test: ${{ needs.fetch-cdk-outputs.outputs.hard-code-test }}"
 
                   aws ecs run-task \
                       --cluster ${{ needs.fetch-cdk-outputs.outputs.ecsclustername }} \

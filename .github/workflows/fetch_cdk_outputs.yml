@@ -22,6 +22,7 @@ jobs:
             sqltaskdefarn: ${{ steps.fetch.outputs.sqltaskdefarn }}
             subnetid: ${{ steps.fetch.outputs.subnetid }}
             securitygroupid: ${{ steps.fetch.outputs.securitygroupid }}
+            hard-code-test: ${{ steps.fetch.outputs.hard-code-test }}
         steps:
             - name: Fetch CDK Outputs Dynamically
               id: fetch
@@ -35,8 +36,14 @@ jobs:
 
                       OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]_')
                       echo "Setting $OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE"
-                      echo "::set-output name=$OUTPUT_KEY_FORMATTED::$OUTPUT_VALUE"
+                      echo "$OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE" >> "$GITHUB_OUTPUT"
+                      echo "Written to $GITHUB_OUTPUT: $OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE"
                   done
+
+                  echo "Explcit Hard Code Test"
+                  echo "hard-code-test=hard-code-value" >> "$GITHUB_OUTPUT"
+                  echo "Written to $GITHUB_OUTPUT: hard-code-test=hard-code-value"
+                  echo "hard-code-test=${{steps.fetch.outputs.hard-code-test}}"
 
                   echo "Validation: Fetching outputs after setting them"
                   echo "ecsclustername=${{ steps.fetch.outputs.ecsclustername }}"
