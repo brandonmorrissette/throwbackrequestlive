@@ -31,10 +31,10 @@ jobs:
             - name: Run Fargate Task
               run: |
                   aws ecs run-task \
-                    --cluster $ECS_CLUSTER_NAME \
-                    --task-definition $TASK_DEF_ARN \
+                    --cluster ${{ needs.fetch-cdk-outputs.outputs.ecs_cluster_name }} \
+                    --task-definition ${{ needs.fetch-cdk-outputs.outputs.task_def_arn }}  \
                     --launch-type FARGATE \
-                    --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}"
+                    --network-configuration "awsvpcConfiguration={subnets=[${{ needs.fetch-cdk-outputs.outputs.subnet_id }}],securityGroups=[${{ needs.fetch-cdk-outputs.outputs.security_group_id }}],assignPublicIp=ENABLED}"
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

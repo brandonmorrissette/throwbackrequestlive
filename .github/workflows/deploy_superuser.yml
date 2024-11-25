@@ -35,10 +35,10 @@ jobs:
             - name: Run Fargate Task
               run: |
                   aws ecs run-task \
-                      --cluster ${{ steps.fetch-cdk.outputs.ecs_cluster_name }} \
-                      --task-definition ${{ steps.fetch-cdk.outputs.task_def_arn }} \
+                      --cluster ${{ needs.fetch-cdk-outputs.outputs.ecs_cluster_name }} \
+                      --task-definition ${{ needs.fetch-cdk-outputs.outputs.task_def_arn }} \
                       --launch-type FARGATE \
-                      --network-configuration "awsvpcConfiguration={subnets=[${{ steps.fetch-cdk.outputs.subnet_id }}],securityGroups=[${{ steps.fetch-cdk.outputs.security_group_id }}],assignPublicIp=ENABLED}" \
+                      --network-configuration "awsvpcConfiguration={subnets=[${{ needs.fetch-cdk-outputs.outputs.subnet_id }}],securityGroups=[${{ needs.fetch-cdk-outputs.outputs.security_group_id }}],assignPublicIp=ENABLED}" \
                       --overrides '{"containerOverrides":[{"name":"SuperuserContainer","environment":[{"name":"SUPERUSER_EMAIL","value":"${{ inputs.superuser_email }}"}]}]}'
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
