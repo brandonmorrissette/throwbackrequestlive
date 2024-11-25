@@ -19,7 +19,8 @@ class CognitoConstruct(Construct):
     def _user_pool(self, client, project_name):
         user_pool = self._get_user_pool_by_name(client, project_name + "-user-pool")
         if user_pool:
-            return cognito.UserPool.from_user_pool_id(self, f"{project_name}-user-pool", user_pool['Id'])
+            return user_pool
+        
         return cognito.UserPool(
             self, f"{project_name}-user-pool",
             user_pool_name=f"{project_name}-user-pool",
@@ -39,7 +40,7 @@ class CognitoConstruct(Construct):
         if not Token.is_unresolved(self.user_pool.user_pool_id):
             client = self._get_app_client_by_name(client, project_name + "-user-pool-app-client")
             if client:
-                return cognito.CfnUserPoolClient.from_user_pool_client_id(self, project_name + "-user-pool-app-client", client['ClientId'])
+                return client
         
         return cognito.CfnUserPoolClient(
             self, "UserPoolAppClient",
@@ -56,9 +57,9 @@ class CognitoConstruct(Construct):
         groups = []
         for group_name in group_names:
             if not Token.is_unresolved(self.user_pool.user_pool_id):
-                existing_group = self._get_group_by_name(client, group_name)
-                if existing_group:
-                    groups.append(cognito.CfnUserPoolGroup.from_group_name(self, f"{group_name.capitalize()}", group_name))
+                group = self._get_group_by_name(client, group_name)
+                if group:
+                    groups.append(group)
                     continue
             
             group = cognito.CfnUserPoolGroup(
@@ -94,23 +95,41 @@ class CognitoConstruct(Construct):
                 )
                 group.role_arn = role.role_arn
 
-    def _get_user_pool_by_name(self, client, user_pool_name):
-        user_pools = client.list_user_pools(MaxResults=60)
-        for pool in user_pools.get('UserPools', []):
-            if pool['Name'] == user_pool_name:
-                return pool
-        return None
-
     def _get_app_client_by_name(self, client, app_client_name):
         app_clients = client.list_user_pool_clients(UserPoolId=self.user_pool.user_pool_id, MaxResults=60)
         for client in app_clients.get('UserPoolClients', []):
             if client['ClientName'] == app_client_name:
-                return client
+                return cognito.UserPoolClient.from_user_pool_client_id(
+                    self,
+                    app_client_name,
+                    user_pool_client_id=client["ClientId"]
+                )
+            
+        return None
+
+    def _get_user_pool_by_name(self, client, user_pool_name):
+        user_pools = client.list_user_pools(MaxResults=60)
+        for pool in user_pools.get('UserPools', []):
+            if pool['Name'] == user_pool_name:
+                return cognito.UserPool.from_user_pool_id(
+                    self,
+                    user_pool_name,
+                    user_pool_id=pool["Id"]
+                )
+
         return None
 
     def _get_group_by_name(self, client, group_name):
         groups = client.list_groups(UserPoolId=self.user_pool.user_pool_id)
         for group in groups.get('Groups', []):
             if group['GroupName'] == group_name:
-                return group
+                return cognito.CfnUserPoolGroup(
+                    self,
+                    f"{group_name}-group",
+                    group_name=group["GroupName"],
+                    user_pool_id=self.user_pool.user_pool_id
+                )
+
         return None
+
+
