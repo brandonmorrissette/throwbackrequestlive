@@ -46,11 +46,11 @@ jobs:
                       echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
                   done
 
-                  aws ecs run-task \
-                      --cluster "${CFN_OUTPUTS[ecsclustername]}" \
-                      --task-definition "${CFN_OUTPUTS[sqltaskdefinitionarn]}" \
-                      --launch-type FARGATE \
-                      --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}"
+                    aws ecs run-task \
+                        --cluster "${CFN_OUTPUTS[ecsclustername]}" \
+                        --task-definition "${CFN_OUTPUTS[sqltaskdefinitionarn]}" \
+                        --launch-type FARGATE \
+                        --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}" \
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
