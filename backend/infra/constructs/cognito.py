@@ -60,6 +60,20 @@ class CognitoConstruct(Construct):
                 "ALLOW_REFRESH_TOKEN_AUTH"
             ]
         )
+    
+    def _admin_policy(self, rds):
+        return iam.PolicyDocument(
+            statements=[
+                iam.PolicyStatement(
+                    actions=[
+                        "rds-db:connect",
+                        "rds-db:executeStatement",
+                        "rds-db:batchExecuteStatement"
+                    ],
+                    resources=[rds.instance_arn]
+                )
+            ]
+        )
 
     def _admin_group(self, rds):
         if not Token.is_unresolved(self.user_pool.user_pool_id):
@@ -72,50 +86,18 @@ class CognitoConstruct(Construct):
             group_name="admin",
             user_pool_id=self.user_pool.user_pool_id
         )
-        policy = iam.Policy(
-            self, "admin-policy",
-            statements=[
-                iam.PolicyStatement(
-                    actions=[
-                        "rds-db:connect",
-                        "rds-db:executeStatement",
-                        "rds-db:batchExecuteStatement"
-                    ],
-                    resources=[rds.instance_arn]
-                )
-            ]
-        )
         role = iam.Role(
                     self, f"admin-role",
                     assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
-                    inline_policies={f"admin-policy": policy.document}
+                    inline_policies={f"admin-policy": self._admin_policy(rds)}
                 )
         group.role_arn = role.role_arn
 
         return group
     
-    def _superuser_group(self, rds):
-        if not Token.is_unresolved(self.user_pool.user_pool_id):
-            group = self._get_group_by_name("superuser")
-            if group:
-                return group
-        
-        group = cognito.CfnUserPoolGroup(
-            self, f"superuser",
-            group_name="superuser",
-            user_pool_id=self.user_pool.user_pool_id
-        )
-        policy = iam.Policy(
-            self, "superuser-policy",
+    def _cognito_policy(self):
+        return iam.PolicyDocument(
             statements=[
-                iam.PolicyStatement(
-                    actions=[
-                        "rds-db:connect",
-                        "rds-db:executeStatement",
-                        "rds-db:batchExecuteStatement"
-                    ],
-                    resources=[rds.instance_arn]
-                ),
                 iam.PolicyStatement(
                     actions=[
                         "cognito-idp:AdminCreateUser",
@@ -131,10 +113,26 @@ class CognitoConstruct(Construct):
                 )
             ]
         )
+
+    
+    def _superuser_group(self, rds):
+        if not Token.is_unresolved(self.user_pool.user_pool_id):
+            group = self._get_group_by_name("superuser")
+            if group:
+                return group
+        
+        group = cognito.CfnUserPoolGroup(
+            self, f"superuser",
+            group_name="superuser",
+            user_pool_id=self.user_pool.user_pool_id
+        )
         role = iam.Role(
                     self, f"superuser-role",
                     assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
-                    inline_policies={f"superuser-policy": policy.document}
+                    inline_policies={
+                            f"cognito-policy": self._cognito_policy(), 
+                            "admin-policy": self._admin_policy(rds)
+                    }
                 )
         group.role_arn = role.role_arn
 
