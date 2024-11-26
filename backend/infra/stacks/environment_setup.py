@@ -90,9 +90,12 @@ class EnvironmentSetupStack(Stack):
                 "SuperuserPolicy": iam.PolicyDocument(
                     statements=[
                         iam.PolicyStatement(
-                            actions=["ssm:GetParameter"],
+                            actions=[
+                                "cognito-idp:AdminGetUser",
+                                "cognito-idp:AdminCreateUser"
+                            ],
                             resources=[
-                                f"arn:aws:ssm:{self.region}:{self.account}:parameter/{project_name}/{project_name}-user-pool-id"
+                                f"arn:aws:cognito-idp:{self.region}:{self.account}:userpool/us-east-1_3Fh2szKSN"
                             ]
                         )
                     ]
