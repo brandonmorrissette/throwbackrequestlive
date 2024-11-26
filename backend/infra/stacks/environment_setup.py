@@ -56,7 +56,10 @@ class EnvironmentSetupStack(Stack):
 
         sql_task_definition.add_container(
             "sql-container",
-            image=ecs.ContainerImage.from_registry("postgres:14"),
+            image=ecs.ContainerImage.from_asset(
+                "infra", 
+                file="environment_setup/deploy_sql/Dockerfile"  
+            )
             secrets={
                 "DB_HOST": ecs.Secret.from_secrets_manager(rds_secret, "host"),
                 "DB_USER": ecs.Secret.from_secrets_manager(rds_secret, "username"),
@@ -65,11 +68,8 @@ class EnvironmentSetupStack(Stack):
             command=[
                 "sh",
                 "-c",
-                "aws s3 cp s3://{bucket_name}/ /schema/ --recursive && for file in /schema/*.sql; do echo \"Running $file\"; psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file; done"
+                "for file in /schema/*.sql; do echo \"Running $file\"; psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file; done"
             ],
-            environment={
-                "bucket_name": schema_bucket.bucket_name
-            },
             logging=ecs.LogDrivers.aws_logs(stream_prefix="sql-deployment")
         )
 
@@ -118,7 +118,7 @@ class EnvironmentSetupStack(Stack):
                     string_parameter_name=f"/{project_name}/{project_name}-user-pool-id"
                 ).string_value,
             },
-            command=["python3", "/infra/setup/create_superuser.py"],
+            command=["python3", "/infra/environment_setup/create_superuser/create_superuser.py"],
             logging=ecs.LogDrivers.aws_logs(stream_prefix="superuser-creation")
         )
 
