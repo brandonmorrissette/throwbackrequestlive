@@ -4,11 +4,46 @@ from constructs import Construct
 class EnvironmentSetupStack(Stack):
     def __init__(self, scope: Construct, id: str, cluster: ecs.Cluster, rds_secret: secretsmanager.ISecret, project_name: str, **kwargs):
         super().__init__(scope, id, **kwargs)
-        sql_task_definition = ecs.FargateTaskDefinition(self, "sql-task-definition",
-            memory_limit_mib=512,
-            cpu=256
+        
+
+        environment_setup_execution_role = iam.Role(
+            self, "environment-setup-execution-role",
+            assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy")
+            ]
         )
-        sql_task_definition.add_container("sql-container",
+
+        sql_task_definition = ecs.FargateTaskDefinition(
+            self, "sql-task-definition",
+            memory_limit_mib=512,
+            cpu=256,
+            execution_role=environment_setup_execution_role,
+            task_role=iam.Role(
+            self, "SQLTaskRole",
+            assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            inline_policies={
+                "SQLTaskPolicy": iam.PolicyDocument(
+                    statements=[
+                        iam.PolicyStatement(
+                            actions=[
+                                "secretsmanager:GetSecretValue",
+                                "secretsmanager:DescribeSecret"
+                            ],
+                            resources=[rds_secret.secret_arn]
+                        ),
+                        iam.PolicyStatement(
+                            actions=["rds-db:connect"],
+                            resources=["*"]  # Adjust this to specific RDS resources if required
+                        )
+                    ]
+                )
+            }
+        )
+        )
+
+        sql_task_definition.add_container(
+            "sql-container",
             image=ecs.ContainerImage.from_registry("amazonlinux"),
             secrets={
                 "DB_HOST": ecs.Secret.from_secrets_manager(rds_secret, "host"),
@@ -18,20 +53,42 @@ class EnvironmentSetupStack(Stack):
             command=["sh", "-c", "for file in /schema/*.sql; do psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file; done"],
             logging=ecs.LogDrivers.aws_logs(stream_prefix="sql-deployment")
         )
-        security_group = ec2.SecurityGroup(self, "task-security-group",
+
+        security_group = ec2.SecurityGroup(
+            self, "TaskSecurityGroup",
             vpc=cluster.vpc,
             description="Allow ECS tasks to communicate with RDS",
             allow_all_outbound=True
         )
-        security_group.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(5432), "Allow PostgreSQL access")
-        
-
-
-        superuser_task_definition = ecs.FargateTaskDefinition(self, "superuser-task-definition",
-            memory_limit_mib=512,
-            cpu=256
+        security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(), ec2.Port.tcp(5432), "Allow PostgreSQL access"
         )
-        superuser_task_definition.add_container("superuser-container",
+
+        superuser_task_definition = ecs.FargateTaskDefinition(
+            self, "superuser-task-definition",
+            memory_limit_mib=512,
+            cpu=256,
+            execution_role=environment_setup_execution_role,
+            task_role=iam.Role(
+            self, "SuperuserTaskRole",
+            assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            inline_policies={
+                "SuperuserPolicy": iam.PolicyDocument(
+                    statements=[
+                        iam.PolicyStatement(
+                            actions=["ssm:GetParameter"],
+                            resources=[
+                                f"arn:aws:ssm:{self.region}:{self.account}:parameter/{project_name}/{project_name}-user-pool-id"
+                            ]
+                        )
+                    ]
+                )
+            }
+        )
+        )
+
+        superuser_task_definition.add_container(
+            "superuser-container",
             image=ecs.ContainerImage.from_registry("amazonlinux"),
             environment={
                 "USER_POOL_ID": ssm.StringParameter.from_string_parameter_name(
@@ -45,15 +102,12 @@ class EnvironmentSetupStack(Stack):
         )
 
         # Outputs for CICD pipeline
-        CfnOutput(self, "security-group-id", 
-                  value=security_group.security_group_id)
-        CfnOutput(self, "sql-task-definition-arn",
-                   value=sql_task_definition.task_definition_arn)
+        CfnOutput(self, "security-group-id", value=security_group.security_group_id)
+        CfnOutput(self, "sql-task-definition-arn", value=sql_task_definition.task_definition_arn)
         CfnOutput(self, "superuser-task-definition-arn", 
-                  value=superuser_task_definition.task_definition_arn)
-        
-        # From dependencies, but this felt like the right place. 
-        # The outputs are at the stack level and this is the stack that needs them 
-        # in the CICD pipeline.
+        value=superuser_task_definition.task_definition_arn)
+
+        # Dependency specific outputs, but only needed in env setup so 
+        # felt like it belonged here.
         CfnOutput(self, "ecs-cluster-name", value=cluster.cluster_name)
         CfnOutput(self, "subnet-id", value=cluster.vpc.select_subnets(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT).subnet_ids[0])
