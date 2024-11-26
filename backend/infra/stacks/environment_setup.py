@@ -57,7 +57,7 @@ class EnvironmentSetupStack(Stack):
         sql_task_definition.add_container(
             "sql-container",
             image=ecs.ContainerImage.from_asset(
-                "infra", 
+                "backend/infra", 
                 file="environment_setup/deploy_sql/Dockerfile"  
             ),
             secrets={
