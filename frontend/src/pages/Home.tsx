@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Modal from '../components/app/modal/Modal';
 import Shows from '../components/pages/home/Shows';
-import ThankYou from '../components/pages/home/ThankYou'; // Import the ThankYou component
+import ThankYou from '../components/pages/home/ThankYou';
 
 const Home: React.FC = () => {
     const location = useLocation();
@@ -16,7 +16,7 @@ const Home: React.FC = () => {
             <Shows />
             {showModal && song && (
                 <Modal onClose={() => setShowModal(false)}>
-                    <ThankYou song={song} /> {/* Use the ThankYou component */}
+                    <ThankYou song={song} />
                 </Modal>
             )}
         </div>

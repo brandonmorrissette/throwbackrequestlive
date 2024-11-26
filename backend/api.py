@@ -11,47 +11,49 @@ bp = Blueprint('routes', __name__)
 def render_vote():
     return app.send_static_file('index.html')
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def render_main(path):
+@app.route('/login')
+def render_login():
     return app.send_static_file('index.html')
 
-
-def login(data):
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    response_dict = {'success': False}
+
+    if not username or not password:
+        return jsonify({'success': False, 'error': 'Username and password are required'}), 400
 
     try:
-        response = boto3.client('cognito-idp', region_name=app.config['COGNITO_REGION']).initiate_auth(
-            ClientId=app.config['COGNITO_APP_CLIENT_ID'],
+        client = boto3.client('cognito-idp', region_name=os.getenv('COGNITO_REGION'))
+        response = client.initiate_auth(
+            ClientId=os.getenv('COGNITO_APP_CLIENT_ID'),
             AuthFlow='USER_PASSWORD_AUTH',
             AuthParameters={
                 'USERNAME': username,
                 'PASSWORD': password
             }
         )
-        response_dict.update({'response': response})
-        
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200 and 'AuthenticationResult' in response:
-            response_dict.update({
-            'success': True,
-            'access_token': response['AuthenticationResult']['AccessToken'],
-            'id_token': response['AuthenticationResult']['IdToken'],
-            'refresh_token': response['AuthenticationResult'].get('RefreshToken')
-            })
+
+        if 'AuthenticationResult' in response:
+            auth_result = response['AuthenticationResult']
+            return jsonify({
+                'success': True,
+                'access_token': auth_result['AccessToken'],
+                'id_token': auth_result['IdToken'],
+                'refresh_token': auth_result.get('RefreshToken')
+            }), 200
         else:
-            app.logger.error(f"Authentication failed or AuthenticationResult not in response: {response}")
-        
-        return response_dict
-        
+            return jsonify({'success': False, 'error': 'Authentication failed'}), 401
+
     except ClientError as e:
-        app.logger.error(f"Login failed: {e}")
-        response_dict.update({'error': str(e)})
-        return response_dict
+        error_message = e.response['Error']['Message']
+        app.logger.error(f"Cognito login failed: {error_message}")
+        return jsonify({'success': False, 'error': error_message}), 500
+
     
 @app.route('/api/vote', methods=['POST'])
-def handle_vote():
+def post_vote():
     vote_data = request.get_json()
     print("Vote data received:", vote_data)
     song_name = vote_data.get('song')
@@ -91,3 +93,8 @@ def get_songs():
                 'votes_per_show': int(row['Votes Per Show'])
             })
     return jsonify(songs)
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def render_main(path):
+    return app.send_static_file('index.html')

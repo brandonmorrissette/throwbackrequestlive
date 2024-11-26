@@ -4,6 +4,7 @@ from aws_cdk import Token
 from aws_cdk import aws_ssm as ssm
 from constructs import Construct
 import boto3
+import logging
 
 class CognitoConstruct(Construct):
     def __init__(self, scope: Construct, id: str, rds, project_name, env, **kwargs) -> None:
@@ -46,10 +47,13 @@ class CognitoConstruct(Construct):
 
     def _app_client(self, project_name):
         if not Token.is_unresolved(self.user_pool.user_pool_id):
+            logging.info(f"User pool ID: {self.user_pool.user_pool_id}")
             client = self._get_app_client_by_name(project_name + "-user-pool-app-client")
+            logging.info(f"Client: {client}")
             if client:
                 return client
         
+        logging.info(f"Creating app client for {project_name}")
         return cognito.CfnUserPoolClient(
             self, f"{project_name}-user-pool-app-client",
             user_pool_id=self.user_pool.user_pool_id,
