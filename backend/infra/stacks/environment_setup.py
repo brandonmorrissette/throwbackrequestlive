@@ -110,7 +110,9 @@ class EnvironmentSetupStack(Stack):
 
         superuser_task_definition.add_container(
             "superuser-container",
-            image=ecs.ContainerImage.from_registry("amazon/aws-lambda-python:3.9"),
+            image=ecs.ContainerImage.from_asset(
+                "backend/infra/environment_setup/create_superuser"
+            ),
             environment={
                 "USER_POOL_ID": ssm.StringParameter.from_string_parameter_name(
                     self,
@@ -118,9 +120,9 @@ class EnvironmentSetupStack(Stack):
                     string_parameter_name=f"/{project_name}/{project_name}-user-pool-id"
                 ).string_value,
             },
-            command=["python3", "/infra/environment_setup/create_superuser/create_superuser.py"],
             logging=ecs.LogDrivers.aws_logs(stream_prefix="superuser-creation")
         )
+
 
         # Outputs for CICD pipeline
         CfnOutput(self, "schema-bucket-name", value=schema_bucket.bucket_name)
