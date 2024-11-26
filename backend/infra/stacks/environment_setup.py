@@ -59,7 +59,7 @@ class EnvironmentSetupStack(Stack):
             image=ecs.ContainerImage.from_asset(
                 "infra", 
                 file="environment_setup/deploy_sql/Dockerfile"  
-            )
+            ),
             secrets={
                 "DB_HOST": ecs.Secret.from_secrets_manager(rds_secret, "host"),
                 "DB_USER": ecs.Secret.from_secrets_manager(rds_secret, "username"),
