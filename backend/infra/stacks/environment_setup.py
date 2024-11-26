@@ -44,7 +44,7 @@ class EnvironmentSetupStack(Stack):
 
         sql_task_definition.add_container(
             "sql-container",
-            image=ecs.ContainerImage.from_registry("amazonlinux"),
+            image=ecs.ContainerImage.from_registry("postgres:14"),
             secrets={
                 "DB_HOST": ecs.Secret.from_secrets_manager(rds_secret, "host"),
                 "DB_USER": ecs.Secret.from_secrets_manager(rds_secret, "username"),
@@ -53,7 +53,7 @@ class EnvironmentSetupStack(Stack):
             command=[
                 "sh",
                 "-c",
-                "yum install -y postgresql && for file in /schema/*.sql; do psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file; done"
+                "for file in /schema/*.sql; do psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file; done"
             ],
             logging=ecs.LogDrivers.aws_logs(stream_prefix="sql-deployment")
         )
@@ -93,7 +93,7 @@ class EnvironmentSetupStack(Stack):
 
         superuser_task_definition.add_container(
             "superuser-container",
-            image=ecs.ContainerImage.from_registry("amazonlinux"),
+            image=ecs.ContainerImage.from_registry("amazon/aws-lambda-python:3.9"),
             environment={
                 "USER_POOL_ID": ssm.StringParameter.from_string_parameter_name(
                     self,
@@ -101,11 +101,7 @@ class EnvironmentSetupStack(Stack):
                     string_parameter_name=f"/{project_name}/{project_name}-user-pool-id"
                 ).string_value,
             },
-            command=[
-                "sh",
-                "-c",
-                "yum install -y python3 && python3 -m pip install --no-cache-dir boto3 && python /infra/setup/create_superuser.py"
-            ],
+            command=["python3", "/infra/setup/create_superuser.py"],
             logging=ecs.LogDrivers.aws_logs(stream_prefix="superuser-creation")
         )
 
