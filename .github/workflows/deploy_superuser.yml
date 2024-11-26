@@ -47,7 +47,7 @@ jobs:
                                   "environment": [
                                       {
                                           "name": "SUPERUSER_EMAIL",
-                                          "value": "'"${{vars.SUPERUSER_EMAIL}}"'"  # Interpolates GitHub Actions variable
+                                          "value": "${{vars.SUPERUSER_EMAIL}}"
                                       }
                                   ]
                               }
