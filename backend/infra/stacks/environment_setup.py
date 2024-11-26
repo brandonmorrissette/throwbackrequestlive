@@ -50,7 +50,11 @@ class EnvironmentSetupStack(Stack):
                 "DB_USER": ecs.Secret.from_secrets_manager(rds_secret, "username"),
                 "DB_PASSWORD": ecs.Secret.from_secrets_manager(rds_secret, "password")
             },
-            command=["sh", "-c", "for file in /schema/*.sql; do psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file; done"],
+            command=[
+                "sh",
+                "-c",
+                "yum install -y postgresql && for file in /schema/*.sql; do psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file; done"
+            ],
             logging=ecs.LogDrivers.aws_logs(stream_prefix="sql-deployment")
         )
 
@@ -97,7 +101,11 @@ class EnvironmentSetupStack(Stack):
                     string_parameter_name=f"/{project_name}/{project_name}-user-pool-id"
                 ).string_value,
             },
-            command=["sh", "-c", "python /infra/setup/create_superuser.py"],
+            command=[
+                "sh",
+                "-c",
+                "yum install -y python3 && python3 -m pip install --no-cache-dir boto3 && python /infra/setup/create_superuser.py"
+            ],
             logging=ecs.LogDrivers.aws_logs(stream_prefix="superuser-creation")
         )
 
