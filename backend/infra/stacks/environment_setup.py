@@ -119,10 +119,11 @@ class EnvironmentSetupStack(Stack):
                     f"{project_name}-user-pool-id",
                     string_parameter_name=f"/{project_name}/{project_name}-user-pool-id"
                 ).string_value,
+                "SUPERUSER_EMAIL": "admin@example.com"
             },
-            command=["python3", "/app/create_superuser.py"],
             logging=ecs.LogDrivers.aws_logs(stream_prefix="superuser-creation")
         )
+
 
 
         # Outputs for CICD pipeline
