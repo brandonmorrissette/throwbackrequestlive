@@ -39,20 +39,21 @@ jobs:
                       --cluster "${CFN_OUTPUTS[ecsclustername]}" \
                       --task-definition "${CFN_OUTPUTS[superusertaskdefinitionarn]}" \
                       --launch-type FARGATE \
-                      --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}"
+                      --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}" \
                       --overrides '{
-                            "containerOverrides": [
-                                {
-                                    "name": "superuser-container",
-                                    "environment": [
-                                        {
-                                            "name": "SUPERUSER_EMAIL",
-                                            "value": "${{vars.SUPERUSER_EMAIL}}"
-                                        }
-                                    ]
-                                }
-                            ]
-                        }'
+                          "containerOverrides": [
+                              {
+                                  "name": "superuser-container",
+                                  "environment": [
+                                      {
+                                          "name": "SUPERUSER_EMAIL",
+                                          "value": "'"${{vars.SUPERUSER_EMAIL}}"'"  # Interpolates GitHub Actions variable
+                                      }
+                                  ]
+                              }
+                          ]
+                      }'
+
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
