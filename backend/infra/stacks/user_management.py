@@ -33,12 +33,6 @@ class UserManagementStack(Stack):
                     )
                 ]
             )
-        
-        userpool_id = ssm.StringParameter.from_string_parameter_name(
-            self,
-            "userpol-id",
-            string_parameter_name=f"/{user_pool_name}-id"
-        ).string_value
 
         cognito_policy = iam.ManagedPolicy(
             self, "cognito-policy",
@@ -54,7 +48,7 @@ class UserManagementStack(Stack):
                         "cognito-idp:AdminDeleteGroup",
                         "cognito-idp:AdminUpdateGroup"
                     ],
-                    resources=[f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{userpool_id}"]
+                    resources=[f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{self.user_pool_construct.user_pool.user_pool_id}"]
 
                 )
             ]
@@ -62,7 +56,7 @@ class UserManagementStack(Stack):
 
         admin_group = cognito.CfnUserPoolGroup(
             self, "admin-group",
-            user_pool_id=userpool_id,
+            user_pool_id=self.user_pool_construct.user_pool.user_pool_id,
             group_name="admin"
         )
 
@@ -75,7 +69,7 @@ class UserManagementStack(Stack):
 
         superuser_group = cognito.CfnUserPoolGroup(
             self, "SuperuserGroup",
-            user_pool_id=userpool_id,
+            user_pool_id=self.user_pool_construct.user_pool.user_pool_id,
             group_name="superuser"
         )
 
