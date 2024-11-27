@@ -2,7 +2,7 @@ from constructs import Construct
 from aws_cdk import Stack
 from constructs.userpool import UserPoolConstruct
 from aws_cdk import aws_cognito as cognito
-from aws_cdk import aws_iam as iam, aws_ssm as ssm, aws_ecs as ecs
+from aws_cdk import aws_iam as iam, aws_ssm as ssm
 import boto3
 
 class UserManagementStack(Stack):
@@ -11,7 +11,14 @@ class UserManagementStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         self._cognito_client = boto3.client('cognito-idp')
-        self.user_pool_construct = UserPoolConstruct(self, f"{project_name}-user-pool-construct", f"{project_name}-user-pool", self._cognito_client, **kwargs)
+        user_pool_name = f"{project_name}-user-pool"
+        self.user_pool_construct = UserPoolConstruct(
+                self, 
+                f"{project_name}-user-pool-construct", 
+                user_pool_name, 
+                self._cognito_client, 
+                **kwargs
+            )
 
         admin_rds_policy = iam.ManagedPolicy(
             self, "admin-rds-policy",
@@ -29,8 +36,8 @@ class UserManagementStack(Stack):
         
         userpool_id = ssm.StringParameter.from_string_parameter_name(
             self,
-            "UserPoolIdParameter",
-            string_parameter_name=f"/{project_name}/user-pool-id"
+            "userpol-id",
+            string_parameter_name=f"/{user_pool_name}-id"
         ).string_value
 
         cognito_policy = iam.ManagedPolicy(

@@ -32,9 +32,9 @@ class UserPoolConstruct(Construct):
 
         ssm.StringParameter(
             self,
-            f"userpool_name_id",
+            "userpool-id",
             string_value=user_pool.user_pool_id,
-            parameter_name=f"/{userpool_name}", 
+            parameter_name=f"/{userpool_name}-id", 
             description="The user pool ID for the Cognito pool",
             tier=ssm.ParameterTier.STANDARD, 
         )
