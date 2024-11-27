@@ -5,7 +5,7 @@ from stacks.network import NetworkStack
 from stacks.compute import ComputeStack
 from stacks.storage import StorageStack
 from stacks.runtime import RuntimeStack
-from backend.infra.stacks.user_management import UserManagementStack
+from stacks.user_management import UserManagementStack
 from stacks.environment_setup import EnvironmentSetupStack
 
 app = cdk.App()
