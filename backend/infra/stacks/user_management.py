@@ -1,5 +1,5 @@
 from constructs import Construct
-from aws_cdk import Stack, Token
+from aws_cdk import Stack
 from constructs.userpool import UserPoolConstruct
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_iam as iam, aws_ssm as ssm, aws_ecs as ecs

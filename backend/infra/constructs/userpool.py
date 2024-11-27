@@ -29,10 +29,10 @@ class UserPoolConstruct(Construct):
                 ),
                 account_recovery=cognito.AccountRecovery.EMAIL_ONLY
             )
-            
+
         ssm.StringParameter(
             self,
-            userpool_name,
+            f"userpool_name_id",
             string_value=user_pool.user_pool_id,
             parameter_name=f"/{userpool_name}", 
             description="The user pool ID for the Cognito pool",
