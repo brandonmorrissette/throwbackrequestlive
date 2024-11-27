@@ -1,5 +1,12 @@
-from aws_cdk import Stack, aws_ecs as ecs, aws_ec2 as ec2, aws_iam as iam, aws_s3 as s3, CfnOutput, aws_secretsmanager as secretsmanager, aws_ssm as ssm, RemovalPolicy
+from aws_cdk import CfnOutput, RemovalPolicy, Stack
+from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_secretsmanager as secretsmanager
+from aws_cdk import aws_ssm as ssm
 from constructs import Construct
+
 
 class EnvironmentSetupStack(Stack):
     def __init__(self, scope: Construct, id: str, cluster: ecs.Cluster, rds_secret: secretsmanager.ISecret, project_name: str, **kwargs):
@@ -119,8 +126,8 @@ class EnvironmentSetupStack(Stack):
             environment={
                 "USER_POOL_ID": ssm.StringParameter.from_string_parameter_name(
                     self,
-                    f"{project_name}-user-pool-id",
-                    string_parameter_name=f"/{project_name}/{project_name}-user-pool-id"
+                    "user-pool-id",
+                    string_parameter_name=f"/{project_name}-user-pool-id"
                 ).string_value,
             },
             logging=ecs.LogDrivers.aws_logs(stream_prefix="superuser-creation")
