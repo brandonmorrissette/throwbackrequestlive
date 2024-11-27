@@ -65,7 +65,12 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
     deploy-environment-setup-stack:
-        needs: [deploy-compute-stack, deploy-storage-stack, deploy-user-stack]
+        needs:
+            [
+                deploy-compute-stack,
+                deploy-storage-stack,
+                deploy-user-management-stack,
+            ]
         name: Deploy Environment Setup Stack
         uses: ./.github/workflows/deploy_stack.yml
         with:
@@ -88,7 +93,7 @@ jobs:
 
     deploy-superuser:
         name: Deploy Super User
-        needs: [deploy-user-stack, deploy-environment-setup-stack]
+        needs: [deploy-user-management-stack, deploy-environment-setup-stack]
         uses: ./.github/workflows/deploy_superuser.yml
         with:
             environment: production
