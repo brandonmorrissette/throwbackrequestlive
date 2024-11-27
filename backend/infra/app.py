@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import os
+
 import aws_cdk as cdk
-from stacks.network import NetworkStack
 from stacks.compute import ComputeStack
-from stacks.storage import StorageStack
-from stacks.runtime import RuntimeStack
-from stacks.user_management import UserManagementStack
 from stacks.environment_setup import EnvironmentSetupStack
+from stacks.network import NetworkStack
+from stacks.runtime import RuntimeStack
+from stacks.storage import StorageStack
+from stacks.user_management import UserManagementStack
 
 app = cdk.App()
 project_name = os.getenv("PROJECT_NAME", os.path.basename(os.path.dirname(os.path.dirname(__file__))))
@@ -57,7 +58,7 @@ apply_tags(storage_stack,tags=tags)
 
 user_stack = UserManagementStack(
     app, 
-    f"{project_name}-user-stack-{environment_name}", 
+    f"{project_name}-user-management-stack-{environment_name}", 
     env=env, 
     rds=storage_stack.rds_construct.db_instance, 
     project_name=project_name
