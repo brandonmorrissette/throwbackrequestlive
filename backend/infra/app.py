@@ -5,7 +5,7 @@ from stacks.network import NetworkStack
 from stacks.compute import ComputeStack
 from stacks.storage import StorageStack
 from stacks.runtime import RuntimeStack
-from stacks.user import UserStack
+from backend.infra.stacks.user_management import UserManagementStack
 from stacks.environment_setup import EnvironmentSetupStack
 
 app = cdk.App()
@@ -55,7 +55,7 @@ storage_stack = StorageStack(
 )
 apply_tags(storage_stack,tags=tags)
 
-user_stack = UserStack(
+user_stack = UserManagementStack(
     app, 
     f"{project_name}-user-stack-{environment_name}", 
     env=env, 

@@ -1,4 +1,3 @@
-
 import boto3
 import os
 
@@ -22,5 +21,17 @@ except client.exceptions.UserNotFoundException:
             ],
         )
         print(f'User {superuser_email} created successfully.')
+        # Add user to groups
+        client.admin_add_user_to_group(
+            UserPoolId=user_pool_id,
+            Username=superuser_email,
+            GroupName='admin'
+        )
+        client.admin_add_user_to_group(
+            UserPoolId=user_pool_id,
+            Username=superuser_email,
+            GroupName='superuser'
+        )
+        print(f'User {superuser_email} added to admin and superuser groups.')
     except botocore.exceptions.ParamValidationError as e:
         print(f'Invalid parameters: {e}')

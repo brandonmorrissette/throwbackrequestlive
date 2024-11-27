@@ -44,7 +44,7 @@ def login():
                 'refresh_token': auth_result.get('RefreshToken')
             }), 200
         else:
-            return jsonify({'success': False, 'error': 'Authentication failed'}), 401
+            return jsonify({'success': False, 'error': f'Authentication failed : {response}'}), 401
 
     except ClientError as e:
         error_message = e.response['Error']['Message']
