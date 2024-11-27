@@ -1,8 +1,10 @@
+import logging
+
+from aws_cdk import RemovalPolicy, Token
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ssm as ssm
-from aws_cdk import Token
 from constructs import Construct
-import logging
+
 
 class UserPoolConstruct(Construct):
     def __init__(self, scope: Construct, id: str, userpool_name, cognito_client, **kwargs) -> None:
@@ -30,7 +32,7 @@ class UserPoolConstruct(Construct):
                 account_recovery=cognito.AccountRecovery.EMAIL_ONLY
             )
 
-        ssm.StringParameter(
+        ssm_param = ssm.StringParameter(
             self,
             "userpool-id",
             string_value=user_pool.user_pool_id,
@@ -38,6 +40,9 @@ class UserPoolConstruct(Construct):
             description="The user pool ID for the Cognito pool",
             tier=ssm.ParameterTier.STANDARD, 
         )
+
+        ssm_param.apply_removal_policy(RemovalPolicy.DESTROY) 
+        
         return user_pool
     
     def _get_user_pool_by_name(self, user_pool_name):
