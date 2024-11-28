@@ -4,6 +4,7 @@ from aws_cdk import RemovalPolicy, Token
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ssm as ssm
 from constructs import Construct
+from jsii.errors import JSIIError
 
 
 class UserPoolConstruct(Construct):
@@ -12,6 +13,7 @@ class UserPoolConstruct(Construct):
         self._cognito_client = cognito_client
 
         self.user_pool = self._user_pool(userpool_name)
+        self._post_user_pool_id(userpool_name, self.user_pool.user_pool_id)
         self.app_client = self._app_client(userpool_name)
 
     def _user_pool(self, userpool_name):
@@ -33,24 +35,30 @@ class UserPoolConstruct(Construct):
                 removal_policy=RemovalPolicy.DESTROY
             )
 
-        ssm_param = ssm.StringParameter(
-            self,
-            "user-pool-id",
-            string_value=user_pool.user_pool_id,
-            parameter_name=f"/{userpool_name}-id", 
-            description="The user pool ID for the Cognito pool",
-            tier=ssm.ParameterTier.STANDARD, 
-        )
-
-        ssm_param.apply_removal_policy(RemovalPolicy.DESTROY) 
-        
         return user_pool
+    
+    def _post_user_pool_id(self, user_pool_name, user_pool_id):
+        try:
+            ssm_param = ssm.StringParameter.from_string_parameter_name(
+                self, "user-pool-id",
+                string_parameter_name=f"/{user_pool_name}-id"
+            )
+            logging.info("Parameter already exists.")
+        except JSIIError:
+            ssm_param = ssm.StringParameter(
+                self, "user-pool-id",
+                parameter_name=f"/{user_pool_name}-id",
+                string_value=user_pool_id,
+                description="The user pool ID for the Cognito pool"
+            )
+            ssm_param.apply_removal_policy(RemovalPolicy.DESTROY) 
+
     
     def _get_user_pool_by_name(self, user_pool_name):
         user_pools = self._cognito_client.list_user_pools(MaxResults=60)
         for pool in user_pools.get('UserPools', []):
             if pool['Name'] == user_pool_name:
-                return cognito.UserPool.from_user_pool_id(
+                user_pool= cognito.UserPool.from_user_pool_id(
                     self,
                     user_pool_name,
                     user_pool_id=pool["Id"]
