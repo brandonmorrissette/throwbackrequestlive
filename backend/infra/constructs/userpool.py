@@ -6,6 +6,7 @@ from aws_cdk import aws_ssm as ssm
 from constructs import Construct
 from jsii.errors import JSIIError
 
+logging.basicConfig(level=logging.INFO)
 
 class UserPoolConstruct(Construct):
     def __init__(self, scope: Construct, id: str, userpool_name, cognito_client, **kwargs) -> None:
