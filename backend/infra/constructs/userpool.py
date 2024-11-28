@@ -34,7 +34,7 @@ class UserPoolConstruct(Construct):
 
         ssm_param = ssm.StringParameter(
             self,
-            "unique-value-for-troubleshooting",
+            "user-pool-id",
             string_value=user_pool.user_pool_id,
             parameter_name=f"/{userpool_name}-id", 
             description="The user pool ID for the Cognito pool",
