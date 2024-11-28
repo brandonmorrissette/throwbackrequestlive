@@ -30,50 +30,56 @@ def apply_tags(resource, tags):
 apply_tags(app, {key: value for key, value in vars(env).items() if isinstance(value, str)})
 apply_tags(app, tags)
 
-core_stack = NetworkStack(
+network_stack = NetworkStack(
     app, 
     f"{project_name}-network-stack-{environment_name}",
     env=env
 )
-apply_tags(core_stack, tags=tags)
+apply_tags(network_stack, tags=tags)
 
 compute_stack = ComputeStack(
     app,
     f"{project_name}-compute-stack-{environment_name}",
     env=env,
-    vpc=core_stack.vpc_constrcut.vpc,
+    vpc=network_stack.vpc_constrcut.vpc,
     
 )
 apply_tags(compute_stack, tags=tags)
+compute_stack.add_dependency(network_stack)
 
 storage_stack = StorageStack(
     app,
     f"{project_name}-storage-stack-{environment_name}",
     env=env,
-    vpc=core_stack.vpc_constrcut.vpc,
+    vpc=network_stack.vpc_constrcut.vpc,
     project_name=project_name
     
 )
 apply_tags(storage_stack,tags=tags)
+storage_stack.add_dependency(network_stack)
 
-user_stack = UserManagementStack(
+user_management_stack = UserManagementStack(
     app, 
     f"{project_name}-user-management-stack-{environment_name}", 
     env=env, 
     rds=storage_stack.rds_construct.db_instance, 
     project_name=project_name
 )
-apply_tags(user_stack, tags=tags)
+apply_tags(user_management_stack, tags=tags)
+user_management_stack.add_dependency(storage_stack)
 
-app_stack = RuntimeStack(
+runtime_stack = RuntimeStack(
     app,
     f"{project_name}-runtime-stack-{environment_name}",
     env=env,
     cluster=compute_stack.cluster_construct.cluster,
-    certificate=core_stack.cert_construct.certificate,
-    hosted_zone=core_stack.cert_construct.hosted_zone,
+    certificate=network_stack.cert_construct.certificate,
+    hosted_zone=network_stack.cert_construct.hosted_zone,
 )
-apply_tags(app_stack, tags=tags)
+apply_tags(runtime_stack, tags=tags)
+runtime_stack.add_dependency(compute_stack)
+runtime_stack.add_dependency(storage_stack)
+
 
 environment_setup_stack = EnvironmentSetupStack(
     app,
@@ -84,5 +90,8 @@ environment_setup_stack = EnvironmentSetupStack(
     project_name=project_name,
 )
 apply_tags(environment_setup_stack, tags=tags)
+environment_setup_stack.add_dependency(compute_stack)
+environment_setup_stack.add_dependency(storage_stack)
+environment_setup_stack.add_dependency(user_management_stack)
 
 app.synth()

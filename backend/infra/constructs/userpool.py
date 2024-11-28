@@ -29,7 +29,8 @@ class UserPoolConstruct(Construct):
                     require_digits=False,
                     require_symbols=False
                 ),
-                account_recovery=cognito.AccountRecovery.EMAIL_ONLY
+                account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
+                removal_policy=RemovalPolicy.DESTROY
             )
 
         ssm_param = ssm.StringParameter(
