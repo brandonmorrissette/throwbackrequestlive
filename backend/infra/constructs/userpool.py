@@ -20,7 +20,7 @@ class UserPoolConstruct(Construct):
         user_pool = self._get_user_pool_by_name(userpool_name)
         if not user_pool:
             user_pool = cognito.UserPool(
-                self, userpool_name,
+                self, f"{userpool_name}-{self.node.addr}",
                 user_pool_name=userpool_name,
                 self_sign_up_enabled=False,
                 sign_in_aliases=cognito.SignInAliases(email=True),
