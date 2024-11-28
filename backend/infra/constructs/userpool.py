@@ -45,7 +45,9 @@ class UserPoolConstruct(Construct):
                 string_parameter_name=f"/{user_pool_name}-id"
             )
             logging.info("Parameter already exists.")
-        except JSIIError:
+            return
+        except JSIIError as e:
+            logging.warning(f"JSIIError encountered: {e}")
             ssm_param = ssm.StringParameter(
                 self, "user-pool-id",
                 parameter_name=f"/{user_pool_name}-id",
@@ -53,6 +55,9 @@ class UserPoolConstruct(Construct):
                 description="The user pool ID for the Cognito pool"
             )
             ssm_param.apply_removal_policy(RemovalPolicy.DESTROY) 
+            return
+        
+        logging.info("This log line should never be hit. If we do, something went wrong.")
 
     
     def _get_user_pool_by_name(self, user_pool_name):
