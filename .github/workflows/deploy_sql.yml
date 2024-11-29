@@ -31,12 +31,12 @@ jobs:
         steps:
             - name: Run Fargate Task
               run: |
-                  STACK_NAME=throwbackrequestlive-environment-setup-stack-production
                   OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
 
                   declare -A CFN_OUTPUTS
 
-                  for row in $(echo "$OUTPUTS" | jq -c ".[]"); do
+                  # Iterate over each stack's outputs
+                  for row in $(echo "$OUTPUTS" | jq -c ".[] | .[]"); do
                       OUTPUT_KEY=$(echo "$row" | jq -r ".OutputKey")
                       OUTPUT_VALUE=$(echo "$row" | jq -r ".OutputValue")
 
@@ -46,12 +46,11 @@ jobs:
                       echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
                   done
 
-                  # Now, use the task definition ARN from the outputs
                   aws ecs run-task \
-                      --cluster "${CFN_OUTPUTS[ecsclustername]}" \
-                      --task-definition "${CFN_OUTPUTS[sqltaskdefinitionarn]}" \
-                      --launch-type FARGATE \
-                      --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}" \
+                    --cluster "${CFN_OUTPUTS[ecsclustername]}" \
+                    --task-definition "${CFN_OUTPUTS[sqltaskdefinitionarn]}" \
+                    --launch-type FARGATE \
+                    --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}"
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
