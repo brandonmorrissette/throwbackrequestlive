@@ -24,12 +24,10 @@ class EnvironmentSetupStack(Stack):
             ],
         )
 
-        self.log_group = (
-            logs.LogGroup(
-                self,
-                "environment-setup-log-group",
-                log_group_name=f"/ecs/{project_name}-environment-setup-logs",
-            ),
+        self.log_group = logs.LogGroup(
+            self,
+            "environment-setup-log-group",
+            log_group_name=f"/ecs/{project_name}-environment-setup-logs",
         )
 
         self.security_group = ec2.SecurityGroup(
