@@ -6,12 +6,15 @@ from constructs import Construct
 
 
 class EnvironmentSetupStack(Stack):
-    def __init__(self, scope: Construct, id: str, cluster: ecs.Cluster, **kwargs):
+    def __init__(
+        self, scope: Construct, id: str, project_name, cluster: ecs.Cluster, **kwargs
+    ):
         super().__init__(scope, id, **kwargs)
 
         self.environment_setup_execution_role = iam.Role(
             self,
             "environment-setup-execution-role",
+            role_name=f"{project_name}-environment-setup-execution-role",
             assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name(

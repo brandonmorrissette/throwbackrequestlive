@@ -50,6 +50,7 @@ compute_stack.add_dependency(network_stack)
 environment_setup_stack = EnvironmentSetupStack(
     app,
     f"{project_name}-environment-setup-stack-{environment_name}",
+    project_name=project_name,
     env=env,
     cluster=compute_stack.cluster_construct.cluster,
 )
