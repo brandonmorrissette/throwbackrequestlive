@@ -32,6 +32,17 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
+    deploy-environment-setup-stack:
+        needs: [deploy-compute-stack]
+        name: Deploy Environment Setup Stack
+        uses: ./.github/workflows/deploy_stack.yml
+        with:
+            stack-name: environment-setup-stack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
     deploy-storage-stack:
         needs: deploy-network-stack
         name: Deploy Storage Stack
@@ -60,22 +71,6 @@ jobs:
         uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: runtime-stack
-        secrets:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-
-    deploy-environment-setup-stack:
-        needs:
-            [
-                deploy-compute-stack,
-                deploy-storage-stack,
-                deploy-user-management-stack,
-            ]
-        name: Deploy Environment Setup Stack
-        uses: ./.github/workflows/deploy_stack.yml
-        with:
-            stack-name: environment-setup-stack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

@@ -1,9 +1,21 @@
-import boto3
 import os
 
+import boto3
+
 client = boto3.client('cognito-idp')
-user_pool_id = os.environ['USER_POOL_ID']
+
+project_name = os.environ['PROJECT_NAME']
 superuser_email = os.environ['SUPERUSER_EMAIL']
+
+response = client.list_user_pools(MaxResults=60)
+user_pool_id = None
+for pool in response['UserPools']:
+    if pool['Name'] == f"{project_name}-user-pool":
+        user_pool_id = pool['Id']
+        break
+
+if not user_pool_id:
+    raise Exception(f"User pool for project {project_name} not found.")
 
 try:
     client.admin_get_user(

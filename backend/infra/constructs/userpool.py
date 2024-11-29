@@ -39,9 +39,14 @@ class UserPoolConstruct(Construct):
         return user_pool
     
     def _post_user_pool_id(self, user_pool_name, user_pool_id):
+            user_pool_id_param_id = f"{user_pool_name}-{self.node.addr}-id"
+            param_name = f"/{user_pool_name}-id"
+            if self.node.try_find_child(user_pool_id_param_id):
+                self.node.try_remove_child(user_pool_id_param_id)
+
             ssm_param = ssm.StringParameter(
-                self, f"{user_pool_name}-{self.node.addr}-id",
-                parameter_name=f"/{user_pool_name}-id",
+                self, user_pool_id_param_id,
+                parameter_name=param_name,
                 string_value=user_pool_id,
                 description="The user pool ID for the Cognito pool"
             )
