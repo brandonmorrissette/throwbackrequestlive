@@ -31,30 +31,46 @@ jobs:
         steps:
             - name: Run Fargate Task
               run: |
-                  OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
+                  # Fetch the CloudFormation outputs
+                    OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
 
-                  declare -A CFN_OUTPUTS
+                    # Log the OUTPUTS for debugging
+                    echo "=== Raw OUTPUTS ==="
+                    echo "$OUTPUTS"
+                    echo "==================="
 
-                  for row in $(echo "$OUTPUTS" | jq -c ".[] | .[]"); do
-                      # Extract the key and value from each output
-                      OUTPUT_KEY=$(echo "$row" | jq -r ".OutputKey")
-                      OUTPUT_VALUE=$(echo "$row" | jq -r ".OutputValue")
+                    # Check if OUTPUTS is empty
+                    if [[ -z "$OUTPUTS" ]]; then
+                        echo "ERROR: OUTPUTS is empty!"
+                        exit 1
+                    fi
 
-                      # Format the key to lower case and replace ":" with "_"
-                      OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
+                    declare -A CFN_OUTPUTS
 
-                      # Store the key-value pair in the associative array
-                      CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
+                    for row in $(echo "$OUTPUTS" | jq -c ".[] | .[]"); do
+                        # Extract the key and value from each output
+                        OUTPUT_KEY=$(echo "$row" | jq -r ".OutputKey")
+                        OUTPUT_VALUE=$(echo "$row" | jq -r ".OutputValue")
 
-                      # Output to confirm the values
-                      echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
-                  done
+                        # Log each extracted key-value pair
+                        echo "Extracted OUTPUT_KEY=$OUTPUT_KEY, OUTPUT_VALUE=$OUTPUT_VALUE"
 
+                        # Format the key to lower case and replace ":" with "_"
+                        OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
+
+                        # Store the key-value pair in the associative array
+                        CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
+
+                        # Output to confirm the values
+                        echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
+                    done
+
+                    # Now running the ECS task
                     aws ecs run-task \
-                      --cluster "${CFN_OUTPUTS[ecsclustername]}" \
-                      --task-definition "${CFN_OUTPUTS[sqltaskdefinitionarn]}" \
-                      --launch-type FARGATE \
-                      --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}"
+                    --cluster "${CFN_OUTPUTS[ecsclustername]}" \
+                    --task-definition "${CFN_OUTPUTS[sqltaskdefinitionarn]}" \
+                    --launch-type FARGATE \
+                    --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}"
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
