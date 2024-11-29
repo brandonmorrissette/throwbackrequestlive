@@ -32,7 +32,7 @@ jobs:
             - name: Run Fargate Task
               run: |
                   STACK_NAME=throwbackrequestlive-environment-setup-stack-production
-                  OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
+                  OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
 
                   declare -A CFN_OUTPUTS
 
