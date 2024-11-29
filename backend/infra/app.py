@@ -2,6 +2,7 @@
 import os
 
 import aws_cdk as cdk
+from aws_cdk import aws_iam as iam
 from stacks.compute import ComputeStack
 from stacks.environment_setup import EnvironmentSetupStack
 from stacks.network import NetworkStack
@@ -63,12 +64,15 @@ storage_stack = StorageStack(
     env=env,
     vpc=network_stack.vpc_constrcut.vpc,
     project_name=project_name,
-    execution_role=environment_setup_stack.environment_setup_execution_role,
+    execution_role=iam.Role.from_role_arn(
+        app,
+        "execution-role",
+        role_arn=environment_setup_stack.node.try_get_context("execution-role-arn")
+    ),
     log_group=environment_setup_stack.log_group,
 )
 apply_tags(storage_stack, tags=tags)
 storage_stack.add_dependency(network_stack)
-storage_stack.add_dependency(environment_setup_stack)
 
 user_management_stack = UserManagementStack(
     app,

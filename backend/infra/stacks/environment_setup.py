@@ -56,3 +56,10 @@ class EnvironmentSetupStack(Stack):
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT
             ).subnet_ids[0],
         )
+
+        # For use in other stacks. Should stop the circular dependency
+        CfnOutput(
+            self,
+            "execution-role-arn",
+            value=self.environment_setup_execution_role.role_arn
+        )
