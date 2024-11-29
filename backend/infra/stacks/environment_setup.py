@@ -29,6 +29,7 @@ class EnvironmentSetupStack(Stack):
             "environment-setup-log-group",
             log_group_name=f"/ecs/{project_name}-environment-setup-logs",
         )
+        
 
         self.security_group = ec2.SecurityGroup(
             self,

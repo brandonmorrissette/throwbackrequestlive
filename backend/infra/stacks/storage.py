@@ -1,4 +1,4 @@
-from aws_cdk import CfnOutput, RemovalPolicy, Stack
+from aws_cdk import Stack
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
@@ -23,14 +23,6 @@ class StorageStack(Stack):
             self, "rds", vpc=vpc, project_name=project_name
         )
 
-        schema_bucket = s3.Bucket(
-            self,
-            "SchemaBucket",
-            bucket_name=f"{project_name.lower()}-schema-files",
-            removal_policy=RemovalPolicy.DESTROY,
-            auto_delete_objects=True,
-        )
-
         sql_task_role = iam.Role(
             self,
             "SQLTaskRole",
@@ -52,10 +44,6 @@ class StorageStack(Stack):
                             resources=[
                                 "*"
                             ],  # Adjust this to specific RDS resources if required
-                        ),
-                        iam.PolicyStatement(
-                            actions=["s3:GetObject"],
-                            resources=[f"{schema_bucket.bucket_arn}/*"],
                         ),
                     ]
                 )
@@ -85,11 +73,4 @@ class StorageStack(Stack):
                 stream_prefix="sql-deployment",
                 log_group=log_group,
             ),
-        )
-
-        CfnOutput(self, "schema-bucket-name", value=schema_bucket.bucket_name)
-        CfnOutput(
-            self,
-            "sql-task-definition-arn",
-            value=sql_task_definition.task_definition_arn,
         )
