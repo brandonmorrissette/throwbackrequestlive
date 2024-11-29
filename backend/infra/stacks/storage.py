@@ -1,8 +1,7 @@
-from aws_cdk import Stack
+from aws_cdk import CfnOutput, Stack
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_s3 as s3
 from constructs import Construct
 from constructs.rds import RdsConstruct
 
@@ -74,3 +73,5 @@ class StorageStack(Stack):
                 log_group=log_group,
             ),
         )
+        
+        CfnOutput(self, "sql-task-definition-arn", value=sql_task_definition.task_definition_arn)

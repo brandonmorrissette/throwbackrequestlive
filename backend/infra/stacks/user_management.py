@@ -139,3 +139,5 @@ class UserManagementStack(Stack):
                 log_group=log_group,
             ),
         )
+        
+        CfnOutput(self, "superuser-task-definition-arn", value=superuser_task_definition.task_definition_arn)
