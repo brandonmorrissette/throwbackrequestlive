@@ -2,7 +2,6 @@ from aws_cdk import CfnOutput, RemovalPolicy, Stack
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_logs as logs
 from aws_cdk import aws_s3 as s3
 from constructs import Construct
 from constructs.rds import RdsConstruct
@@ -16,6 +15,7 @@ class StorageStack(Stack):
         vpc: ec2.Vpc,
         project_name: str,
         execution_role,
+        log_group,
         **kwargs,
     ):
         super().__init__(scope, id, **kwargs)
@@ -83,11 +83,7 @@ class StorageStack(Stack):
             ],
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="sql-deployment",
-                log_group=logs.LogGroup(
-                    self,
-                    "deploy-sql-task-log-group",
-                    log_group_name=f"/ecs/{project_name}-deploy-sql-task-logs",
-                ),
+                log_group=log_group,
             ),
         )
 

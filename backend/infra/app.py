@@ -64,6 +64,7 @@ storage_stack = StorageStack(
     vpc=network_stack.vpc_constrcut.vpc,
     project_name=project_name,
     execution_role=environment_setup_stack.environment_setup_execution_role,
+    log_group=environment_setup_stack.log_group,
 )
 apply_tags(storage_stack, tags=tags)
 storage_stack.add_dependency(network_stack)
@@ -76,6 +77,7 @@ user_management_stack = UserManagementStack(
     rds=storage_stack.rds_construct.db_instance,
     project_name=project_name,
     execution_role=environment_setup_stack.environment_setup_execution_role,
+    log_group=environment_setup_stack.log_group,
 )
 apply_tags(user_management_stack, tags=tags)
 user_management_stack.add_dependency(storage_stack)

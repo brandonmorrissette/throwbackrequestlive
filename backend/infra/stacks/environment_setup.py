@@ -2,6 +2,7 @@ from aws_cdk import CfnOutput, Stack
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
+from aws_cdk import aws_logs as logs
 from constructs import Construct
 
 
@@ -21,6 +22,14 @@ class EnvironmentSetupStack(Stack):
                     "service-role/AmazonECSTaskExecutionRolePolicy"
                 )
             ],
+        )
+
+        self.log_group = (
+            logs.LogGroup(
+                self,
+                "environment-setup-log-group",
+                log_group_name=f"/ecs/{project_name}-environment-setup-logs",
+            ),
         )
 
         self.security_group = ec2.SecurityGroup(

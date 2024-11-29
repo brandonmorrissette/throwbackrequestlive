@@ -3,7 +3,6 @@ from aws_cdk import CfnOutput, Stack
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_logs as logs
 from constructs import Construct
 from constructs.userpool import UserPoolConstruct
 
@@ -18,6 +17,7 @@ class UserManagementStack(Stack):
         project_name: str,
         env,
         execution_role,
+        log_group,
         **kwargs,
     ) -> None:
         super().__init__(scope, id, **kwargs)
@@ -136,11 +136,7 @@ class UserManagementStack(Stack):
             ),
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="superuser-creation",
-                log_group=logs.LogGroup(
-                    self,
-                    "deploy-superuser-task-log-group",
-                    log_group_name=f"/ecs/{project_name}-deploy-superuser-task-logs",
-                ),
+                log_group=log_group,
             ),
         )
 
