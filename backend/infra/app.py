@@ -67,6 +67,7 @@ storage_stack = StorageStack(
 )
 apply_tags(storage_stack, tags=tags)
 storage_stack.add_dependency(network_stack)
+storage_stack.add_dependency(environment_setup_stack)
 
 user_management_stack = UserManagementStack(
     app,
