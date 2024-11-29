@@ -58,17 +58,21 @@ environment_setup_stack = EnvironmentSetupStack(
 apply_tags(environment_setup_stack, tags=tags)
 environment_setup_stack.add_dependency(compute_stack)
 
+execution_role_arn = environment_setup_stack.node.find_child("execution-role-arn").get_att("Value").to_string()
+
+execution_role = iam.Role.from_role_arn(
+    app,
+    "ExecutionRole",
+    role_arn=execution_role_arn
+)
+
 storage_stack = StorageStack(
     app,
     f"{project_name}-storage-stack-{environment_name}",
     env=env,
     vpc=network_stack.vpc_constrcut.vpc,
     project_name=project_name,
-    execution_role=iam.Role.from_role_arn(
-        app,
-        "execution-role",
-        role_arn=environment_setup_stack.node.try_get_context("execution-role-arn")
-    ),
+    execution_role=execution_role,
     log_group=environment_setup_stack.log_group,
 )
 apply_tags(storage_stack, tags=tags)
