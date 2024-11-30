@@ -3,6 +3,9 @@ name: Deploy Super User
 on:
     workflow_call:
         inputs:
+            project_name:
+                required: true
+                type: string
             environment:
                 required: true
                 type: string
@@ -73,7 +76,11 @@ jobs:
                                       {
                                           "name": "SUPERUSER_EMAIL",
                                           "value": "${{vars.SUPERUSER_EMAIL}}"
-                                      }
+                                      },
+                                      {
+                                          "name": "PROJECT_NAME",
+                                          "value": "${{inputs.project_name}}"
+                                        }
                                   ]
                               }
                           ]
