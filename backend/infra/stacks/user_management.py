@@ -110,12 +110,17 @@ class UserManagementStack(Stack):
                             actions=[
                                 "cognito-idp:AdminGetUser",
                                 "cognito-idp:AdminCreateUser",
-                                "cognito-idp:ListUserPools",
                             ],
                             resources=[
                                 f"arn:aws:cognito-idp:{self.region}:{self.account}:userpool/{self.user_pool_construct.user_pool.user_pool_id}"
                             ],
-                        )
+                        ),
+                        iam.PolicyStatement(
+                            actions=[
+                                "cognito-idp:ListUserPools",
+                            ],
+                            resources=["*"],
+                        ),
                     ]
                 )
             },
