@@ -64,7 +64,6 @@ storage_stack = StorageStack(
     env=env,
     vpc=network_stack.vpc_constrcut.vpc,
     project_name=project_name,
-    execution_role=environment_setup_stack.execution_role,
     log_group=environment_setup_stack.log_group,
     security_group=environment_setup_stack.security_group,
 )

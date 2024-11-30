@@ -13,7 +13,6 @@ class StorageStack(Stack):
         id: str,
         vpc: ec2.Vpc,
         project_name: str,
-        execution_role,
         log_group,
         security_group,
         **kwargs,
@@ -56,7 +55,17 @@ class StorageStack(Stack):
             "sql-task-definition",
             memory_limit_mib=512,
             cpu=256,
-            execution_role=execution_role,
+            execution_role= iam.Role(
+                self,
+                "sql-task-execution-role",
+                role_name=f"{project_name}-sql-task-execution-role",
+                assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+                managed_policies=[
+                    iam.ManagedPolicy.from_aws_managed_policy_name(
+                        "service-role/AmazonECSTaskExecutionRolePolicy"
+                    )
+                ],
+        ),
             task_role=sql_task_role,
         )
 
@@ -74,15 +83,15 @@ class StorageStack(Stack):
                 stream_prefix="sql-deployment",
                 log_group=log_group,
             ),
-            # secrets={
-            #     "DB_USER": ecs.Secret.from_secrets_manager(self.rds_construct.db_instance.secret, field="username"),
-            #     "DB_PASSWORD": ecs.Secret.from_secrets_manager(self.rds_construct.db_instance.secret, field="password"),
-            # },
-            # environment={
-            #     "DB_HOST": self.rds_construct.db_instance.db_instance_endpoint_address,
-            # },
+            secrets={
+                "DB_USER": ecs.Secret.from_secrets_manager(self.rds_construct.db_instance.secret, field="username"),
+                "DB_PASSWORD": ecs.Secret.from_secrets_manager(self.rds_construct.db_instance.secret, field="password"),
+            },
+            environment={
+                "DB_HOST": self.rds_construct.db_instance.db_instance_endpoint_address,
+            },
         )
-        
+
         security_group.add_ingress_rule(
             ec2.Peer.any_ipv4(), ec2.Port.tcp(5432), "Allow PostgreSQL access"
         )
