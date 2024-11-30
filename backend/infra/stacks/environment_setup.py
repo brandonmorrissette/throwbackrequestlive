@@ -12,7 +12,7 @@ class EnvironmentSetupStack(Stack):
     ):
         super().__init__(scope, id, **kwargs)
 
-        self.environment_setup_execution_role = iam.Role(
+        self.execution_role = iam.Role(
             self,
             "environment-setup-execution-role",
             role_name=f"{project_name}-environment-setup-execution-role",
@@ -55,11 +55,4 @@ class EnvironmentSetupStack(Stack):
             value=cluster.vpc.select_subnets(
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT
             ).subnet_ids[0],
-        )
-
-        # For use in other stacks. Should stop the circular dependency
-        CfnOutput(
-            self,
-            "execution-role-arn",
-            value=self.environment_setup_execution_role.role_arn
         )

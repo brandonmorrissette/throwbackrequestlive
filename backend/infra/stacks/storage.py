@@ -18,6 +18,7 @@ class StorageStack(Stack):
         **kwargs,
     ):
         super().__init__(scope, id, **kwargs)
+
         self.rds_construct = RdsConstruct(
             self, "rds", vpc=vpc, project_name=project_name
         )
@@ -72,13 +73,13 @@ class StorageStack(Stack):
                 stream_prefix="sql-deployment",
                 log_group=log_group,
             ),
-            secrets={
-                "DB_USER": ecs.Secret.from_secrets_manager(self.rds_construct.db_instance.secret, field="username"),
-                "DB_PASSWORD": ecs.Secret.from_secrets_manager(self.rds_construct.db_instance.secret, field="password"),
-            },
-            environment={
-                "DB_HOST": self.rds_construct.db_instance.db_instance_endpoint_address,
-            },
+            # secrets={
+            #     "DB_USER": ecs.Secret.from_secrets_manager(self.rds_construct.db_instance.secret, field="username"),
+            #     "DB_PASSWORD": ecs.Secret.from_secrets_manager(self.rds_construct.db_instance.secret, field="password"),
+            # },
+            # environment={
+            #     "DB_HOST": self.rds_construct.db_instance.db_instance_endpoint_address,
+            # },
         )
         
         CfnOutput(self, "sql-task-definition-arn", value=sql_task_definition.task_definition_arn)
