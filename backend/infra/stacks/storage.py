@@ -55,6 +55,8 @@ class StorageStack(Stack):
             "sql-task-definition",
             memory_limit_mib=512,
             cpu=256,
+            # I'd rather use the environment setup execution role, but it keeps causing a circular dependency
+            # due to the container requiring secrets. It's been a real tail chase.
             execution_role= iam.Role(
                 self,
                 "sql-task-execution-role",
