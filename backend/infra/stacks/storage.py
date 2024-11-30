@@ -15,6 +15,7 @@ class StorageStack(Stack):
         project_name: str,
         execution_role,
         log_group,
+        security_group,
         **kwargs,
     ):
         super().__init__(scope, id, **kwargs)
@@ -80,6 +81,10 @@ class StorageStack(Stack):
             # environment={
             #     "DB_HOST": self.rds_construct.db_instance.db_instance_endpoint_address,
             # },
+        )
+        
+        security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(), ec2.Port.tcp(5432), "Allow PostgreSQL access"
         )
         
         CfnOutput(self, "sql-task-definition-arn", value=sql_task_definition.task_definition_arn)

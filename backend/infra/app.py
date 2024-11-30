@@ -66,6 +66,7 @@ storage_stack = StorageStack(
     project_name=project_name,
     execution_role=environment_setup_stack.execution_role,
     log_group=environment_setup_stack.log_group,
+    security_group=environment_setup_stack.security_group,
 )
 apply_tags(storage_stack, tags=tags)
 storage_stack.add_dependency(network_stack)

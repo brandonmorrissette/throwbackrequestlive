@@ -38,9 +38,9 @@ class EnvironmentSetupStack(Stack):
             description="Allow ECS tasks to communicate with RDS",
             allow_all_outbound=True,
         )
-        self.security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(), ec2.Port.tcp(5432), "Allow PostgreSQL access"
-        )
+        # self.security_group.add_ingress_rule(
+        #     ec2.Peer.any_ipv4(), ec2.Port.tcp(5432), "Allow PostgreSQL access"
+        # )
 
         # Outputs for CICD pipeline
         CfnOutput(
