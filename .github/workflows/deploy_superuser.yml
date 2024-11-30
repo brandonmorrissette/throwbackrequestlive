@@ -21,6 +21,10 @@ jobs:
     run-superuser-task:
         runs-on: ubuntu-latest
         steps:
+            - name: Debug project_name input
+              run: |
+                  echo "Project Name: ${{ inputs.project_name }}"
+
             - name: Run Superuser Fargate Task
               run: |
                   # Fetch the CloudFormation outputs
@@ -80,7 +84,7 @@ jobs:
                                       {
                                           "name": "PROJECT_NAME",
                                           "value": "${{inputs.project_name}}"
-                                        }
+                                       }
                                   ]
                               }
                           ]

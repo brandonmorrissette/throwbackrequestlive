@@ -7,6 +7,7 @@ client = boto3.client('cognito-idp')
 
 project_name = os.environ['PROJECT_NAME']
 superuser_email = os.environ['SUPERUSER_EMAIL']
+print(f" Project Name: {project_name}\n Superuser Email: {superuser_email}")
 
 response = client.list_user_pools(MaxResults=60)
 user_pool_id = None
