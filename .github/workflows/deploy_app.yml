@@ -64,7 +64,7 @@ jobs:
     deploy-user-management-stack:
         uses: ./.github/workflows/deploy_stack.yml
         needs: deploy-storage-stack
-        name: Deploy User Stack
+        name: Deploy User Management Stack
         with:
             stack-name: user-management-stack
         secrets:
