@@ -58,7 +58,7 @@ environment_setup_stack = EnvironmentSetupStack(
 apply_tags(environment_setup_stack, tags=tags)
 environment_setup_stack.add_dependency(compute_stack)
 
-execution_role_arn = environment_setup_stack.node.find_child("execution-role-arn").get_att("Value").to_string()
+execution_role_arn = environment_setup_stack.node.find_child("execution-role-arn").get_string_attribute("Value")
 
 execution_role = iam.Role.from_role_arn(
     app,
