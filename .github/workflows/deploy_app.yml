@@ -2,6 +2,13 @@ name: Deploy App
 
 on:
     workflow_call:
+        inputs:
+            project_name:
+                required: true
+                type: string
+            environment:
+                required: true
+                type: string
         secrets:
             AWS_ACCESS_KEY_ID:
                 required: true
@@ -92,7 +99,8 @@ jobs:
         needs: [deploy-user-management-stack, deploy-environment-setup-stack]
         uses: ./.github/workflows/deploy_superuser.yml
         with:
-            environment: production
+            environment: ${{ inputs.environment }}
+            project_name: ${{ inputs.project_name }}
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

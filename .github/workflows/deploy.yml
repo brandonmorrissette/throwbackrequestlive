@@ -17,6 +17,9 @@ jobs:
         if: ${{ inputs.jobs == '' }}
         name: Deploy All Stacks and Stand up the Application Environment
         uses: ./.github/workflows/deploy_app.yml
+        with:
+            environment: ${{ env.ENVIRONMENT_NAME }}
+            project_name: ${{ env.PROJECT_NAME }}
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
