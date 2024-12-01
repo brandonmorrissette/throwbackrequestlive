@@ -1,6 +1,6 @@
 import logging
 
-from aws_cdk import CfnOutput, RemovalPolicy, Token
+from aws_cdk import RemovalPolicy, Token
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ssm as ssm
 from constructs import Construct
