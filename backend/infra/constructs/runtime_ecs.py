@@ -34,7 +34,7 @@ class RuntimeEcsConstruct(Construct):
                 ),
                 environment = {
                     "COGNITO_APP_CLIENT_ID": ssm.StringParameter.from_string_parameter_name(
-                        self, "AppClientId", f"{project_name}-app-client-id"
+                        self, "AppClientId", f"{project_name}-user-pool-app-client-id"
                     ).string_value,
                     "COGNITO_USER_POOL_ID": ssm.StringParameter.from_string_parameter_name(
                         self, "UserPoolId", f"{project_name}-user-pool-id"
