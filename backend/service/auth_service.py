@@ -22,10 +22,7 @@ class AuthService:
                 AuthParameters={'USERNAME': username, 'PASSWORD': password}
             )
 
-            user_groups = self.get_groups_by_username(username)
-            token = self.generate_jwt(username, user_groups)
-
-            return {'token': token, 'user_groups': user_groups}
+            return {'token': self.generate_jwt(username, self.get_groups_by_username(username))}
 
         except ClientError as e:
             raise Exception(f"Authentication failed: {e.response['Error']['Message']}")
@@ -41,9 +38,8 @@ class AuthService:
                 },
                 Session=session
             )
-            user_groups = self.get_groups_by_username(username)
-            token = self.generate_jwt(username, user_groups)
-            return {'token': token, 'user_groups': user_groups}
+
+            return {'token': self.generate_jwt(username, self.get_groups_by_username(username))}
 
         except ClientError as e:
             raise Exception(f"Password reset failed: {e.response['Error']['Message']}")
@@ -60,16 +56,14 @@ class AuthService:
             logging.error(f"Error fetching user groups: {e}")
             return []
 
-    def generate_jwt(self, username, user_groups):
+    def generate_jwt(self, username, groups):
         payload = {
             'sub': username,
             'username': username,
-            'roles': user_groups,  
+            'groups': groups,  
             'iat': datetime.utcnow(), 
             'exp': datetime.utcnow() + timedelta(hours=1) 
         }
 
-        logging.debug(f"Generating JWT with payload: {payload}")
         token = jwt.encode(payload, self.jwt_secret, algorithm=self.jwt_algorithm)
-        logging.debug(f"Generated JWT: {token}")
         return token

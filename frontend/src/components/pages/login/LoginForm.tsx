@@ -11,7 +11,7 @@ const LoginForm: React.FC = () => {
     const [showPasswordReset, setShowPasswordReset] = useState(false);
     const [session, setSession] = useState('');
 
-    const { setToken, setUserGroups } = useAuth();
+    const { setToken } = useAuth();
     const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -29,12 +29,7 @@ const LoginForm: React.FC = () => {
 
         if (response.ok && data.success) {
             sessionStorage.setItem('auth_token', data.token);
-            sessionStorage.setItem(
-                'user_groups',
-                JSON.stringify(data.user_groups)
-            );
             setToken(data.token);
-            setUserGroups(data.user_groups);
             navigate('/admin');
         } else if (data.error === 'New password required') {
             setSession(data.session);

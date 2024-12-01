@@ -47,7 +47,6 @@ def login():
         return jsonify({
             'success': True,
             'token': response['token'],
-            'user_groups': response['user_groups']
         }), 200
 
     except Exception as e:
