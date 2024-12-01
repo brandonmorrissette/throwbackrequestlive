@@ -72,7 +72,7 @@ class RuntimeEcsConstruct(Construct):
         vpc = ec2.Vpc.from_lookup(
             self,
             "ImportedVPC",
-            vpc_id=f"{project_name}-vpc-id",
+            vpc_id=f"{project_name}-vpc",
         )
 
         cluster = ecs.Cluster.from_cluster_attributes(
