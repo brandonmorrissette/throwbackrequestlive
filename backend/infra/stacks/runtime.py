@@ -15,7 +15,7 @@ class RuntimeStack(Stack):
         hosted_zone: str,
         **kwargs
     ):
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id, env=env, **kwargs)
         fargate_service = RuntimeEcsConstruct(
             self,
             "runtime-ecs",
