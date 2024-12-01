@@ -69,14 +69,16 @@ class RuntimeEcsConstruct(Construct):
             },
         )
 
+        vpc_id = ssm.StringParameter.from_string_parameter_name(
+            self,
+            "VpcIdParam",
+            string_parameter_name=f"/{project_name}/vpc-id",
+        ).string_value
+
         vpc = ec2.Vpc.from_lookup(
             self,
             "ImportedVPC",
-            vpc_id=ssm.StringParameter.from_string_parameter_name(
-                self,
-                "VpcIdParam",
-                string_parameter_name=f"/{project_name}/vpc-id",
-            ).string_value,
+            vpc_id=vpc_id,
         )
 
         cluster = ecs.Cluster.from_cluster_attributes(
