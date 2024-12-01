@@ -7,10 +7,8 @@ import React, {
 } from 'react';
 
 interface AuthContextType {
-    isAuthenticated: boolean;
     token: string | null;
     userGroups: string[];
-    setIsAuthenticated: (isAuthenticated: boolean) => void;
     setToken: (token: string) => void;
     setUserGroups: (groups: string[]) => void;
     logout: () => void;
@@ -31,36 +29,41 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [token, setToken] = useState<string | null>(
-        localStorage.getItem('authToken')
-    ); // Persist token
+        sessionStorage.getItem('authToken')
+    );
     const [userGroups, setUserGroups] = useState<string[]>(
-        JSON.parse(localStorage.getItem('userGroups') || '[]')
+        JSON.parse(sessionStorage.getItem('userGroups') || '[]')
     );
 
     useEffect(() => {
         if (token) {
-            setIsAuthenticated(true);
+            sessionStorage.setItem('authToken', token);
         } else {
-            setIsAuthenticated(false);
+            sessionStorage.removeItem('authToken');
         }
     }, [token]);
+
+    useEffect(() => {
+        if (userGroups.length > 0) {
+            sessionStorage.setItem('userGroups', JSON.stringify(userGroups));
+        } else {
+            sessionStorage.removeItem('userGroups');
+        }
+    }, [userGroups]);
 
     const logout = () => {
         setToken(null);
         setUserGroups([]);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userGroups');
+        sessionStorage.removeItem('authToken');
+        sessionStorage.removeItem('userGroups');
     };
 
     return (
         <AuthContext.Provider
             value={{
-                isAuthenticated,
                 token,
                 userGroups,
-                setIsAuthenticated,
                 setToken,
                 setUserGroups,
                 logout,

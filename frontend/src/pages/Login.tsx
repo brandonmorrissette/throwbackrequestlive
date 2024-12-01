@@ -1,8 +1,8 @@
 // src/pages/Admin.tsx
 import React from 'react';
-import LoginModal from '../components/pages/login/LoginModal';
+import LoginForm from '../components/pages/login/LoginForm';
 
 const Login: React.FC = () => {
-    return <LoginModal />;
+    return <LoginForm />;
 };
 export default Login;

@@ -46,13 +46,14 @@ def login():
 
         return jsonify({
             'success': True,
-            'token': response['token'], 
+            'token': response['token'],
             'user_groups': response['user_groups']
         }), 200
 
     except Exception as e:
         app.logger.error(f"Error during Cognito authentication: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 
 @app.route('/api/vote', methods=['POST'])

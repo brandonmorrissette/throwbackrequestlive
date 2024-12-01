@@ -3,6 +3,7 @@ from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_logs
+from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_cdk import aws_ssm as ssm
 from constructs import Construct
 
@@ -14,6 +15,16 @@ class RuntimeEcsConstruct(Construct):
         docker_image = ecr_assets.DockerImageAsset(
             self, "throwback-request-live-image",
             directory="."
+        )
+
+        jwt_secret = secretsmanager.Secret(
+            self, 
+            "JWTSecret", 
+            description="JWT secret for secure token generation", 
+            generate_secret_string=secretsmanager.SecretStringGenerator(
+                password_length=32,
+                exclude_punctuation=True
+            )
         )
 
         self.runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
@@ -39,6 +50,7 @@ class RuntimeEcsConstruct(Construct):
                     "COGNITO_USER_POOL_ID": ssm.StringParameter.from_string_parameter_name(
                         self, "UserPoolId", f"{project_name}-user-pool-id"
                     ).string_value,
+                    "JWT_SECRET": jwt_secret.secret_value.to_string()
                 }
             ),
             public_load_balancer=True,

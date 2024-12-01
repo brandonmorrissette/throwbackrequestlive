@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import PasswordReset from './PasswordReset';
 
-const LoginModal: React.FC = () => {
+const LoginForm: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -10,7 +11,8 @@ const LoginModal: React.FC = () => {
     const [showPasswordReset, setShowPasswordReset] = useState(false);
     const [session, setSession] = useState('');
 
-    const { setIsAuthenticated } = useAuth();
+    const { setToken, setUserGroups } = useAuth();
+    const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,17 +28,23 @@ const LoginModal: React.FC = () => {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            setIsAuthenticated(true);
+            sessionStorage.setItem('auth_token', data.token);
+            sessionStorage.setItem(
+                'user_groups',
+                JSON.stringify(data.user_groups)
+            );
+            setToken(data.token);
+            setUserGroups(data.user_groups);
+            navigate('/admin');
         } else if (data.error === 'New password required') {
             setSession(data.session);
             setShowPasswordReset(true);
         } else {
-            setError('Invalid login credentials. Please try again.');
+            setError('Invalid login credentials.');
         }
     };
 
     if (showPasswordReset) {
-        console.log('Redirecting to PasswordReset...');
         return <PasswordReset session={session} username={username} />;
     }
 
@@ -75,4 +83,4 @@ const LoginModal: React.FC = () => {
     );
 };
 
-export default LoginModal;
+export default LoginForm;

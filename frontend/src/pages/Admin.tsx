@@ -1,17 +1,35 @@
-// src/pages/Admin.tsx
-import React from 'react';
-import UserManagement from '../components/pages/admin/UserManagement';
-import LoginModal from '../components/pages/login/LoginModal';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useState } from 'react';
 
 const Admin: React.FC = () => {
-    const { isAuthenticated } = useAuth();
+    const [userGroups, setUserGroups] = useState<string[]>([]);
 
-    if (!isAuthenticated) {
-        return <LoginModal />;
-    }
+    useEffect(() => {
+        const token = sessionStorage.getItem('auth_token');
+        const groups = sessionStorage.getItem('user_groups');
 
-    return <UserManagement />;
+        if (token) {
+            setUserGroups(groups ? JSON.parse(groups) : []);
+        } else {
+            window.location.href = '/login';
+        }
+    }, []);
+
+    const renderAdminContent = () => {
+        if (userGroups.includes('admin')) {
+            return <div>Admin Content</div>;
+        } else if (userGroups.includes('superuser')) {
+            return <div>Superuser Content</div>;
+        } else {
+            return <div>You do not have permission to access this page</div>;
+        }
+    };
+
+    return (
+        <div>
+            <h1>Admin Dashboard</h1>
+            {renderAdminContent()}
+        </div>
+    );
 };
 
 export default Admin;

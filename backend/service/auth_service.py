@@ -22,7 +22,7 @@ class AuthService:
                 AuthParameters={'USERNAME': username, 'PASSWORD': password}
             )
 
-            user_groups = self.get_user_groups(username)
+            user_groups = self.get_groups_by_username(username)
             token = self.generate_jwt(username, user_groups)
 
             return {'token': token, 'user_groups': user_groups}
@@ -41,16 +41,16 @@ class AuthService:
                 },
                 Session=session
             )
-            user_groups = self.get_user_groups(username)
+            user_groups = self.get_groups_by_username(username)
             token = self.generate_jwt(username, user_groups)
             return {'token': token, 'user_groups': user_groups}
 
         except ClientError as e:
             raise Exception(f"Password reset failed: {e.response['Error']['Message']}")
 
-    def get_user_groups(self, username):
+    def get_groups_by_username(self, username):
         try:
-            response = self.client.admin_get_user(
+            response = self.client.admin_list_groups_for_user(
                 UserPoolId=os.getenv('COGNITO_USER_POOL_ID'),
                 Username=username
             )
@@ -69,5 +69,7 @@ class AuthService:
             'exp': datetime.utcnow() + timedelta(hours=1) 
         }
 
+        logging.debug(f"Generating JWT with payload: {payload}")
         token = jwt.encode(payload, self.jwt_secret, algorithm=self.jwt_algorithm)
+        logging.debug(f"Generated JWT: {token}")
         return token
