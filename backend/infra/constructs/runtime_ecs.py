@@ -69,7 +69,7 @@ class RuntimeEcsConstruct(Construct):
             },
         )
 
-        vpc = ec2.Vpc.from_vpc_attributes(
+        vpc = ec2.Vpc.from_lookup(
             self,
             "ImportedVPC",
             vpc_id=ssm.StringParameter.from_string_parameter_name(
