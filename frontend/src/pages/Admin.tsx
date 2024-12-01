@@ -1,8 +1,17 @@
+// src/pages/Admin.tsx
 import React from 'react';
-import Login from '../components/pages/admin/Login';
+import UserManagement from '../components/pages/admin/UserManagement';
+import LoginModal from '../components/pages/login/LoginModal';
+import { useAuth } from '../context/AuthContext';
 
 const Admin: React.FC = () => {
-    return <Login />;
+    const { isAuthenticated } = useAuth();
+
+    if (!isAuthenticated) {
+        return <LoginModal />;
+    }
+
+    return <UserManagement />;
 };
 
 export default Admin;

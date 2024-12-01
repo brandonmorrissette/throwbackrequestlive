@@ -1,12 +1,14 @@
-from aws_cdk import aws_ecs as ecs, aws_logs
-from aws_cdk import aws_ecr_assets as ecr_assets
-from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import Duration
+from aws_cdk import aws_ecr_assets as ecr_assets
+from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_ecs_patterns as ecs_patterns
+from aws_cdk import aws_logs
+from aws_cdk import aws_ssm as ssm
 from constructs import Construct
 
 
 class RuntimeEcsConstruct(Construct):
-    def __init__(self, scope: Construct, id: str, cluster, certificate) -> None:
+    def __init__(self, scope: Construct, id: str, project_name, cluster, certificate) -> None:
         super().__init__(scope, id)
 
         docker_image = ecr_assets.DockerImageAsset(
@@ -14,8 +16,8 @@ class RuntimeEcsConstruct(Construct):
             directory="."
         )
 
-        self.fargate_service = ecs_patterns.ApplicationLoadBalancedFargateService(
-            self, "fargate-service",
+        self.runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
+            self, "runtime-service",
             cluster=cluster,
             cpu=256,
             memory_limit_mib=512,
@@ -29,7 +31,15 @@ class RuntimeEcsConstruct(Construct):
                         self, "log-group",
                         retention=aws_logs.RetentionDays.ONE_WEEK
                     )
-                )
+                ),
+                environment = {
+                    "COGNITO_APP_CLIENT_ID": ssm.StringParameter.from_string_parameter_name(
+                        self, "AppClientId", f"{project_name}-app-client-id"
+                    ).string_value,
+                    "COGNITO_USER_POOL_ID": ssm.StringParameter.from_string_parameter_name(
+                        self, "UserPoolId", f"{project_name}-user-pool-id"
+                    ).string_value,
+                }
             ),
             public_load_balancer=True,
             certificate=certificate,
@@ -37,7 +47,7 @@ class RuntimeEcsConstruct(Construct):
             health_check_grace_period=Duration.minutes(5)
         )
 
-        self.fargate_service.target_group.configure_health_check(
+        self.runtime_service.target_group.configure_health_check(
             path="/",
             interval=Duration.seconds(30),
             timeout=Duration.seconds(10),

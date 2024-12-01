@@ -1,39 +1,43 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../../context/AuthContext';
+import PasswordReset from './PasswordReset';
 
-const Login: React.FC = () => {
+const LoginModal: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [showPasswordReset, setShowPasswordReset] = useState(false);
+    const [session, setSession] = useState('');
+
+    const { setIsAuthenticated } = useAuth();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
-        try {
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+        });
 
-            const data = await response.json();
-            if (data.success) {
-                setIsLoggedIn(true);
-            } else {
-                setError('Invalid login credentials. Please try again.');
-            }
-        } catch (err) {
-            setError('An error occurred. Please try again later.');
-        } finally {
-            setLoading(false);
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            setIsAuthenticated(true);
+        } else if (data.error === 'New password required') {
+            setSession(data.session);
+            setShowPasswordReset(true);
+        } else {
+            setError('Invalid login credentials. Please try again.');
         }
     };
 
-    if (isLoggedIn) {
-        return <div>Welcome! You're now logged in.</div>;
+    if (showPasswordReset) {
+        console.log('Redirecting to PasswordReset...');
+        return <PasswordReset session={session} username={username} />;
     }
 
     return (
@@ -71,4 +75,4 @@ const Login: React.FC = () => {
     );
 };
 
-export default Login;
+export default LoginModal;

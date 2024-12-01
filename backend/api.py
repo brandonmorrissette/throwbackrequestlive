@@ -1,14 +1,26 @@
-from flask import Blueprint, current_app as app, jsonify, request, redirect
-import boto3
-from botocore.exceptions import ClientError
 import csv
-from datetime import datetime
+import logging
 import os
+from datetime import datetime
+
+from flask import Blueprint
+from flask import current_app as app
+from flask import jsonify, redirect, request
+from service.auth_service import AuthService
 
 bp = Blueprint('routes', __name__)
 
+logging.basicConfig(level=logging.DEBUG)
+app.logger.setLevel(logging.DEBUG)
+
+auth_service = AuthService()
+
 @app.route('/vote')
 def render_vote():
+    return app.send_static_file('index.html')
+
+@app.route('/admin')
+def render_admin():
     return app.send_static_file('index.html')
 
 @app.route('/login')
@@ -20,38 +32,29 @@ def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+    session = data.get('session')
+    password_reset = data.get('password_reset')
 
     if not username or not password:
         return jsonify({'success': False, 'error': 'Username and password are required'}), 400
 
     try:
-        client = boto3.client('cognito-idp', region_name=os.getenv('COGNITO_REGION'))
-        response = client.initiate_auth(
-            ClientId=os.getenv('COGNITO_APP_CLIENT_ID'),
-            AuthFlow='USER_PASSWORD_AUTH',
-            AuthParameters={
-                'USERNAME': username,
-                'PASSWORD': password
-            }
-        )
-
-        if 'AuthenticationResult' in response:
-            auth_result = response['AuthenticationResult']
-            return jsonify({
-                'success': True,
-                'access_token': auth_result['AccessToken'],
-                'id_token': auth_result['IdToken'],
-                'refresh_token': auth_result.get('RefreshToken')
-            }), 200
+        if password_reset:
+            response = auth_service.reset_password(username, password, session)
         else:
-            return jsonify({'success': False, 'error': f'Authentication failed : {response}'}), 401
+            response = auth_service.authenticate_user(username, password)
 
-    except ClientError as e:
-        error_message = e.response['Error']['Message']
-        app.logger.error(f"Cognito login failed: {error_message}")
-        return jsonify({'success': False, 'error': error_message}), 500
+        return jsonify({
+            'success': True,
+            'token': response['token'], 
+            'user_groups': response['user_groups']
+        }), 200
 
-    
+    except Exception as e:
+        app.logger.error(f"Error during Cognito authentication: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/vote', methods=['POST'])
 def post_vote():
     vote_data = request.get_json()

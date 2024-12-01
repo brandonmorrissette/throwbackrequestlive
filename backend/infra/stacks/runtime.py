@@ -1,7 +1,8 @@
-from constructs import Construct
-from constructs.runtime_ecs import RuntimeEcsConstruct
-from constructs.route_53 import Route53Construct
 from aws_cdk import Stack
+from constructs import Construct
+from constructs.route_53 import Route53Construct
+from constructs.runtime_ecs import RuntimeEcsConstruct
+
 
 class RuntimeStack(Stack):
     def __init__(
@@ -16,7 +17,7 @@ class RuntimeStack(Stack):
         super().__init__(scope, id, **kwargs)
         fargate_service = RuntimeEcsConstruct(
             self, "runtime-ecs", cluster=cluster, certificate=certificate
-        ).fargate_service
+        ).runtime_service
 
         Route53Construct(
             self,

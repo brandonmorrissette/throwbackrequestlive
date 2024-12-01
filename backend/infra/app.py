@@ -86,6 +86,7 @@ runtime_stack = RuntimeStack(
     app,
     f"{project_name}-runtime-stack-{environment_name}",
     env=env,
+    project_name=project_name,
     cluster=compute_stack.cluster_construct.cluster,
     certificate=network_stack.cert_construct.certificate,
     hosted_zone=network_stack.cert_construct.hosted_zone,
