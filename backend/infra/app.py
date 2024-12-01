@@ -35,13 +35,17 @@ apply_tags(
 apply_tags(app, tags)
 
 network_stack = NetworkStack(
-    app, f"{project_name}-network-stack-{environment_name}", env=env
+    app,
+    f"{project_name}-network-stack-{environment_name}",
+    project_name=project_name,
+    env=env,
 )
 apply_tags(network_stack, tags=tags)
 
 compute_stack = ComputeStack(
     app,
     f"{project_name}-compute-stack-{environment_name}",
+    project_name=project_name,
     env=env,
     vpc=network_stack.vpc_constrcut.vpc,
 )
@@ -87,7 +91,6 @@ runtime_stack = RuntimeStack(
     f"{project_name}-runtime-stack-{environment_name}",
     env=env,
     project_name=project_name,
-    cluster=compute_stack.cluster_construct.cluster,
     certificate=network_stack.cert_construct.certificate,
     hosted_zone=network_stack.cert_construct.hosted_zone,
 )

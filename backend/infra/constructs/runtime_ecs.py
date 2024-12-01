@@ -1,4 +1,5 @@
 from aws_cdk import Duration
+from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
@@ -10,34 +11,42 @@ from constructs import Construct
 
 
 class RuntimeEcsConstruct(Construct):
-    def __init__(self, scope: Construct, id: str, project_name, cluster, certificate, env, **kwargs) -> None:
+    def __init__(
+        self,
+        scope: Construct,
+        id: str,
+        project_name,
+        certificate,
+        env,
+        **kwargs,
+    ) -> None:
         super().__init__(scope, id)
 
         docker_image = ecr_assets.DockerImageAsset(
-            self, "throwback-request-live-image",
-            directory="."
+            self, "throwback-request-live-image", directory="."
         )
 
         jwt_secret = secretsmanager.Secret(
-            self, 
-            "JWTSecret", 
-            description="JWT secret for secure token generation", 
+            self,
+            "JWTSecret",
+            description="JWT secret for secure token generation",
             generate_secret_string=secretsmanager.SecretStringGenerator(
-                password_length=32,
-                exclude_punctuation=True
-            )
+                password_length=32, exclude_punctuation=True
+            ),
         )
 
         user_pool_id = ssm.StringParameter.from_string_parameter_name(
-                        self, "UserPoolId", f"{project_name}-user-pool-id"
-                    ).string_value
-        
+            self, "UserPoolId", f"{project_name}-user-pool-id"
+        ).string_value
+
         task_role = iam.Role(
             self,
             "CustomTaskRole",
             assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy"),  
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AmazonECSTaskExecutionRolePolicy"
+                ),
             ],
             inline_policies={
                 "CustomPolicy": iam.PolicyDocument(
@@ -49,19 +58,41 @@ class RuntimeEcsConstruct(Construct):
                             ],
                             resources=[
                                 f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{user_pool_id}"
-                            ]
+                            ],
                         ),
                         iam.PolicyStatement(
                             actions=["secretsmanager:GetSecretValue"],
-                            resources=[jwt_secret.secret_arn] 
-                        )
+                            resources=[jwt_secret.secret_arn],
+                        ),
                     ]
                 )
-            }
+            },
+        )
+
+        vpc = ec2.Vpc.from_vpc_attributes(
+            self,
+            "ImportedVPC",
+            vpc_id=ssm.StringParameter.from_string_parameter_name(
+                self,
+                "VpcIdParam",
+                string_parameter_name=f"/{project_name}/vpc-id",
+            ).string_value,
+        )
+
+        cluster = ecs.Cluster.from_cluster_attributes(
+            self,
+            "ImportedCluster",
+            cluster_name=ssm.StringParameter.from_string_parameter_name(
+                self,
+                "EcsClusterNameParam",
+                string_parameter_name=f"/{project_name}/ecs-cluster-name",
+            ).string_value,
+            vpc=vpc,
         )
 
         self.runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
-            self, "runtime-service",
+            self,
+            "runtime-service",
             cluster=cluster,
             cpu=256,
             memory_limit_mib=512,
@@ -72,28 +103,27 @@ class RuntimeEcsConstruct(Construct):
                 log_driver=ecs.LogDrivers.aws_logs(
                     stream_prefix="throwback-request-live",
                     log_group=aws_logs.LogGroup(
-                        self, "log-group",
-                        retention=aws_logs.RetentionDays.ONE_WEEK
-                    )
+                        self, "log-group", retention=aws_logs.RetentionDays.ONE_WEEK
+                    ),
                 ),
-                environment = {
+                environment={
                     "COGNITO_APP_CLIENT_ID": ssm.StringParameter.from_string_parameter_name(
                         self, "AppClientId", f"{project_name}-user-pool-app-client-id"
                     ).string_value,
                     "COGNITO_USER_POOL_ID": user_pool_id,
-                    "JWT_SECRET": jwt_secret.secret_value.to_string()
+                    "JWT_SECRET": jwt_secret.secret_value.to_string(),
                 },
-                task_role=task_role
+                task_role=task_role,
             ),
             public_load_balancer=True,
             certificate=certificate,
             redirect_http=True,
-            health_check_grace_period=Duration.minutes(5)
+            health_check_grace_period=Duration.minutes(5),
         )
 
         self.runtime_service.target_group.configure_health_check(
             path="/",
             interval=Duration.seconds(30),
             timeout=Duration.seconds(10),
-            healthy_http_codes="200"
+            healthy_http_codes="200",
         )

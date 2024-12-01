@@ -1,10 +1,14 @@
-from aws_cdk import PhysicalName
 from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_ssm as ssm
 from constructs import Construct
 
 
 class ClusterConstruct(Construct):
-    def __init__(self, scope: Construct, id: str, vpc) -> None:
+    def __init__(self, scope: Construct, id: str, project_name, vpc) -> None:
         super().__init__(scope, id)
 
-        self.cluster = ecs.Cluster(self, "throwback-request-live-cluster", vpc=vpc, cluster_name=PhysicalName.GENERATE_IF_NEEDED)
+        self.cluster = ecs.Cluster(self, "throwback-request-live-cluster", vpc=vpc)
+        ssm.StringParameter(self, "EcsClusterNameParam",
+            parameter_name=f"/{project_name}/ecs-cluster-name",
+            string_value=self.cluster.cluster_name
+        )
