@@ -13,6 +13,7 @@ class RuntimeStack(Stack):
         project_name: str,
         certificate: str,
         hosted_zone: str,
+        vpc,
         **kwargs
     ):
         super().__init__(scope, id, env=env, **kwargs)
@@ -21,6 +22,7 @@ class RuntimeStack(Stack):
             "runtime-ecs",
             project_name=project_name,
             certificate=certificate,
+            vpc=vpc,
             env=env,
         ).runtime_service
 

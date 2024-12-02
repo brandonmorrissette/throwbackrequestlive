@@ -18,6 +18,7 @@ class RuntimeEcsConstruct(Construct):
         project_name,
         certificate,
         env,
+        vpc,
         **kwargs,
     ) -> None:
         super().__init__(scope, id)
@@ -67,17 +68,6 @@ class RuntimeEcsConstruct(Construct):
                     ]
                 )
             },
-        )
-
-        vpc = ec2.Vpc.from_lookup(
-            self,
-            "ImportedVPC",
-            # vpc_id=ssm.StringParameter.from_string_parameter_name(
-            #     self,
-            #     "VpcIdParam",
-            #     string_parameter_name=f"/{project_name}/vpc-id",
-            # ).string_value,
-            vpc_id=f"{project_name}-vpc",
         )
 
         cluster = ecs.Cluster.from_cluster_attributes(
