@@ -95,6 +95,7 @@ runtime_stack = RuntimeStack(
     hosted_zone=network_stack.cert_construct.hosted_zone,
 )
 apply_tags(runtime_stack, tags=tags)
+runtime_stack.add_dependency(network_stack)
 runtime_stack.add_dependency(compute_stack)
 runtime_stack.add_dependency(storage_stack)
 
