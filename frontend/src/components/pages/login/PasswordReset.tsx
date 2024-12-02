@@ -16,7 +16,6 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ session, username }) => {
         setError('');
 
         try {
-            console.log('Session in PasswordReset: ', session);
             const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

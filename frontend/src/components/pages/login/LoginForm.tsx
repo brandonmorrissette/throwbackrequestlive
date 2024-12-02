@@ -27,8 +27,7 @@ const LoginForm: React.FC = () => {
 
         const data = await response.json();
 
-        if (data.error.trim() === 'NEW_PASSWORD_REQUIRED') {
-            console.log('Session in LoginForm: ', data.session);
+        if (data.error === 'NEW_PASSWORD_REQUIRED') {
             setSession(data.session);
             setShowPasswordReset(true);
         } else if (response.ok && data.success) {
@@ -41,7 +40,6 @@ const LoginForm: React.FC = () => {
     };
 
     if (showPasswordReset) {
-        console.log('Session about to be passed to password reset: ', session);
         return <PasswordReset session={session} username={username} />;
     }
 

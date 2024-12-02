@@ -1,5 +1,6 @@
 import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
+import UserManagement from '../components/pages/admin/UserManagement';
 
 const Admin: React.FC = () => {
     const [userGroups, setUserGroups] = useState<string[]>([]);
@@ -23,16 +24,17 @@ const Admin: React.FC = () => {
     const renderContent = () => {
         const content = (
             <div>
+                {userGroups.includes('superuser') && (
+                    <div>
+                        <h3>Superuser Content</h3>
+                        <UserManagement />
+                        <hr />
+                    </div>
+                )}
                 {userGroups.includes('admin') && (
                     <div>
                         <h3>Admin Content</h3>
                         <p>Content for Admin group</p>
-                    </div>
-                )}
-                {userGroups.includes('superuser') && (
-                    <div>
-                        <h3>Superuser Content</h3>
-                        <p>Content for Superuser group</p>
                     </div>
                 )}
             </div>

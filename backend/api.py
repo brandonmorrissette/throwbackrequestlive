@@ -1,8 +1,11 @@
 import csv
 import logging
 import os
+import secrets
+import string
 from datetime import datetime
 
+import boto3
 from flask import Blueprint
 from flask import current_app as app
 from flask import jsonify, redirect, request
@@ -14,6 +17,8 @@ logging.basicConfig(level=logging.DEBUG)
 app.logger.setLevel(logging.DEBUG)
 
 auth_service = AuthService()
+cognito_client = boto3.client("cognito-idp", region_name="us-east-1")
+USER_POOL_ID = os.environ.get("COGNITO_USER_POOL_ID")
 
 
 @app.route("/vote")
@@ -117,6 +122,132 @@ def get_songs():
                 }
             )
     return jsonify(songs)
+
+
+@app.route("/api/users", methods=["GET"])
+def list_users():
+    try:
+        response = cognito_client.list_users(UserPoolId=USER_POOL_ID)
+        users = [
+            {
+                "username": user["Username"],
+                "email": next(
+                    (
+                        attr["Value"]
+                        for attr in user["Attributes"]
+                        if attr["Name"] == "email"
+                    ),
+                    None,
+                ),
+                "groups": [
+                    group["GroupName"]
+                    for group in cognito_client.admin_list_groups_for_user(
+                        Username=user["Username"], UserPoolId=USER_POOL_ID
+                    )["Groups"]
+                ],
+            }
+            for user in response["Users"]
+        ]
+        return jsonify(users), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+def generate_temp_password():
+    characters = string.ascii_letters + string.digits + "!@#$%^&*()-_=+"
+    return "".join(secrets.choice(characters) for _ in range(12))
+
+
+@app.route("/api/users", methods=["POST"])
+def add_user():
+    data = request.get_json()
+    email = data["email"]
+    username = data.get("username", "").strip() or email
+    groups = data.get("groups", [])
+
+    logging.info(f"Creating user {email} with username {username} and groups {groups}")
+    try:
+        cognito_client.admin_create_user(
+            UserPoolId=USER_POOL_ID,
+            Username=username,
+            UserAttributes=[{"Name": "email", "Value": email}],
+            TemporaryPassword=generate_temp_password(),
+        )
+
+        for group in groups:
+            cognito_client.admin_add_user_to_group(
+                UserPoolId=os.getenv("COGNITO_USER_POOL_ID"),
+                Username=username,
+                GroupName=group,
+            )
+
+        return jsonify({"message": f"User {email} created successfully."}), 201
+    except Exception as e:
+        return jsonify({"message": str(e)}), 400
+
+
+@app.route("/api/users/<username>", methods=["PUT"])
+def update_user(username):
+    data = request.get_json()
+    email = data.get("email")
+    groups = data.get("groups", [])
+
+    if not email:
+        return jsonify({"message": "Email is required"}), 400
+
+    try:
+        cognito_client.admin_update_user_attributes(
+            UserPoolId=os.getenv("COGNITO_USER_POOL_ID"),
+            Username=username,
+            UserAttributes=[{"Name": "email", "Value": email}],
+        )
+
+        existing_groups = cognito_client.admin_list_groups_for_user(
+            UserPoolId=os.getenv("COGNITO_USER_POOL_ID"),
+            Username=username,
+        )["Groups"]
+
+        for group in existing_groups:
+            cognito_client.admin_remove_user_from_group(
+                UserPoolId=os.getenv("COGNITO_USER_POOL_ID"),
+                Username=username,
+                GroupName=group["GroupName"],
+            )
+
+        for group in groups:
+            cognito_client.admin_add_user_to_group(
+                UserPoolId=os.getenv("COGNITO_USER_POOL_ID"),
+                Username=username,
+                GroupName=group,
+            )
+
+        return jsonify({"message": f"User {username} updated successfully."}), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 400
+
+
+@app.route("/api/users/<username>", methods=["DELETE"])
+def delete_user(username):
+    try:
+        cognito_client.admin_delete_user(
+            UserPoolId=USER_POOL_ID,
+            Username=username,
+        )
+        return jsonify({"message": f"User {username} deleted successfully."}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/api/groups", methods=["GET"])
+def list_groups():
+    try:
+        response = cognito_client.list_groups(
+            UserPoolId=os.getenv("COGNITO_USER_POOL_ID")
+        )
+        groups = [group["GroupName"] for group in response["Groups"]]
+        return jsonify(groups), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
 
 
 @app.route("/", defaults={"path": ""})
