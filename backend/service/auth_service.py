@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from datetime import datetime, timedelta
@@ -9,20 +10,37 @@ from botocore.exceptions import ClientError
 
 class AuthService:
     def __init__(self):
-        self.client = boto3.client('cognito-idp', region_name=os.getenv('COGNITO_REGION'))
-        self.client_id = os.getenv('COGNITO_APP_CLIENT_ID')
-        self.jwt_secret = os.getenv('JWT_SECRET') 
-        self.jwt_algorithm = "HS256" 
-        
+        self.client = boto3.client(
+            "cognito-idp", region_name=os.getenv("COGNITO_REGION")
+        )
+        self.client_id = os.getenv("COGNITO_APP_CLIENT_ID")
+        self.jwt_secret = os.getenv("JWT_SECRET")
+        self.jwt_algorithm = "HS256"
+
     def authenticate_user(self, username, password):
         try:
             response = self.client.initiate_auth(
                 ClientId=self.client_id,
-                AuthFlow='USER_PASSWORD_AUTH',
-                AuthParameters={'USERNAME': username, 'PASSWORD': password}
+                AuthFlow="USER_PASSWORD_AUTH",
+                AuthParameters={"USERNAME": username, "PASSWORD": password},
             )
+            if response.get("ChallengeName") == "NEW_PASSWORD_REQUIRED":
+                logging.info(
+                    f"Session during authentication: {response.get('Session')}"
+                )
+                return {
+                    "token": self.generate_jwt(
+                        username, self.get_groups_by_username(username)
+                    ),
+                    "error": "NEW_PASSWORD_REQUIRED",
+                    "session": response.get("Session"),
+                }
 
-            return {'token': self.generate_jwt(username, self.get_groups_by_username(username))}
+            return {
+                "token": self.generate_jwt(
+                    username, self.get_groups_by_username(username)
+                )
+            }
 
         except ClientError as e:
             raise Exception(f"Authentication failed: {e.response['Error']['Message']}")
@@ -31,15 +49,16 @@ class AuthService:
         try:
             response = self.client.respond_to_auth_challenge(
                 ClientId=self.client_id,
-                ChallengeName='NEW_PASSWORD_REQUIRED',
-                ChallengeResponses={
-                    'USERNAME': username,
-                    'NEW_PASSWORD': password
-                },
-                Session=session
+                ChallengeName="NEW_PASSWORD_REQUIRED",
+                ChallengeResponses={"USERNAME": username, "NEW_PASSWORD": password},
+                Session=session,
             )
 
-            return {'token': self.generate_jwt(username, self.get_groups_by_username(username))}
+            return {
+                "token": self.generate_jwt(
+                    username, self.get_groups_by_username(username)
+                )
+            }
 
         except ClientError as e:
             raise Exception(f"Password reset failed: {e.response['Error']['Message']}")
@@ -47,10 +66,9 @@ class AuthService:
     def get_groups_by_username(self, username):
         try:
             response = self.client.admin_list_groups_for_user(
-                UserPoolId=os.getenv('COGNITO_USER_POOL_ID'),
-                Username=username
+                UserPoolId=os.getenv("COGNITO_USER_POOL_ID"), Username=username
             )
-            groups = [group['GroupName'] for group in response.get('Groups', [])]
+            groups = [group["GroupName"] for group in response.get("Groups", [])]
             return groups
         except ClientError as e:
             logging.error(f"Error fetching user groups: {e}")
@@ -58,11 +76,11 @@ class AuthService:
 
     def generate_jwt(self, username, groups):
         payload = {
-            'sub': username,
-            'username': username,
-            'groups': groups,  
-            'iat': datetime.utcnow(), 
-            'exp': datetime.utcnow() + timedelta(hours=1) 
+            "sub": username,
+            "username": username,
+            "groups": groups,
+            "iat": datetime.utcnow(),
+            "exp": datetime.utcnow() + timedelta(hours=1),
         }
 
         token = jwt.encode(payload, self.jwt_secret, algorithm=self.jwt_algorithm)

@@ -16,6 +16,7 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ session, username }) => {
         setError('');
 
         try {
+            console.log('Session in PasswordReset: ', session);
             const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -29,7 +30,7 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ session, username }) => {
 
             const data = await response.json();
             if (data.success) {
-                window.location.href = '/dashboard';
+                window.location.href = '/admin';
             } else {
                 setError('Failed to reset password. Please try again.');
             }

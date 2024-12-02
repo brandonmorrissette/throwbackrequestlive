@@ -27,19 +27,21 @@ const LoginForm: React.FC = () => {
 
         const data = await response.json();
 
-        if (response.ok && data.success) {
+        if (data.error.trim() === 'NEW_PASSWORD_REQUIRED') {
+            console.log('Session in LoginForm: ', data.session);
+            setSession(data.session);
+            setShowPasswordReset(true);
+        } else if (response.ok && data.success) {
             sessionStorage.setItem('auth_token', data.token);
             setToken(data.token);
             navigate('/admin');
-        } else if (data.error === 'New password required') {
-            setSession(data.session);
-            setShowPasswordReset(true);
         } else {
             setError('Invalid login credentials.');
         }
     };
 
     if (showPasswordReset) {
+        console.log('Session about to be passed to password reset: ', session);
         return <PasswordReset session={session} username={username} />;
     }
 
