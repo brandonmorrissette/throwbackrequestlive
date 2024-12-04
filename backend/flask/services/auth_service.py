@@ -1,5 +1,4 @@
 import logging
-import os
 from datetime import datetime, timedelta
 
 import boto3
@@ -8,25 +7,23 @@ from botocore.exceptions import ClientError
 
 
 class AuthService:
-    def __init__(self):
-        self.client = boto3.client(
-            "cognito-idp", region_name=os.getenv("COGNITO_REGION")
+    def __init__(self, config):
+        self._client = boto3.client(
+            "cognito-idp", region_name=config["cognito"]["COGNITO_REGION"]
         )
-        self.client_id = os.getenv("COGNITO_APP_CLIENT_ID")
-        self.jwt_secret = os.getenv("JWT_SECRET")
-        self.jwt_algorithm = "HS256"
+        self._client_id = config["cognito"]["COGNITO_APP_CLIENT_ID"]
+        self._user_pool_id = config["cognito"]["COGNITO_USER_POOL_ID"]
+        self._jwt_secret = config["jwt"]["JWT_SECRET_KEY"]
+        self._jwt_algorithm = "HS256"
 
     def authenticate_user(self, username, password):
         try:
-            response = self.client.initiate_auth(
-                ClientId=self.client_id,
+            response = self._client.initiate_auth(
+                ClientId=self._client_id,
                 AuthFlow="USER_PASSWORD_AUTH",
                 AuthParameters={"USERNAME": username, "PASSWORD": password},
             )
             if response.get("ChallengeName") == "NEW_PASSWORD_REQUIRED":
-                logging.info(
-                    f"Session during authentication: {response.get('Session')}"
-                )
                 return {
                     "token": self.generate_jwt(
                         username, self.get_groups_by_username(username)
@@ -46,8 +43,8 @@ class AuthService:
 
     def reset_password(self, username, password, session):
         try:
-            response = self.client.respond_to_auth_challenge(
-                ClientId=self.client_id,
+            response = self._client.respond_to_auth_challenge(
+                ClientId=self._client_id,
                 ChallengeName="NEW_PASSWORD_REQUIRED",
                 ChallengeResponses={"USERNAME": username, "NEW_PASSWORD": password},
                 Session=session,
@@ -64,8 +61,8 @@ class AuthService:
 
     def get_groups_by_username(self, username):
         try:
-            response = self.client.admin_list_groups_for_user(
-                UserPoolId=os.getenv("COGNITO_USER_POOL_ID"), Username=username
+            response = self._client.admin_list_groups_for_user(
+                UserPoolId=self._user_pool_id, Username=username
             )
             groups = [group["GroupName"] for group in response.get("Groups", [])]
             return groups
@@ -82,5 +79,5 @@ class AuthService:
             "exp": datetime.utcnow() + timedelta(hours=1),
         }
 
-        token = jwt.encode(payload, self.jwt_secret, algorithm=self.jwt_algorithm)
+        token = jwt.encode(payload, self._jwt_secret, algorithm=self._jwt_algorithm)
         return token

@@ -1,21 +1,20 @@
-import os
 from contextlib import contextmanager
 
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_NAME = os.getenv("DB_NAME")
-DB_ENGINE = os.getenv("DB_ENGINE", "postgresql")
-
-DATABASE_URL = f"{DB_ENGINE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
-
 
 class RDSService:
-    def __init__(self):
+    def __init__(self, config):
+        DB_USER = config["database"]["DB_USER"]
+        DB_PASSWORD = config["database"]["DB_PASSWORD"]
+        DB_HOST = config["database"]["DB_HOST"]
+        DB_NAME = config["database"]["DB_NAME"]
+        DB_ENGINE = config["database"]["DB_ENGINE"]
+
+        DATABASE_URL = f"{DB_ENGINE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+
         self.engine = create_engine(DATABASE_URL, pool_pre_ping=True)
         self.metadata = MetaData(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine)

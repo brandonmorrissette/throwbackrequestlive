@@ -1,5 +1,6 @@
 import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
+import DataManagement from '../components/pages/admin/DataManagement';
 import UserManagement from '../components/pages/admin/UserManagement';
 
 const Admin: React.FC = () => {
@@ -26,15 +27,14 @@ const Admin: React.FC = () => {
             <div>
                 {userGroups.includes('superuser') && (
                     <div>
-                        <h3>Superuser Content</h3>
                         <UserManagement />
                         <hr />
                     </div>
                 )}
                 {userGroups.includes('admin') && (
                     <div>
-                        <h3>Admin Content</h3>
-                        <p>Content for Admin group</p>
+                        <DataManagement />
+                        <hr />
                     </div>
                 )}
             </div>
@@ -49,12 +49,7 @@ const Admin: React.FC = () => {
         return content;
     };
 
-    return (
-        <div>
-            <h1>Admin Dashboard</h1>
-            {renderContent()}
-        </div>
-    );
+    return <div>{renderContent()}</div>;
 };
 
 export default Admin;

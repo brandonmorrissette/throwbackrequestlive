@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import apiRequest from '../../routing/Request';
 import ShowDetail from './ShowDetails';
 import styles from './Shows.module.css';
 
@@ -19,7 +20,9 @@ const Shows: React.FC = () => {
     useEffect(() => {
         const getShows = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/shows');
+                const response = await apiRequest(
+                    'http://localhost:5000/api/shows'
+                );
                 if (response.ok) {
                     const data = await response.json();
                     setShows(data);
