@@ -139,12 +139,16 @@ class UserManagementStack(Stack):
         superuser_task_definition.add_container(
             "superuser-container",
             image=ecs.ContainerImage.from_asset(
-                "backend/infra/environment_setup/create_superuser"
+                "infra/environment_setup/create_superuser"
             ),
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="superuser-creation",
                 log_group=log_group,
             ),
         )
-        
-        CfnOutput(self, "superuser-task-definition-arn", value=superuser_task_definition.task_definition_arn)
+
+        CfnOutput(
+            self,
+            "superuser-task-definition-arn",
+            value=superuser_task_definition.task_definition_arn,
+        )

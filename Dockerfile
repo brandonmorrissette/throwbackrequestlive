@@ -9,10 +9,10 @@ RUN npm run build
 # Python backend app
 FROM python:3.9-slim
 WORKDIR /app
-COPY backend/ ./backend
-COPY --from=react-build /frontend/dist ./backend/static/
-ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
-RUN pip install -r backend/requirements.txt
+COPY backend/ .
+COPY --from=react-build /frontend/dist ./flask/static/
+ENV PYTHONPATH "/app/"
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 5000
-CMD ["python", "backend/app.py"]
+CMD ["python", "flask/app.py"]

@@ -154,7 +154,6 @@ const UserManagement: React.FC = () => {
                 <tbody>
                     {users.map((user) =>
                         editingUser === user.username ? (
-                            // Editable Row
                             <tr key={user.username}>
                                 <td>
                                     <input
@@ -197,7 +196,6 @@ const UserManagement: React.FC = () => {
                                 </td>
                             </tr>
                         ) : (
-                            // Non-Editable Row
                             <tr key={user.username}>
                                 <td>{user.email}</td>
                                 <td>{user.username}</td>
@@ -221,8 +219,6 @@ const UserManagement: React.FC = () => {
                             </tr>
                         )
                     )}
-
-                    {/* Row for Adding a New User */}
                     <tr>
                         <td>
                             <input

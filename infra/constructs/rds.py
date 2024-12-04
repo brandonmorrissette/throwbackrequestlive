@@ -1,4 +1,5 @@
 from aws_cdk import aws_ec2 as ec2, aws_rds as rds, Duration
+from aws_cdk import aws_ssm as ssm
 from constructs import Construct
 
 
@@ -11,8 +12,15 @@ class RdsConstruct(Construct):
             ec2.Peer.ipv4(vpc.vpc_cidr_block), ec2.Port.tcp(5432), "Allow ECS to access RDS"
         )
 
+        db_name = project_name
+        ssm.StringParameter(
+            self, "DbNameParam",
+            parameter_name=f"/{project_name}/db-name",
+            string_value=db_name
+        )
         self.db_instance = rds.DatabaseInstance(
             self, "rds-instance",
+            database_name=db_name,
             engine=rds.DatabaseInstanceEngine.postgres(
                 version=rds.PostgresEngineVersion.VER_16_4
             ),
@@ -28,7 +36,6 @@ class RdsConstruct(Construct):
             multi_az=False,
             publicly_accessible=False,
             backup_retention=Duration.days(7),
-            database_name="throwbackrequestlive",
             security_groups=[rds_security_group],
             instance_identifier=f"{project_name}-rds-instance"
         )

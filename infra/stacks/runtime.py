@@ -13,6 +13,7 @@ class RuntimeStack(Stack):
         project_name: str,
         certificate: str,
         hosted_zone: str,
+        db_instance,
         vpc,
         **kwargs
     ):
@@ -24,6 +25,7 @@ class RuntimeStack(Stack):
             certificate=certificate,
             vpc=vpc,
             env=env,
+            db_instance=db_instance,
         ).runtime_service
 
         Route53Construct(
