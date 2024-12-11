@@ -5,15 +5,9 @@ import 'react-tabs/style/react-tabs.css';
 import apiRequest from '../../routing/Request';
 import Table from './Table';
 
-type TableMetadata = {
-    name: string;
-    recordCount: number;
-    lastUpdated: string;
-};
-
 const DataManagement: React.FC = () => {
-    const [tables, setTables] = useState<TableMetadata[]>([]);
-    const [openTables, setOpenTables] = useState<TableMetadata[]>([]);
+    const [tables, setTables] = useState<string[]>([]);
+    const [openTables, setOpenTables] = useState<string[]>([]);
     const [activeTabIndex, setActiveTabIndex] = useState<number>(0);
 
     useEffect(() => {
@@ -30,10 +24,8 @@ const DataManagement: React.FC = () => {
         }
     };
 
-    const handleTableClick = (table: TableMetadata) => {
-        const existingIndex = openTables.findIndex(
-            (t) => t.name === table.name
-        );
+    const handleTableClick = (table: string) => {
+        const existingIndex = openTables.findIndex((t) => t === table);
         if (existingIndex === -1) {
             setOpenTables([...openTables, table]);
             setActiveTabIndex(openTables.length);
@@ -64,7 +56,7 @@ const DataManagement: React.FC = () => {
             <Select
                 options={tables.map((table) => ({
                     value: table,
-                    label: `${table.name} (${table.recordCount})`,
+                    label: table,
                 }))}
                 placeholder="Search tables..."
                 onChange={handleSelectChange}
@@ -75,9 +67,8 @@ const DataManagement: React.FC = () => {
             >
                 <TabList>
                     {openTables.map((table, index) => (
-                        <Tab key={table.name} className="tab">
-                            {table.name}
-                            <span className="badge">{table.recordCount}</span>
+                        <Tab key={table} className="tab">
+                            {table}
                             <button
                                 className="close-button"
                                 onClick={() => handleTabClose(index)}
@@ -88,8 +79,8 @@ const DataManagement: React.FC = () => {
                     ))}
                 </TabList>
                 {openTables.map((table) => (
-                    <TabPanel key={table.name}>
-                        <Table tableName={table.name} />
+                    <TabPanel key={table}>
+                        <Table tableName={table} />
                     </TabPanel>
                 ))}
             </Tabs>
