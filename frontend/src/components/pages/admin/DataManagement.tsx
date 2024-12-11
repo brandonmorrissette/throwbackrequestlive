@@ -71,7 +71,7 @@ const DataManagement: React.FC = () => {
             />
             <Tabs
                 selectedIndex={activeTabIndex}
-                onSelect={(index: number) => setActiveTabIndex(index)} // Explicitly type 'index'
+                onSelect={(index: number) => setActiveTabIndex(index)}
             >
                 <TabList>
                     {openTables.map((table, index) => (

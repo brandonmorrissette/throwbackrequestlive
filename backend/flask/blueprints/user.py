@@ -2,10 +2,11 @@ import secrets
 import string
 
 from blueprints.blueprint import BaseBlueprint
-from flask import Blueprint, jsonify, request
+from flask import current_app as app
+from flask import jsonify, request
 
 
-class SuperuserBlueprint(BaseBlueprint):
+class UserBlueprint(BaseBlueprint):
     def _register_routes(self):
 
         @self._blueprint.route("/users", methods=["GET"])
@@ -14,6 +15,7 @@ class SuperuserBlueprint(BaseBlueprint):
                 users = self._service.list_users()
                 return jsonify(users), 200
             except Exception as e:
+                app.logger.error(f"Error listing users: {e}")
                 return jsonify({"error": str(e)}), 500
 
         @self._blueprint.route("/users", methods=["POST"])
@@ -27,6 +29,7 @@ class SuperuserBlueprint(BaseBlueprint):
                 self._service.add_user(email, username, groups)
                 return jsonify({"message": f"User {email} created successfully."}), 201
             except Exception as e:
+                app.logger.error(f"Error adding user: {e}")
                 return jsonify({"message": str(e)}), 400
 
         @self._blueprint.route("/users/<username>", methods=["PUT"])
@@ -45,6 +48,7 @@ class SuperuserBlueprint(BaseBlueprint):
                     200,
                 )
             except Exception as e:
+                app.logger.error(f"Error updating user: {e}")
                 return jsonify({"message": str(e)}), 400
 
         @self._blueprint.route("/users/<username>", methods=["DELETE"])
@@ -56,6 +60,7 @@ class SuperuserBlueprint(BaseBlueprint):
                     200,
                 )
             except Exception as e:
+                app.logger.error(f"Error deleting user: {e}")
                 return jsonify({"error": str(e)}), 400
 
         @self._blueprint.route("/groups", methods=["GET"])
@@ -64,6 +69,7 @@ class SuperuserBlueprint(BaseBlueprint):
                 groups = self._service.list_groups()
                 return jsonify(groups), 200
             except Exception as e:
+                app.logger.error(f"Error listing groups: {e}")
                 return jsonify({"message": str(e)}), 500
 
     def generate_temp_password(self):

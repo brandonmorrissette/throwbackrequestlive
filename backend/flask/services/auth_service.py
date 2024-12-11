@@ -14,6 +14,7 @@ class AuthService:
         self._client_id = config["cognito"]["COGNITO_APP_CLIENT_ID"]
         self._user_pool_id = config["cognito"]["COGNITO_USER_POOL_ID"]
         self._jwt_secret = config["jwt"]["JWT_SECRET_KEY"]
+        logging.info(f"JWT_SECRET_KEY : {self._jwt_secret}")
         self._jwt_algorithm = "HS256"
 
     def authenticate_user(self, username, password):

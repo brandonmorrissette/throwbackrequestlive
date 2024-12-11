@@ -10,6 +10,7 @@ RUN npm run build
 FROM python:3.9-slim
 WORKDIR /app
 COPY backend/ .
+
 COPY --from=react-build /frontend/dist ./flask/static/
 ENV PYTHONPATH "/app/"
 RUN pip install --no-cache-dir -r requirements.txt

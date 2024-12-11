@@ -13,6 +13,7 @@ class DataBlueprint(BaseBlueprint):
         def list_tables():
             try:
                 tables = self._service.list_tables()
+                app.logger.debug(f"Tables: {tables}")
                 return jsonify(list(tables)), 200
             except Exception as e:
                 app.logger.error(f"Error listing tables: {e}")

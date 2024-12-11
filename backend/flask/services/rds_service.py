@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 
 from sqlalchemy import MetaData, create_engine
@@ -11,9 +12,16 @@ class RDSService:
         DB_PASSWORD = config["database"]["DB_PASSWORD"]
         DB_HOST = config["database"]["DB_HOST"]
         DB_NAME = config["database"]["DB_NAME"]
-        DB_ENGINE = config["database"]["DB_ENGINE"]
+        DB_ENGINE = config["database"].get("DB_ENGINE", "postgresql")
+        DB_PORT = config["database"].get("DB_PORT", 5432)
 
-        DATABASE_URL = f"{DB_ENGINE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+        logging.debug(f"Connecting to database {DB_NAME} on {DB_HOST}")
+        logging.debug(f"Passowrd: {DB_PASSWORD}")
+
+        DATABASE_URL = (
+            f"{DB_ENGINE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+        )
+        logging.debug("Database URL: %s", DATABASE_URL)
 
         self.engine = create_engine(DATABASE_URL, pool_pre_ping=True)
         self.metadata = MetaData(bind=self.engine)

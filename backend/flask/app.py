@@ -4,7 +4,7 @@ import os
 from blueprints.auth import AuthBlueprint
 from blueprints.data import DataBlueprint
 from blueprints.render import RenderBlueprint
-from blueprints.superuser import SuperuserBlueprint
+from blueprints.user import UserBlueprint
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from services.auth_service import AuthService
@@ -29,16 +29,19 @@ CONFIG = {
         "DB_HOST": os.getenv("DB_HOST"),
         "DB_NAME": os.getenv("DB_NAME"),
         "DB_ENGINE": os.getenv("DB_ENGINE", "postgresql"),
+        "DB_PORT": os.getenv("DB_PORT", 5432),
     },
 }
 
 
 def _create_app():
     app = Flask(__name__)
-    logging.basicConfig(level=logging.DEBUG)
     app.logger.setLevel(logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG)
     for current in CONFIG:
         app.config.update(CONFIG[current])
+
+    app.logger.debug(f"Config : {app.config}")
 
     JWTManager(app)
 
@@ -49,7 +52,7 @@ def _create_app():
 
     # API Blueprints
     AuthBlueprint(app, auth_service)
-    SuperuserBlueprint(app, cognito_service)
+    UserBlueprint(app, cognito_service)
     DataBlueprint(app, rds_service)
 
     # Render Blueprints
