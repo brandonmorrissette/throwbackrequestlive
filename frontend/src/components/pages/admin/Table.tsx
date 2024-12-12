@@ -4,6 +4,8 @@ import apiRequest from '../../routing/Request';
 type Column = {
     name: string;
     type: string;
+    nullable: boolean;
+    foreignKeys: string[];
 };
 
 type Row = {
@@ -31,13 +33,13 @@ const mapInputType = (dbType: string): string => {
 
 const EditableRow: React.FC<{
     row: Row;
-    schema: Column[];
+    columns: Column[];
     onSave: () => void;
     onCancel: () => void;
     onChange: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
-}> = ({ row, schema, onSave, onCancel, onChange }) => (
+}> = ({ row, columns, onSave, onCancel, onChange }) => (
     <tr>
-        {schema.map((col) => (
+        {columns.map((col) => (
             <td key={col.name}>
                 <input
                     type={mapInputType(col.type)}
@@ -55,12 +57,12 @@ const EditableRow: React.FC<{
 
 const ReadOnlyRow: React.FC<{
     row: Row;
-    schema: Column[];
+    columns: Column[];
     onEdit: () => void;
     onDelete: () => void;
-}> = ({ row, schema, onEdit, onDelete }) => (
+}> = ({ row, columns, onEdit, onDelete }) => (
     <tr>
-        {schema.map((col) => (
+        {columns.map((col) => (
             <td key={col.name}>{row[col.name]}</td>
         ))}
         <td>
@@ -71,13 +73,13 @@ const ReadOnlyRow: React.FC<{
 );
 
 const AddRowForm: React.FC<{
-    schema: Column[];
+    columns: Column[];
     newRow: Row;
     onChange: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
     onAdd: () => void;
-}> = ({ schema, newRow, onChange, onAdd }) => (
+}> = ({ columns, newRow, onChange, onAdd }) => (
     <tr>
-        {schema.map((col) => (
+        {columns.map((col) => (
             <td key={col.name}>
                 <input
                     type={mapInputType(col.type)}
@@ -93,25 +95,26 @@ const AddRowForm: React.FC<{
 );
 
 const Table: React.FC<TableProps> = ({ tableName }) => {
-    const [schema, setSchema] = useState<Column[]>([]);
+    const [columns, setColumns] = useState<Column[]>([]);
     const [rows, setRows] = useState<Row[]>([]);
     const [editingRow, setEditingRow] = useState<number | null>(null);
     const [newRow, setNewRow] = useState<Row>({});
 
     useEffect(() => {
-        fetchSchema();
+        fetchColumns();
         fetchRows();
     }, [tableName]);
 
-    const fetchSchema = async () => {
+    const fetchColumns = async () => {
         try {
             const response = await apiRequest(
-                `/api/tables/${tableName}/schema`
+                `/api/tables/${tableName}/columns`
             );
             const data = await response.json();
-            setSchema(data);
+            console.log('Fetched column data:', data);
+            setColumns(data);
         } catch (error) {
-            console.error('Error fetching schema:', error);
+            console.error('Error fetching columns:', error);
         }
     };
 
@@ -191,7 +194,7 @@ const Table: React.FC<TableProps> = ({ tableName }) => {
     };
 
     const validateNewRow = () => {
-        for (const col of schema) {
+        for (const col of columns) {
             if (col.type !== 'VARCHAR' && !newRow[col.name]) {
                 alert(`Field ${col.name} is required.`);
                 return false;
@@ -206,7 +209,7 @@ const Table: React.FC<TableProps> = ({ tableName }) => {
             <table>
                 <thead>
                     <tr>
-                        {schema.map((col) => (
+                        {columns.map((col) => (
                             <th key={col.name}>{col.name}</th>
                         ))}
                         <th>Actions</th>
@@ -218,7 +221,7 @@ const Table: React.FC<TableProps> = ({ tableName }) => {
                             <EditableRow
                                 key={row.id || index}
                                 row={row}
-                                schema={schema}
+                                columns={columns}
                                 onSave={() => handleSaveRow(row, index)}
                                 onCancel={() => setEditingRow(null)}
                                 onChange={(e, key) =>
@@ -229,14 +232,14 @@ const Table: React.FC<TableProps> = ({ tableName }) => {
                             <ReadOnlyRow
                                 key={row.id || index}
                                 row={row}
-                                schema={schema}
+                                columns={columns}
                                 onEdit={() => setEditingRow(index)}
                                 onDelete={() => handleDeleteRow(row.id)}
                             />
                         )
                     )}
                     <AddRowForm
-                        schema={schema}
+                        columns={columns}
                         newRow={newRow}
                         onChange={(e, key) => handleInputChange(e, newRow, key)}
                         onAdd={() => {

@@ -15,18 +15,13 @@ class RDSService:
         DB_ENGINE = config["database"].get("DB_ENGINE", "postgresql")
         DB_PORT = config["database"].get("DB_PORT", 5432)
 
-        logging.debug(f"Connecting to database {DB_NAME} on {DB_HOST}")
-        logging.debug(f"Passowrd: {DB_PASSWORD}")
-
         DATABASE_URL = (
             f"{DB_ENGINE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
         )
-        logging.debug("Database URL: %s", DATABASE_URL)
 
         self.engine = create_engine(DATABASE_URL, pool_pre_ping=True)
         self.metadata = MetaData(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine)
-        self.table_schemas = {}
 
     @contextmanager
     def session_scope(self):
@@ -42,31 +37,39 @@ class RDSService:
 
     def refresh_metadata(self):
         self.metadata.reflect()
-        self.table_schemas = {
-            table.name: table for table in self.metadata.tables.values()
-        }
 
     def list_tables(self):
         self.refresh_metadata()
         return self.metadata.tables.keys()
 
-    def get_table_schema(self, table_name):
+    def get_columns(self, table_name):
         self.refresh_metadata()
-        table = self.table_schemas.get(table_name)
-        if not table:
+        table = self.metadata.tables.get(table_name)
+        if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
-        return {
-            "columns": [(col.name, str(col.type)) for col in table.columns],
-            "constraints": [str(constraint) for constraint in table.constraints],
-        }
+        return [
+            {
+                "name": column_name,
+                "type": str(column.type),
+                "nullable": column.nullable,
+                "foreign_keys": [
+                    {
+                        "column": fk.column.name,
+                        "table": fk.column.table.name,
+                    }
+                    for fk in column.foreign_keys
+                ],
+            }
+            for column_name, column in table.columns.items()
+        ]
 
     def validate_table_name(self, table_name):
         if table_name not in self.metadata.tables:
             raise ValueError(f"Table {table_name} does not exist.")
 
     def validate_columns(self, table_name, columns):
-        table = self.table_schemas.get(table_name)
-        if not table:
+        table = self.metadata.tables.get(table_name)
+        if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
         for column in columns:
             if column not in table.columns:
@@ -84,8 +87,9 @@ class RDSService:
         sort_order="asc",
     ):
         self.refresh_metadata()
-        table = self.table_schemas.get(table_name)
-        if not table:
+        table = self.metadata.tables.get(table_name)
+
+        if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
         with self.session_scope() as session:
             query = session.query(table)
@@ -104,16 +108,16 @@ class RDSService:
 
     def create_row(self, table_name, data):
         self.refresh_metadata()
-        table = self.table_schemas.get(table_name)
-        if not table:
+        table = self.metadata.tables.get(table_name)
+        if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
         with self.session_scope() as session:
             session.execute(table.insert().values(**data))
 
     def update_row(self, table_name, row_id, data):
         self.refresh_metadata()
-        table = self.table_schemas.get(table_name)
-        if not table:
+        table = self.metadata.tables.get(table_name)
+        if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
         primary_key = list(table.primary_key.columns)[0]
         with self.session_scope() as session:
@@ -121,8 +125,8 @@ class RDSService:
 
     def delete_row(self, table_name, row_id):
         self.refresh_metadata()
-        table = self.table_schemas.get(table_name)
-        if not table:
+        table = self.metadata.tables.get(table_name)
+        if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
         primary_key = list(table.primary_key.columns)[0]
         with self.session_scope() as session:

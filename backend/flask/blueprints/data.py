@@ -19,15 +19,15 @@ class DataBlueprint(BaseBlueprint):
                 app.logger.error(f"Error listing tables: {e}")
                 return jsonify({"error": str(e)}), 500
 
-        @self._blueprint.route("/tables/<table_name>/schema", methods=["GET"])
+        @self._blueprint.route("/tables/<table_name>/columns", methods=["GET"])
         @admin_required
-        def get_table_schema(table_name):
+        def get_columns(table_name):
             try:
                 self._service.validate_table_name(table_name)
-                schema = self._service.get_table_schema(table_name)
-                return jsonify(schema), 200
+                columns = self._service.get_columns(table_name)
+                return jsonify(columns), 200
             except Exception as e:
-                app.logger.error(f"Error getting table schema: {e}")
+                app.logger.error(f"Error getting table columns: {e}")
                 return jsonify({"error": str(e)}), 500
 
         @self._blueprint.route("/tables/<table_name>", methods=["GET"])
@@ -38,6 +38,11 @@ class DataBlueprint(BaseBlueprint):
             offset = request.args.get("offset")
             sort_by = request.args.get("sort_by")
             sort_order = request.args.get("sort_order", "asc")
+
+            app.logger.debug(
+                f"Filters: {filters}, Sort By: {sort_by}, Sort Order: {sort_order}, Limit: {limit}, Offset: {offset}"
+            )
+
             try:
                 self._service.validate_table_name(table_name)
                 rows = self._service.read_rows(
