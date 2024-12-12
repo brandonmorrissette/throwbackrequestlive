@@ -8,13 +8,14 @@
         "build": "tsc -b && vite build",
         "lint": "eslint .",
         "preview": "vite preview",
-        "build-and-move": "tsc -b && vite build && xcopy /E /I /Y dist\\ ..\\backend\\static\\"
+        "build-and-move": "tsc -b && vite build && xcopy /E /I /Y dist\\ ..\\backend\\flask\\static\\"
     },
     "dependencies": {
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "react-router-dom": "^6.2.1",
         "react-select": "^5.2.2",
+        "react-tabs": "6.0.2",
         "jwt-decode": "^3.1.2"
     },
     "devDependencies": {

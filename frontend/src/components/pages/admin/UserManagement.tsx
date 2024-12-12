@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
+import apiRequest from '../../routing/Request';
 
 type User = {
     username: string;
@@ -25,7 +26,7 @@ const UserManagement: React.FC = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await fetch('/api/users');
+            const response = await apiRequest('/api/users');
             const data = await response.json();
             setUsers(data);
         } catch (error) {
@@ -35,7 +36,7 @@ const UserManagement: React.FC = () => {
 
     const fetchGroups = async () => {
         try {
-            const response = await fetch('/api/groups');
+            const response = await apiRequest('/api/groups');
             const data: string[] = await response.json();
             setGroupOptions(
                 data.map((group) => ({ label: group, value: group }))
@@ -52,7 +53,7 @@ const UserManagement: React.FC = () => {
         }
 
         try {
-            const response = await fetch('/api/users', {
+            const response = await apiRequest('/api/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -92,7 +93,7 @@ const UserManagement: React.FC = () => {
         }
 
         try {
-            const response = await fetch(`/api/users/${username}`, {
+            const response = await apiRequest(`/api/users/${username}`, {
                 method: 'DELETE',
             });
 
@@ -112,7 +113,7 @@ const UserManagement: React.FC = () => {
 
     const handleSaveUser = async (user: User) => {
         try {
-            const response = await fetch(`/api/users/${user.username}`, {
+            const response = await apiRequest(`/api/users/${user.username}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -154,7 +155,6 @@ const UserManagement: React.FC = () => {
                 <tbody>
                     {users.map((user) =>
                         editingUser === user.username ? (
-                            // Editable Row
                             <tr key={user.username}>
                                 <td>
                                     <input
@@ -197,7 +197,6 @@ const UserManagement: React.FC = () => {
                                 </td>
                             </tr>
                         ) : (
-                            // Non-Editable Row
                             <tr key={user.username}>
                                 <td>{user.email}</td>
                                 <td>{user.username}</td>
@@ -221,8 +220,6 @@ const UserManagement: React.FC = () => {
                             </tr>
                         )
                     )}
-
-                    {/* Row for Adding a New User */}
                     <tr>
                         <td>
                             <input

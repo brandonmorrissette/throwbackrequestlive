@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import apiRequest from '../../routing/Request';
 import PasswordReset from './PasswordReset';
 
 const LoginForm: React.FC = () => {
@@ -19,7 +20,7 @@ const LoginForm: React.FC = () => {
         setLoading(true);
         setError('');
 
-        const response = await fetch('/api/login', {
+        const response = await apiRequest('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
