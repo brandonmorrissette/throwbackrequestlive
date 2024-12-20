@@ -1,11 +1,20 @@
-.container {
+:root {
+    --default-width: 60vw;
+    --wide-width: 95vw;
+}
+
+.content {
     background-color: var(--color-background-dark) !important;
     border-radius: 20px !important;
     padding: 10px;
-    max-width: 600px;
+    max-width: var(--default-width);
     margin: 20px auto;
     width: 100%;
     flex: 1;
     margin-top: 95px;
     margin-bottom: 70px;
+}
+
+.wide-content {
+    max-width: var(--wide-width) !important;
 }

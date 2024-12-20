@@ -1,4 +1,3 @@
-import logging
 from contextlib import contextmanager
 
 from sqlalchemy import MetaData, create_engine
@@ -6,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 
-class RDSService:
+class DataService:
     def __init__(self, config):
         DB_USER = config["database"]["DB_USER"]
         DB_PASSWORD = config["database"]["DB_PASSWORD"]
@@ -50,6 +49,7 @@ class RDSService:
         return [
             {
                 "name": column_name,
+                "field": column.name,
                 "type": str(column.type),
                 "nullable": column.nullable,
                 "foreign_keys": [
@@ -106,31 +106,36 @@ class RDSService:
                 query = query.offset(offset)
             return [row._asdict() for row in query.all()]
 
-    def create_row(self, table_name, data):
+    def write_rows(self, table_name, rows):
         self.refresh_metadata()
         table = self.metadata.tables.get(table_name)
         if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
-        with self.session_scope() as session:
-            session.execute(table.insert().values(**data))
 
-    def update_row(self, table_name, row_id, data):
-        self.refresh_metadata()
-        table = self.metadata.tables.get(table_name)
-        if table is None:
-            raise ValueError(f"Table {table_name} does not exist.")
-        primary_key = list(table.primary_key.columns)[0]
+        primary_key = list(table.primary_key.columns)[0].name
         with self.session_scope() as session:
-            session.execute(table.update().where(primary_key == row_id).values(**data))
+            existing_ids = {
+                row[primary_key] for row in session.query(table.c[primary_key]).all()
+            }
+            new_ids = {row[primary_key] for row in rows if primary_key in row}
 
-    def delete_row(self, table_name, row_id):
-        self.refresh_metadata()
-        table = self.metadata.tables.get(table_name)
-        if table is None:
-            raise ValueError(f"Table {table_name} does not exist.")
-        primary_key = list(table.primary_key.columns)[0]
-        with self.session_scope() as session:
-            session.execute(table.delete().where(primary_key == row_id))
+            rows_to_delete = existing_ids - new_ids
+            if rows_to_delete:
+                session.execute(
+                    table.delete().where(table.c[primary_key].in_(rows_to_delete))
+                )
+
+            new_rows = [row for row in rows if row[primary_key] not in existing_ids]
+            if new_rows:
+                session.execute(table.insert(), new_rows)
+
+            rows_to_update = [row for row in rows if row[primary_key] in existing_ids]
+            for row in rows_to_update:
+                session.execute(
+                    table.update()
+                    .where(table.c[primary_key] == row[primary_key])
+                    .values(**row)
+                )
 
     def execute_custom_query(self, query, params=None):
         with self.session_scope() as session:

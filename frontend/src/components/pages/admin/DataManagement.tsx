@@ -1,89 +1,65 @@
 import React, { useEffect, useState } from 'react';
-import Select from 'react-select';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
-import 'react-tabs/style/react-tabs.css';
-import apiRequest from '../../routing/Request';
+import { getColumns, getRows, getTableNames } from '../../../services/data';
 import Table from './Table';
+import TableSelector from './TableSelector';
 
 const DataManagement: React.FC = () => {
     const [tables, setTables] = useState<string[]>([]);
-    const [openTables, setOpenTables] = useState<string[]>([]);
-    const [activeTabIndex, setActiveTabIndex] = useState<number>(0);
+    const [selectedTable, setSelectedTable] = useState<string | null>(null);
+    const [tableData, setTableData] = useState<any[]>([]);
+    const [columnDefs, setColumnDefs] = useState<any[]>([]);
 
     useEffect(() => {
-        fetchTables();
+        fetchTableNames();
     }, []);
 
-    const fetchTables = async () => {
+    useEffect(() => {
+        if (selectedTable) {
+            fetchTableData(selectedTable);
+            fetchColumnDefs(selectedTable);
+        }
+    }, [selectedTable]);
+
+    const fetchTableNames = async () => {
         try {
-            const response = await apiRequest('/api/tables');
-            const data = await response.json();
+            const data = await getTableNames();
             setTables(data);
         } catch (error) {
-            console.error('Error fetching tables:', error);
+            console.error('Error fetching table names:', error);
         }
     };
 
-    const handleTableClick = (table: string) => {
-        const existingIndex = openTables.findIndex((t) => t === table);
-        if (existingIndex === -1) {
-            setOpenTables([...openTables, table]);
-            setActiveTabIndex(openTables.length);
-        } else {
-            setActiveTabIndex(existingIndex);
+    const fetchTableData = async (tableName: string) => {
+        try {
+            const data = await getRows(tableName);
+            setTableData(data);
+        } catch (error) {
+            console.error('Error fetching table data:', error);
         }
     };
 
-    const handleTabClose = (index: number) => {
-        const newOpenTables = openTables.filter((_, i) => i !== index);
-        setOpenTables(newOpenTables);
-        if (index === activeTabIndex) {
-            setActiveTabIndex(Math.max(0, index - 1));
-        } else if (index < activeTabIndex) {
-            setActiveTabIndex(activeTabIndex - 1);
-        }
-    };
-
-    const handleSelectChange = (selectedOption: any) => {
-        if (selectedOption) {
-            handleTableClick(selectedOption.value);
+    const fetchColumnDefs = async (tableName: string) => {
+        try {
+            const columns = await getColumns(tableName);
+            setColumnDefs(
+                columns.map((col: any) => ({ headerName: col.name }))
+            );
+        } catch (error) {
+            console.error('Error fetching column definitions:', error);
         }
     };
 
     return (
         <div>
             <h1>Data Management</h1>
-            <Select
-                options={tables.map((table) => ({
-                    value: table,
-                    label: table,
-                }))}
-                placeholder="Search tables..."
-                onChange={handleSelectChange}
-            />
-            <Tabs
-                selectedIndex={activeTabIndex}
-                onSelect={(index: number) => setActiveTabIndex(index)}
-            >
-                <TabList>
-                    {openTables.map((table, index) => (
-                        <Tab key={table} className="tab">
-                            {table}
-                            <button
-                                className="close-button"
-                                onClick={() => handleTabClose(index)}
-                            >
-                                x
-                            </button>
-                        </Tab>
-                    ))}
-                </TabList>
-                {openTables.map((table) => (
-                    <TabPanel key={table}>
-                        <Table tableName={table} />
-                    </TabPanel>
-                ))}
-            </Tabs>
+            <TableSelector tables={tables} onSelectTable={setSelectedTable} />
+            {selectedTable && (
+                <Table
+                    table_name={selectedTable}
+                    data={tableData}
+                    columns={columnDefs}
+                />
+            )}
         </div>
     );
 };

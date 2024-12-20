@@ -25,6 +25,7 @@ class DataBlueprint(BaseBlueprint):
             try:
                 self._service.validate_table_name(table_name)
                 columns = self._service.get_columns(table_name)
+                app.logger.debug(f"Columns: {columns}")
                 return jsonify(columns), 200
             except Exception as e:
                 app.logger.error(f"Error getting table columns: {e}")
@@ -32,7 +33,7 @@ class DataBlueprint(BaseBlueprint):
 
         @self._blueprint.route("/tables/<table_name>", methods=["GET"])
         @admin_required
-        def fetch_rows(table_name):
+        def read_rows(table_name):
             filters = request.args.get("filters")
             limit = request.args.get("limit")
             offset = request.args.get("offset")
@@ -48,46 +49,24 @@ class DataBlueprint(BaseBlueprint):
                 rows = self._service.read_rows(
                     table_name, filters, limit, offset, sort_by, sort_order
                 )
+                app.logger.debug(f"First 10 Rows: {rows[:10]}")
                 return jsonify(rows), 200
             except Exception as e:
                 app.logger.error(f"Error fetching rows: {e}")
                 return jsonify({"error": str(e)}), 500
 
-        @self._blueprint.route("/tables/<table_name>", methods=["POST"])
+        @self._blueprint.route("/tables/<table_name>", methods=["PUT"])
         @admin_required
-        def insert_row(table_name):
+        def write_rows(table_name):
             data = request.get_json()
+            rows = data.get("rows", [])
+            app.logger.debug(f"Writing rows: {rows}")
             try:
                 self._service.validate_table_name(table_name)
-                self._service.validate_columns(table_name, data.keys())
-                self._service.create_row(table_name, data)
-                return jsonify({"message": "Row inserted successfully."}), 201
+                result = self._service.write_rows(table_name, rows)
+                return jsonify(result), 200
             except Exception as e:
-                app.logger.error(f"Error inserting row: {e}")
-                return jsonify({"error": str(e)}), 500
-
-        @self._blueprint.route("/tables/<table_name>/<row_id>", methods=["PUT"])
-        @admin_required
-        def update_row(table_name, row_id):
-            data = request.get_json()
-            try:
-                self._service.validate_table_name(table_name)
-                self._service.validate_columns(table_name, data.keys())
-                self._service.update_row(table_name, row_id, data)
-                return jsonify({"message": "Row updated successfully."}), 200
-            except Exception as e:
-                app.logger.error(f"Error updating row: {e}")
-                return jsonify({"error": str(e)}), 500
-
-        @self._blueprint.route("/tables/<table_name>/<row_id>", methods=["DELETE"])
-        @admin_required
-        def delete_row(table_name, row_id):
-            try:
-                self._service.validate_table_name(table_name)
-                self._service.delete_row(table_name, row_id)
-                return jsonify({"message": "Row deleted successfully."}), 200
-            except Exception as e:
-                app.logger.error(f"Error deleting row: {e}")
+                app.logger.error(f"Error writing rows: {e}")
                 return jsonify({"error": str(e)}), 500
 
         @self._blueprint.route("/query", methods=["POST"])

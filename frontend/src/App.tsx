@@ -1,5 +1,10 @@
-import React from 'react';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import React, { ReactNode } from 'react';
+import {
+    Route,
+    BrowserRouter as Router,
+    Routes,
+    useLocation,
+} from 'react-router-dom';
 import Content from './components/app/content/Content';
 import Footer from './components/app/footer/Footer';
 import Header from './components/app/header/Header';
@@ -16,7 +21,7 @@ const App: React.FC = () => {
             <Router>
                 <div>
                     <Header />
-                    <Content>
+                    <ContentWrapper>
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route path="/vote" element={<Vote />} />
@@ -30,12 +35,24 @@ const App: React.FC = () => {
                                 }
                             />
                         </Routes>
-                    </Content>
+                    </ContentWrapper>
                     <Footer />
                 </div>
             </Router>
         </AuthProvider>
     );
+};
+
+interface ContentWrapperProps {
+    children: ReactNode;
+}
+
+const ContentWrapper: React.FC<ContentWrapperProps> = ({ children }) => {
+    const location = useLocation();
+    const isAdminRoute = location.pathname === '/admin';
+    const containerClass = isAdminRoute ? 'wide-content' : 'content';
+
+    return <Content className={containerClass}>{children}</Content>;
 };
 
 export default App;

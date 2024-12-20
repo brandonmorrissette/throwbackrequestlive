@@ -49,7 +49,7 @@ const Admin: React.FC = () => {
         return content;
     };
 
-    return <div>{renderContent()}</div>;
+    return renderContent();
 };
 
 export default Admin;

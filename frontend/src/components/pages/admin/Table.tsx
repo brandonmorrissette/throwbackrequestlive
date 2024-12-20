@@ -1,255 +1,157 @@
-import React, { useEffect, useState } from 'react';
-import apiRequest from '../../routing/Request';
+import {
+    AllCommunityModule,
+    GridReadyEvent,
+    ModuleRegistry,
+    RowSelectionOptions,
+} from 'ag-grid-community';
+import { AgGridReact } from 'ag-grid-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { writeRows } from '../../../services/data';
 
-type Column = {
-    name: string;
-    type: string;
-    nullable: boolean;
-    foreignKeys: string[];
-};
+ModuleRegistry.registerModules([AllCommunityModule]);
 
-type Row = {
+interface RowData {
     [key: string]: any;
-};
+}
+
+interface ColumnDef {
+    field: string;
+    headerName: string;
+    editable?: boolean;
+    filter?: boolean;
+    [key: string]: any;
+}
 
 type TableProps = {
-    tableName: string;
+    data: RowData[];
+    columns: ColumnDef[];
+    table_name: string;
 };
 
-const mapInputType = (dbType: string): string => {
-    switch (dbType.toUpperCase()) {
-        case 'VARCHAR':
-        case 'TEXT':
-            return 'text';
-        case 'INT':
-        case 'INTEGER':
-            return 'number';
-        case 'DATE':
-            return 'date';
-        default:
-            return 'text';
-    }
-};
-
-const EditableRow: React.FC<{
-    row: Row;
-    columns: Column[];
-    onSave: () => void;
-    onCancel: () => void;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
-}> = ({ row, columns, onSave, onCancel, onChange }) => (
-    <tr>
-        {columns.map((col) => (
-            <td key={col.name}>
-                <input
-                    type={mapInputType(col.type)}
-                    value={row[col.name] || ''}
-                    onChange={(e) => onChange(e, col.name)}
-                />
-            </td>
-        ))}
-        <td>
-            <button onClick={onSave}>Save</button>
-            <button onClick={onCancel}>Cancel</button>
-        </td>
-    </tr>
-);
-
-const ReadOnlyRow: React.FC<{
-    row: Row;
-    columns: Column[];
-    onEdit: () => void;
-    onDelete: () => void;
-}> = ({ row, columns, onEdit, onDelete }) => (
-    <tr>
-        {columns.map((col) => (
-            <td key={col.name}>{row[col.name]}</td>
-        ))}
-        <td>
-            <button onClick={onEdit}>Edit</button>
-            <button onClick={onDelete}>Delete</button>
-        </td>
-    </tr>
-);
-
-const AddRowForm: React.FC<{
-    columns: Column[];
-    newRow: Row;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
-    onAdd: () => void;
-}> = ({ columns, newRow, onChange, onAdd }) => (
-    <tr>
-        {columns.map((col) => (
-            <td key={col.name}>
-                <input
-                    type={mapInputType(col.type)}
-                    value={newRow[col.name] || ''}
-                    onChange={(e) => onChange(e, col.name)}
-                />
-            </td>
-        ))}
-        <td>
-            <button onClick={onAdd}>Add</button>
-        </td>
-    </tr>
-);
-
-const Table: React.FC<TableProps> = ({ tableName }) => {
-    const [columns, setColumns] = useState<Column[]>([]);
-    const [rows, setRows] = useState<Row[]>([]);
-    const [editingRow, setEditingRow] = useState<number | null>(null);
-    const [newRow, setNewRow] = useState<Row>({});
+const Table: React.FC<TableProps> = ({ data, columns, table_name }) => {
+    const [rowData, setRowData] = useState<RowData[]>(data);
+    const [columnDefs, setColumnDefs] = useState<ColumnDef[]>([]);
+    const [gridApi, setGridApi] = useState<any>(null);
+    const [selectedRows, setSelectedRows] = useState<RowData[]>([]);
+    const [unsavedChanges, setUnsavedChanges] = useState(false);
 
     useEffect(() => {
-        fetchColumns();
-        fetchRows();
-    }, [tableName]);
+        setRowData(data);
+    }, [data]);
 
-    const fetchColumns = async () => {
-        try {
-            const response = await apiRequest(
-                `/api/tables/${tableName}/columns`
-            );
-            const data = await response.json();
-            console.log('Fetched column data:', data);
-            setColumns(data);
-        } catch (error) {
-            console.error('Error fetching columns:', error);
+    useEffect(() => {
+        const updatedColumns = columns.map((column) => ({
+            ...column,
+            editable: true,
+            filter: true,
+            field: column.field || column.headerName || '',
+        }));
+        setColumnDefs(updatedColumns);
+    }, [columns]);
+
+    useEffect(() => {
+        return () => {
+            gridApi?.removeEventListener('rowSelected', onRowSelected);
+        };
+    }, [gridApi]);
+
+    const onGridReady = (params: GridReadyEvent) => {
+        setGridApi(params.api);
+        params.api.addEventListener('rowSelected', onRowSelected);
+    };
+
+    const onRowSelected = (event: any) => {
+        const selectedNodes = event.api.getSelectedNodes();
+        const selectedData = selectedNodes.map((node: any) => node.data);
+        setSelectedRows(selectedData);
+    };
+
+    const onCellValueChanged = (event: any) => {
+        const updatedRowData = rowData.map((row) =>
+            row.id === event.data.id ? event.data : row
+        );
+        setRowData(updatedRowData);
+        setUnsavedChanges(true);
+    };
+
+    const addRow = () => {
+        if (gridApi) {
+            const newRow: RowData = columnDefs.reduce((acc, col) => {
+                acc[col.field] = col.field;
+                return acc;
+            }, {} as RowData);
+            gridApi.applyTransaction({ add: [newRow] });
+            setRowData((prevRowData) => [...prevRowData, newRow]);
+            setUnsavedChanges(true);
         }
     };
 
-    const fetchRows = async () => {
-        try {
-            const response = await apiRequest(`/api/tables/${tableName}`);
-            const data = await response.json();
-            setRows(data);
-        } catch (error) {
-            console.error('Error fetching rows:', error);
-        }
-    };
+    const deleteRow = () => {
+        if (gridApi && selectedRows.length > 0) {
+            gridApi.applyTransaction({ remove: selectedRows });
 
-    const handleSaveRow = async (row: Row, index: number | null) => {
-        try {
-            const method = index === null ? 'POST' : 'PUT';
-            const url =
-                index === null
-                    ? `/api/tables/${tableName}`
-                    : `/api/tables/${tableName}/${row.id}`;
-            const response = await apiRequest(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(row),
-            });
-
-            if (response.ok) {
-                if (index === null) {
-                    setRows([...rows, row]);
-                    setNewRow({});
-                } else {
-                    setRows(rows.map((r, i) => (i === index ? row : r)));
-                    setEditingRow(null);
-                }
-            } else {
-                console.error('Error saving row:', await response.json());
-            }
-        } catch (error) {
-            console.error('An unexpected error occurred:', error);
-        }
-    };
-
-    const handleDeleteRow = async (id: number) => {
-        if (!window.confirm('Are you sure you want to delete this row?')) {
-            return;
-        }
-
-        try {
-            const response = await apiRequest(
-                `/api/tables/${tableName}/${id}`,
-                {
-                    method: 'DELETE',
-                }
+            setRowData((prevRowData) =>
+                prevRowData.filter((row) => !selectedRows.includes(row))
             );
 
-            if (response.ok) {
-                setRows(rows.filter((row) => row.id !== id));
-            } else {
-                console.error('Error deleting row:', await response.json());
-            }
+            setSelectedRows([]);
+            setUnsavedChanges(true);
+        }
+    };
+
+    const saveChanges = async () => {
+        try {
+            await writeRows(table_name, rowData);
+            setUnsavedChanges(false);
         } catch (error) {
-            console.error('An unexpected error occurred:', error);
+            console.error('Error saving changes:', error);
         }
     };
 
-    const handleInputChange = (
-        e: React.ChangeEvent<HTMLInputElement>,
-        row: Row,
-        key: string
-    ) => {
-        const updatedRow = { ...row, [key]: e.target.value };
-        if (editingRow === null) {
-            setNewRow(updatedRow);
-        } else {
-            setRows(rows.map((r, i) => (i === editingRow ? updatedRow : r)));
-        }
-    };
+    const rowSelection = useMemo<
+        RowSelectionOptions | 'single' | 'multiple'
+    >(() => {
+        return {
+            mode: 'multiRow',
+        };
+    }, []);
 
-    const validateNewRow = () => {
-        for (const col of columns) {
-            if (col.type !== 'VARCHAR' && !newRow[col.name]) {
-                alert(`Field ${col.name} is required.`);
-                return false;
-            }
-        }
-        return true;
+    const rowClassRules = {
+        'selected-row': (params: any) => params.node.isSelected(),
     };
 
     return (
         <div>
-            <h1>{tableName} Management</h1>
-            <table>
-                <thead>
-                    <tr>
-                        {columns.map((col) => (
-                            <th key={col.name}>{col.name}</th>
-                        ))}
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((row, index) =>
-                        editingRow === index ? (
-                            <EditableRow
-                                key={row.id || index}
-                                row={row}
-                                columns={columns}
-                                onSave={() => handleSaveRow(row, index)}
-                                onCancel={() => setEditingRow(null)}
-                                onChange={(e, key) =>
-                                    handleInputChange(e, row, key)
-                                }
-                            />
-                        ) : (
-                            <ReadOnlyRow
-                                key={row.id || index}
-                                row={row}
-                                columns={columns}
-                                onEdit={() => setEditingRow(index)}
-                                onDelete={() => handleDeleteRow(row.id)}
-                            />
-                        )
-                    )}
-                    <AddRowForm
-                        columns={columns}
-                        newRow={newRow}
-                        onChange={(e, key) => handleInputChange(e, newRow, key)}
-                        onAdd={() => {
-                            if (validateNewRow()) {
-                                handleSaveRow(newRow, null);
-                            }
-                        }}
-                    />
-                </tbody>
-            </table>
+            <div
+                className="ag-theme-quartz"
+                style={{
+                    height: 400,
+                    padding: '10px',
+                    margin: '0 auto',
+                }}
+            >
+                <AgGridReact
+                    rowData={rowData}
+                    columnDefs={columnDefs}
+                    rowSelection={rowSelection}
+                    onGridReady={onGridReady}
+                    onCellValueChanged={onCellValueChanged}
+                    rowClassRules={rowClassRules}
+                />
+            </div>
+            <div className="button-group">
+                <button onClick={addRow}>Add Row</button>
+                <button
+                    onClick={deleteRow}
+                    disabled={selectedRows.length === 0}
+                >
+                    Delete Row
+                </button>
+                <button onClick={saveChanges} disabled={!unsavedChanges}>
+                    Save Changes
+                </button>
+            </div>
+            {unsavedChanges}
         </div>
     );
 };

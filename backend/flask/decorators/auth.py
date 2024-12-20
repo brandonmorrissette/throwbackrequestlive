@@ -1,7 +1,7 @@
 from functools import wraps
 
 from flask import current_app as app
-from flask import jsonify, request
+from flask import jsonify
 from flask_jwt_extended import get_jwt, verify_jwt_in_request
 
 

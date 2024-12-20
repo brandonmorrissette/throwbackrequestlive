@@ -1,15 +1,17 @@
 import logging
 import os
+from datetime import time
 
 from blueprints.auth import AuthBlueprint
 from blueprints.data import DataBlueprint
 from blueprints.render import RenderBlueprint
 from blueprints.user import UserBlueprint
 from flask import Flask
+from flask.json.provider import DefaultJSONProvider
 from flask_jwt_extended import JWTManager
-from services.auth_service import AuthService
-from services.cognito_service import CognitoService
-from services.rds_service import RDSService
+from services.auth import AuthService
+from services.cognito import CognitoService
+from services.data import DataService
 
 CONFIG = {
     "jwt": {
@@ -34,13 +36,21 @@ CONFIG = {
 }
 
 
+class JSONProvider(DefaultJSONProvider):
+    def default(self, obj):
+        if isinstance(obj, time):
+            return None
+        return super().default(obj)
+
+
 def _create_app():
     app = Flask(__name__)
+    app.json = JSONProvider(app)
     app.logger.setLevel(logging.DEBUG)
     logging.basicConfig(level=logging.DEBUG)
+
     for current in CONFIG:
         app.config.update(CONFIG[current])
-
     app.logger.debug(f"Config : {app.config}")
 
     JWTManager(app)
@@ -48,12 +58,12 @@ def _create_app():
     # Services
     auth_service = AuthService(CONFIG)
     cognito_service = CognitoService(CONFIG)
-    rds_service = RDSService(CONFIG)
+    data_service = DataService(CONFIG)
 
     # API Blueprints
     AuthBlueprint(app, auth_service)
     UserBlueprint(app, cognito_service)
-    DataBlueprint(app, rds_service)
+    DataBlueprint(app, data_service)
 
     # Render Blueprints
     RenderBlueprint(app, url_prefix="")

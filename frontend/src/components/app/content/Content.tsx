@@ -1,8 +1,16 @@
 import React from 'react';
 import styles from './Content.module.css';
 
-const Content: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return <main className={styles['container']}>{children}</main>;
+interface ContentProps {
+    className?: string;
+    children: React.ReactNode;
+}
+
+const Content: React.FC<ContentProps> = ({ className, children }) => {
+    const contentClass = className
+        ? `${styles.content} ${styles[className]}`
+        : styles.content;
+    return <div className={contentClass}>{children}</div>;
 };
 
 export default Content;
