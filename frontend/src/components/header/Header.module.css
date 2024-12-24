@@ -2,7 +2,7 @@
     position: fixed;
     width: 100%;
     top: 0;
-    background-image: url('../../../assets/header.webp');
+    background-image: url('../../assets/header.webp');
     box-shadow: 10px 8px var(--color-box-shadow);
 }
 

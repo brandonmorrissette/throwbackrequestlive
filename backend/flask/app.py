@@ -33,6 +33,10 @@ CONFIG = {
         "DB_ENGINE": os.getenv("DB_ENGINE", "postgresql"),
         "DB_PORT": os.getenv("DB_PORT", 5432),
     },
+    "redis": {
+        "REDIS_HOST": os.getenv("REDIS_HOST", "redis"),
+        "REDIS_PORT": os.getenv("REDIS_PORT", 6379),
+    },
 }
 
 

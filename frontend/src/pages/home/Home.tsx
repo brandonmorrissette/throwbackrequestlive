@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import Modal from '../components/app/modal/Modal';
-import Shows from '../components/pages/home/Shows';
-import ThankYou from '../components/pages/home/ThankYou';
+import Modal from '../../components/modal/Modal';
+import Shows from './Shows';
+import ThankYou from './ThankYou';
 
 const Home: React.FC = () => {
     const location = useLocation();

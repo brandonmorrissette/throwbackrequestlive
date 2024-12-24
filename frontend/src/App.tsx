@@ -5,15 +5,15 @@ import {
     Routes,
     useLocation,
 } from 'react-router-dom';
-import Content from './components/app/content/Content';
-import Footer from './components/app/footer/Footer';
-import Header from './components/app/header/Header';
-import ProtectedRoute from './components/routing/ProtectedRoute';
-import { AuthProvider } from './context/AuthContext';
-import Admin from './pages/Admin';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Vote from './pages/Vote';
+import Content from './components/content/Content';
+import Footer from './components/footer/Footer';
+import Header from './components/header/Header';
+import { AuthProvider } from './contexts/AuthContext';
+import Admin from './pages/admin/Admin';
+import Home from './pages/home/Home';
+import Login from './pages/login/Login';
+import Vote from './pages/request/Vote';
+import ProtectedRoute from './routing/ProtectedRoute';
 
 const App: React.FC = () => {
     return (
@@ -43,6 +43,8 @@ const App: React.FC = () => {
     );
 };
 
+// The admin area is not expected to be mobile, hence the wider content.
+// The following code is exclusively for that
 interface ContentWrapperProps {
     children: ReactNode;
 }

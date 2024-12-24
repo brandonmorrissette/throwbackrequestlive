@@ -6,7 +6,7 @@ import {
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import React, { useEffect, useMemo, useState } from 'react';
-import { writeRows } from '../../../services/data';
+import { useServices } from '../../contexts/TableServiceContext';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -14,23 +14,56 @@ interface RowData {
     [key: string]: any;
 }
 
-interface ColumnDef {
+export class ColumnDef {
     field: string;
     headerName: string;
-    editable?: boolean;
-    filter?: boolean;
-    [key: string]: any;
+
+    constructor(field: string, headerName: string, ...additionalProps: any[]) {
+        this.field = field;
+        this.headerName = headerName;
+
+        additionalProps.forEach((prop) => {
+            Object.assign(this, prop);
+        });
+    }
+}
+
+export class Properties {
+    name: string;
+    columns: ColumnDef[];
+    primaryKeys: ColumnDef[];
+
+    constructor(
+        name: string,
+        columns: ColumnDef[],
+        primaryKeys?: ColumnDef[],
+        ...additionalProps: any[]
+    ) {
+        this.name = name;
+        this.columns = columns;
+        this.primaryKeys = primaryKeys || [];
+
+        additionalProps.forEach((prop) => {
+            Object.entries(prop).forEach(([key, value]) => {
+                if (!(key in this)) {
+                    (this as any)[key] = value;
+                } else {
+                    console.log('Property already exists:', key);
+                }
+            });
+        });
+    }
 }
 
 type TableProps = {
     data: RowData[];
-    columns: ColumnDef[];
-    table_name: string;
+    properties: Properties;
 };
 
-const Table: React.FC<TableProps> = ({ data, columns, table_name }) => {
+const Table: React.FC<TableProps> = ({ data, properties }) => {
+    const { tableService } = useServices();
     const [rowData, setRowData] = useState<RowData[]>(data);
-    const [columnDefs, setColumnDefs] = useState<ColumnDef[]>([]);
+    const [tableProperties, setProperties] = useState<Properties>(properties);
     const [gridApi, setGridApi] = useState<any>(null);
     const [selectedRows, setSelectedRows] = useState<RowData[]>([]);
     const [unsavedChanges, setUnsavedChanges] = useState(false);
@@ -40,14 +73,8 @@ const Table: React.FC<TableProps> = ({ data, columns, table_name }) => {
     }, [data]);
 
     useEffect(() => {
-        const updatedColumns = columns.map((column) => ({
-            ...column,
-            editable: true,
-            filter: true,
-            field: column.field || column.headerName || '',
-        }));
-        setColumnDefs(updatedColumns);
-    }, [columns]);
+        setProperties(properties);
+    }, [properties]);
 
     useEffect(() => {
         return () => {
@@ -67,19 +94,19 @@ const Table: React.FC<TableProps> = ({ data, columns, table_name }) => {
     };
 
     const onCellValueChanged = (event: any) => {
-        const updatedRowData = rowData.map((row) =>
-            row.id === event.data.id ? event.data : row
-        );
+        const updatedRowData = rowData.map((row) => {
+            const isPrimaryKeyMatch = tableProperties.primaryKeys.every(
+                (key) => row[key.field] === event.data[key.field]
+            );
+            return isPrimaryKeyMatch ? event.data : row;
+        });
         setRowData(updatedRowData);
         setUnsavedChanges(true);
     };
 
     const addRow = () => {
         if (gridApi) {
-            const newRow: RowData = columnDefs.reduce((acc, col) => {
-                acc[col.field] = col.field;
-                return acc;
-            }, {} as RowData);
+            const newRow: RowData = {} as RowData;
             gridApi.applyTransaction({ add: [newRow] });
             setRowData((prevRowData) => [...prevRowData, newRow]);
             setUnsavedChanges(true);
@@ -101,7 +128,7 @@ const Table: React.FC<TableProps> = ({ data, columns, table_name }) => {
 
     const saveChanges = async () => {
         try {
-            await writeRows(table_name, rowData);
+            await tableService.writeRows(tableProperties.name, rowData);
             setUnsavedChanges(false);
         } catch (error) {
             console.error('Error saving changes:', error);
@@ -132,11 +159,12 @@ const Table: React.FC<TableProps> = ({ data, columns, table_name }) => {
             >
                 <AgGridReact
                     rowData={rowData}
-                    columnDefs={columnDefs}
+                    columnDefs={tableProperties.columns}
                     rowSelection={rowSelection}
                     onGridReady={onGridReady}
                     onCellValueChanged={onCellValueChanged}
                     rowClassRules={rowClassRules}
+                    {...tableProperties}
                 />
             </div>
             <div className="button-group">

@@ -1,7 +1,7 @@
 import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
-import DataManagement from '../components/pages/admin/DataManagement';
-import UserManagement from '../components/pages/admin/UserManagement';
+import DataManagement from './DataManagement';
+import UserManagement from './UserManagement';
 
 const Admin: React.FC = () => {
     const [userGroups, setUserGroups] = useState<string[]>([]);

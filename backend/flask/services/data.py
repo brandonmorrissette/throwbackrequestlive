@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 
 from sqlalchemy import MetaData, create_engine
@@ -41,41 +42,17 @@ class DataService:
         self.refresh_metadata()
         return self.metadata.tables.keys()
 
-    def get_columns(self, table_name):
+    def get_table_properties(self, table_name):
         self.refresh_metadata()
         table = self.metadata.tables.get(table_name)
         if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
-        return [
-            {
-                "name": column_name,
-                "field": column.name,
-                "type": str(column.type),
-                "nullable": column.nullable,
-                "foreign_keys": [
-                    {
-                        "column": fk.column.name,
-                        "table": fk.column.table.name,
-                    }
-                    for fk in column.foreign_keys
-                ],
-            }
-            for column_name, column in table.columns.items()
-        ]
+        logging.debug(f"Table: {table}")
+        return table
 
     def validate_table_name(self, table_name):
         if table_name not in self.metadata.tables:
             raise ValueError(f"Table {table_name} does not exist.")
-
-    def validate_columns(self, table_name, columns):
-        table = self.metadata.tables.get(table_name)
-        if table is None:
-            raise ValueError(f"Table {table_name} does not exist.")
-        for column in columns:
-            if column not in table.columns:
-                raise ValueError(
-                    f"Column {column} does not exist in table {table_name}."
-                )
 
     def read_rows(
         self,

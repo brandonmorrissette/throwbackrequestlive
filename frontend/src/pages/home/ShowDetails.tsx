@@ -1,5 +1,5 @@
 import React from 'react';
-import Modal from '../../app/modal/Modal';
+import Modal from '../../components/modal/Modal';
 
 interface Show {
     name: string;

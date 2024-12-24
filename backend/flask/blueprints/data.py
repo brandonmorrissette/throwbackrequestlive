@@ -1,3 +1,6 @@
+import logging
+from collections.abc import Iterable
+
 from blueprints.blueprint import BaseBlueprint
 from decorators.auth import admin_required
 from flask import current_app as app
@@ -19,16 +22,18 @@ class DataBlueprint(BaseBlueprint):
                 app.logger.error(f"Error listing tables: {e}")
                 return jsonify({"error": str(e)}), 500
 
-        @self._blueprint.route("/tables/<table_name>/columns", methods=["GET"])
+        @self._blueprint.route("/tables/<table_name>/properties", methods=["GET"])
         @admin_required
-        def get_columns(table_name):
+        def get_table_properties(table_name):
             try:
                 self._service.validate_table_name(table_name)
-                columns = self._service.get_columns(table_name)
-                app.logger.debug(f"Columns: {columns}")
-                return jsonify(columns), 200
+                properties = self._serialize(
+                    self._service.get_table_properties(table_name)
+                )
+                app.logger.debug(f"Properties: {properties}")
+                return jsonify(properties), 200
             except Exception as e:
-                app.logger.error(f"Error getting table columns: {e}")
+                app.logger.error(f"Error getting table properties: {e}")
                 return jsonify({"error": str(e)}), 500
 
         @self._blueprint.route("/tables/<table_name>", methods=["GET"])
@@ -81,3 +86,26 @@ class DataBlueprint(BaseBlueprint):
             except Exception as e:
                 app.logger.error(f"Error executing query: {e}")
                 return jsonify({"error": str(e)}), 500
+
+    def _serialize(self, obj, max_depth=5, current_depth=0):
+        if current_depth >= max_depth:
+            return str(obj)
+        logging.debug(f"Serializing: {obj}")
+
+        current_depth += 1
+        if isinstance(obj, (str, int, float, bool)) or obj is None:
+            logging.debug(f"Returning: {obj}")
+            return obj
+        if isinstance(obj, dict):
+            logging.debug(f"Dict. Invoking serialize on: {obj}")
+            return {
+                k: self._serialize(v, current_depth=current_depth)
+                for k, v in obj.items()
+            }
+        if isinstance(obj, Iterable) and not isinstance(obj, str):
+            logging.debug(f"Iterable. Invoking serialize on: {obj}")
+            return [self._serialize(i, current_depth=current_depth) for i in obj]
+        if hasattr(obj, "__dict__"):
+            logging.debug(f"Has dict. Invoking serialize on: {obj.__dict__}")
+            return self._serialize(obj.__dict__, current_depth=current_depth)
+        return str(obj)
