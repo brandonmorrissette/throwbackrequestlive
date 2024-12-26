@@ -90,22 +90,17 @@ class DataBlueprint(BaseBlueprint):
     def _serialize(self, obj, max_depth=5, current_depth=0):
         if current_depth >= max_depth:
             return str(obj)
-        logging.debug(f"Serializing: {obj}")
 
         current_depth += 1
         if isinstance(obj, (str, int, float, bool)) or obj is None:
-            logging.debug(f"Returning: {obj}")
             return obj
         if isinstance(obj, dict):
-            logging.debug(f"Dict. Invoking serialize on: {obj}")
             return {
                 k: self._serialize(v, current_depth=current_depth)
                 for k, v in obj.items()
             }
         if isinstance(obj, Iterable) and not isinstance(obj, str):
-            logging.debug(f"Iterable. Invoking serialize on: {obj}")
             return [self._serialize(i, current_depth=current_depth) for i in obj]
         if hasattr(obj, "__dict__"):
-            logging.debug(f"Has dict. Invoking serialize on: {obj.__dict__}")
             return self._serialize(obj.__dict__, current_depth=current_depth)
         return str(obj)

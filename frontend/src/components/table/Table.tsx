@@ -69,6 +69,7 @@ const Table: React.FC<TableProps> = ({ data, properties }) => {
     const [unsavedChanges, setUnsavedChanges] = useState(false);
 
     useEffect(() => {
+        console.log('Table::useEffect', data);
         setRowData(data);
     }, [data]);
 
@@ -129,6 +130,10 @@ const Table: React.FC<TableProps> = ({ data, properties }) => {
     const saveChanges = async () => {
         try {
             await tableService.writeRows(tableProperties.name, rowData);
+            const updatedRows = await tableService.readRows(
+                tableProperties.name
+            );
+            setRowData(updatedRows);
             setUnsavedChanges(false);
         } catch (error) {
             console.error('Error saving changes:', error);
@@ -164,7 +169,6 @@ const Table: React.FC<TableProps> = ({ data, properties }) => {
                     onGridReady={onGridReady}
                     onCellValueChanged={onCellValueChanged}
                     rowClassRules={rowClassRules}
-                    {...tableProperties}
                 />
             </div>
             <div className="button-group">

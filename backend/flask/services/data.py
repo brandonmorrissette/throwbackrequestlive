@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Iterable
 from contextlib import contextmanager
 
 from sqlalchemy import MetaData, create_engine
@@ -123,3 +124,21 @@ class DataService:
         with self.session_scope() as session:
             version = session.execute("SELECT version()").scalar()
             return version
+
+    def _serialize(self, obj, max_depth=5, current_depth=0):
+        if current_depth >= max_depth:
+            return str(obj)
+
+        current_depth += 1
+        if isinstance(obj, (str, int, float, bool)) or obj is None:
+            return obj
+        if isinstance(obj, dict):
+            return {
+                k: self._serialize(v, current_depth=current_depth)
+                for k, v in obj.items()
+            }
+        if isinstance(obj, Iterable) and not isinstance(obj, str):
+            return [self._serialize(i, current_depth=current_depth) for i in obj]
+        if hasattr(obj, "__dict__"):
+            return self._serialize(obj.__dict__, current_depth=current_depth)
+        return str(obj)
