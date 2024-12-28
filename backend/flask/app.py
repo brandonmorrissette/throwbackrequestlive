@@ -51,7 +51,10 @@ def _create_app():
     app = Flask(__name__)
     app.json = JSONProvider(app)
     app.logger.setLevel(logging.DEBUG)
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s %(name)s:%(levelname)s:%(pathname)s:%(lineno)d:%(message)s",
+    )
 
     for current in CONFIG:
         app.config.update(CONFIG[current])

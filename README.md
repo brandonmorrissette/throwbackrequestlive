@@ -15,8 +15,9 @@ To Do
 -   File by file analysis. I want to understand ever line of code and if it's needed AND best practice. Will review with AI.
 -   Code quality and testing
 -   Explore the ExecutionRole for StorageStack. I'd like a central Execution role but that is causing circular dependencies.
--   Learn React
+-   Learn React and other front end libraries used
     -   Context
+    -   Proper inheritance for AG Grid ColumnDefs and AG Grid in general
 -   Footer covers up bottom still
 -   Update cognito_service to validate JWT
 -   Much better password reset
@@ -32,5 +33,5 @@ To Do
 -   DRY in the cognito and data services with SQLAlchemy. It's small enough I don't know if I care, but feels like something that could grow.
 -   additionalProps typing in DataManagement
 -   Dynamic table properties for user flow
--   Production logging
+-   Environment logging configuration
 -   Only Update Cognito users when there have been actual updates

@@ -1,5 +1,3 @@
-import logging
-from collections.abc import Iterable
 from contextlib import contextmanager
 
 from sqlalchemy import MetaData, create_engine
@@ -23,6 +21,7 @@ class DataService:
         self.engine = create_engine(DATABASE_URL, pool_pre_ping=True)
         self.metadata = MetaData(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine)
+        self.refresh_metadata()
 
     @contextmanager
     def session_scope(self):
@@ -48,7 +47,6 @@ class DataService:
         table = self.metadata.tables.get(table_name)
         if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
-        logging.debug(f"Table: {table}")
         return table
 
     def validate_table_name(self, table_name):
@@ -125,20 +123,25 @@ class DataService:
             version = session.execute("SELECT version()").scalar()
             return version
 
-    def _serialize(self, obj, max_depth=5, current_depth=0):
-        if current_depth >= max_depth:
-            return str(obj)
 
-        current_depth += 1
-        if isinstance(obj, (str, int, float, bool)) or obj is None:
-            return obj
-        if isinstance(obj, dict):
-            return {
-                k: self._serialize(v, current_depth=current_depth)
-                for k, v in obj.items()
-            }
-        if isinstance(obj, Iterable) and not isinstance(obj, str):
-            return [self._serialize(i, current_depth=current_depth) for i in obj]
-        if hasattr(obj, "__dict__"):
-            return self._serialize(obj.__dict__, current_depth=current_depth)
-        return str(obj)
+def _serialize(obj, seen=None):
+    if seen is None:
+        seen = set()
+
+    if isinstance(obj, (int, float, str, bool, type(None))):
+        return obj
+
+    # I like this implementation better than what I have in data blueprint
+    # But I never got it working. Infinitely recursive.
+    # I tried comparing ids but memories did not align
+    # Tried hashing but some objects weren't hashable and it felt like the same exact issue.
+    # It's first on the tech debt list.
+
+    if hasattr(obj, "items"):
+        return {key: _serialize(value, seen=seen) for key, value in obj.items()}
+    elif hasattr(obj, "__iter__") and not isinstance(obj, (str, bytes)):
+        return [_serialize(item, seen=seen) for item in obj]
+    elif hasattr(obj, "__dict__"):
+        return _serialize(obj.__dict__, seen=seen)
+    else:
+        raise TypeError(f"Type {type(obj)} is not serializable")

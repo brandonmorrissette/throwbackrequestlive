@@ -1,12 +1,8 @@
-import { parse } from 'papaparse';
 import React, { useEffect, useState } from 'react';
 import Table from '../../components/table/Table';
 import TableSelector from '../../components/table/TableSelector';
 import { TableServiceProvider } from '../../contexts/TableServiceContext';
-import {
-    default as DataService,
-    default as dataService,
-} from '../../services/data';
+import { default as DataService } from '../../services/data';
 
 const DataManagement: React.FC = () => {
     const [tables, setTables] = useState<string[]>([]);
@@ -52,47 +48,14 @@ const DataManagement: React.FC = () => {
         }
     };
 
-    const saveRows = async (rows: any[]) => {
-        try {
-            await DataService.writeRows(selectedTable!, rows);
-        } catch (error) {
-            console.error('Error saving rows:', error);
-        }
-    };
-
-    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            parse(file, {
-                header: true,
-                complete: (results: { data: any }) => {
-                    saveRows(results.data);
-                },
-                error: (error: unknown) => {
-                    console.error('Error parsing CSV file:', error);
-                },
-            });
-        }
-    };
-
     return (
         <div>
             <h1>Data Management</h1>
             <TableSelector tables={tables} onSelectTable={setSelectedTable} />
             {selectedTable && (
-                <>
-                    <div>
-                        <h2>Upload CSV</h2>
-                        <input
-                            type="file"
-                            accept=".csv"
-                            onChange={handleFileUpload}
-                        />
-                    </div>
-                    <TableServiceProvider service={dataService}>
-                        <Table properties={tableProperties} data={rows} />
-                    </TableServiceProvider>
-                </>
+                <TableServiceProvider service={DataService}>
+                    <Table properties={tableProperties} data={rows} />
+                </TableServiceProvider>
             )}
         </div>
     );

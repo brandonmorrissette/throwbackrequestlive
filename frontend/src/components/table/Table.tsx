@@ -1,42 +1,43 @@
 import {
     AllCommunityModule,
+    ColDef as BaseColDef,
     GridReadyEvent,
     ModuleRegistry,
     RowSelectionOptions,
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
+import { parse } from 'papaparse';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useServices } from '../../contexts/TableServiceContext';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+export class ColDef implements BaseColDef {
+    field: string = '';
+    headerName: string = '';
+    editable?: boolean = false;
+    sortable?: boolean = false;
+    valueFormatter?: (params: any) => string;
+    cellDataType?: string;
+
+    constructor(init: Partial<ColDef>) {
+        Object.assign(this, init);
+    }
+}
+
 interface RowData {
     [key: string]: any;
 }
 
-export class ColumnDef {
-    field: string;
-    headerName: string;
-
-    constructor(field: string, headerName: string, ...additionalProps: any[]) {
-        this.field = field;
-        this.headerName = headerName;
-
-        additionalProps.forEach((prop) => {
-            Object.assign(this, prop);
-        });
-    }
-}
-
 export class Properties {
     name: string;
-    columns: ColumnDef[];
-    primaryKeys: ColumnDef[];
+    columns: ColDef[];
+    primaryKeys: ColDef[];
 
     constructor(
         name: string,
-        columns: ColumnDef[],
-        primaryKeys?: ColumnDef[],
+        columns: ColDef[],
+        primaryKeys?: ColDef[],
         ...additionalProps: any[]
     ) {
         this.name = name;
@@ -152,8 +153,28 @@ const Table: React.FC<TableProps> = ({ data, properties }) => {
         'selected-row': (params: any) => params.node.isSelected(),
     };
 
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            parse(file, {
+                header: true,
+                complete: (results: { data: any }) => {
+                    const data = results.data as RowData[];
+                    setRowData((prevRowData) => [...prevRowData, ...data]);
+                },
+                error: (error: unknown) => {
+                    console.error('Error parsing CSV file:', error);
+                },
+            });
+        }
+    };
+
     return (
         <div>
+            <div>
+                <h2>Upload CSV</h2>
+                <input type="file" accept=".csv" onChange={handleFileUpload} />
+            </div>
             <div
                 className="ag-theme-quartz"
                 style={{

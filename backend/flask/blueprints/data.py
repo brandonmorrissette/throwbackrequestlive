@@ -1,4 +1,3 @@
-import logging
 from collections.abc import Iterable
 
 from blueprints.blueprint import BaseBlueprint
@@ -36,29 +35,17 @@ class DataBlueprint(BaseBlueprint):
                 app.logger.error(f"Error getting table properties: {e}")
                 return jsonify({"error": str(e)}), 500
 
+        @self._blueprint.route("/tables/shows", methods=["GET"])
+        def read_shows():
+            # Need to update to shows in the renaming refactor.
+            app.logger.debug("Reading shows")
+            return self._get_rows("events", request)
+
         @self._blueprint.route("/tables/<table_name>", methods=["GET"])
         @admin_required
         def read_rows(table_name):
-            filters = request.args.get("filters")
-            limit = request.args.get("limit")
-            offset = request.args.get("offset")
-            sort_by = request.args.get("sort_by")
-            sort_order = request.args.get("sort_order", "asc")
-
-            app.logger.debug(
-                f"Filters: {filters}, Sort By: {sort_by}, Sort Order: {sort_order}, Limit: {limit}, Offset: {offset}"
-            )
-
-            try:
-                self._service.validate_table_name(table_name)
-                rows = self._service.read_rows(
-                    table_name, filters, limit, offset, sort_by, sort_order
-                )
-                app.logger.debug(f"First 10 Rows: {rows[:10]}")
-                return jsonify(rows), 200
-            except Exception as e:
-                app.logger.error(f"Error fetching rows: {e}")
-                return jsonify({"error": str(e)}), 500
+            app.logger.debug(f"Reading rows from {table_name}")
+            return self._get_rows(table_name, request)
 
         @self._blueprint.route("/tables/<table_name>", methods=["PUT"])
         @admin_required
@@ -86,6 +73,28 @@ class DataBlueprint(BaseBlueprint):
             except Exception as e:
                 app.logger.error(f"Error executing query: {e}")
                 return jsonify({"error": str(e)}), 500
+
+    def _get_rows(self, table_name, request):
+        filters = request.args.get("filters")
+        limit = request.args.get("limit")
+        offset = request.args.get("offset")
+        sort_by = request.args.get("sort_by")
+        sort_order = request.args.get("sort_order", "asc")
+
+        app.logger.debug(
+            f"Filters: {filters}, Sort By: {sort_by}, Sort Order: {sort_order}, Limit: {limit}, Offset: {offset}"
+        )
+
+        try:
+            self._service.validate_table_name(table_name)
+            rows = self._service.read_rows(
+                table_name, filters, limit, offset, sort_by, sort_order
+            )
+            app.logger.debug(f"First 10 Rows: {rows[:10]}")
+            return jsonify(rows), 200
+        except Exception as e:
+            app.logger.error(f"Error fetching rows: {e}")
+            return jsonify({"error": str(e)}), 500
 
     def _serialize(self, obj, max_depth=5, current_depth=0):
         if current_depth >= max_depth:

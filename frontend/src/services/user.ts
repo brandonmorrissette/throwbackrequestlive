@@ -1,34 +1,56 @@
-import { ColumnDef, Properties } from '../components/table/Table';
+import { ColDef, Properties } from '../components/table/Table';
 import apiRequest from '../routing/Request';
 import { TableService } from './tableService';
 
 class UserService implements TableService {
     async getTableProperties(tableName: string): Promise<any> {
         const columns = [
-            new ColumnDef('Username', 'Username', {
+            new ColDef({
+                field: 'Username',
+                headerName: 'Username',
                 sortable: true,
             }),
-            new ColumnDef('Email', 'Email', { editable: true, sortable: true }),
-            new ColumnDef('Groups', 'Groups', {
-                sortable: true,
-            }),
-            new ColumnDef('UserCreateDate', 'UserCreateDate', {
-                sortable: true,
-            }),
-            new ColumnDef('UserLastModifiedDate', 'UserLastModifiedDate', {
-                sortable: true,
-            }),
-            new ColumnDef('Enabled', 'Enabled', {
+            new ColDef({
+                field: 'Email',
+                headerName: 'Email',
                 editable: true,
                 sortable: true,
             }),
-            new ColumnDef('UserStatus', 'Status', {
+            new ColDef({
+                field: 'Groups',
+                headerName: 'Groups',
                 sortable: true,
             }),
-            new ColumnDef('Attributes', 'Attributes'),
+            new ColDef({
+                field: 'UserCreateDate',
+                headerName: 'UserCreateDate',
+                sortable: true,
+            }),
+            new ColDef({
+                field: 'UserLastModifiedDate',
+                headerName: 'UserLastModifiedDate',
+                sortable: true,
+            }),
+            new ColDef({
+                field: 'Enabled',
+                headerName: 'Enabled',
+                editable: true,
+                sortable: true,
+            }),
+            new ColDef({
+                field: 'UserStatus',
+                headerName: 'Status',
+                sortable: true,
+            }),
+            new ColDef({
+                field: 'Attributes',
+                headerName: 'Attributes',
+            }),
         ];
 
-        const primaryKeys = [new ColumnDef('Username', 'Username')];
+        const primaryKeys = [
+            new ColDef({ field: 'Username', headerName: 'Username' }),
+        ];
         return new Properties(tableName, columns, primaryKeys);
     }
 

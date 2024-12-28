@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Modal from '../../components/modal/Modal';
+import { TableServiceProvider } from '../../contexts/TableServiceContext';
+import { default as DataService } from '../../services/data';
 import Shows from './Shows';
 import ThankYou from './ThankYou';
 
@@ -13,7 +15,9 @@ const Home: React.FC = () => {
 
     return (
         <div>
-            <Shows />
+            <TableServiceProvider service={DataService}>
+                <Shows />
+            </TableServiceProvider>
             {showModal && song && (
                 <Modal onClose={() => setShowModal(false)}>
                     <ThankYou song={song} />

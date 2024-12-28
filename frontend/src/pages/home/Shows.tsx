@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import apiRequest from '../../routing/Request';
+import { default as DataService } from '../../services/data';
 import ShowDetail from './ShowDetails';
 import styles from './Shows.module.css';
 
-interface Show {
+export interface Show {
     name: string;
-    date: string;
-    time: string;
+    datetime: string;
     venue: string;
     street: string;
     city: string;
@@ -20,22 +19,15 @@ const Shows: React.FC = () => {
     useEffect(() => {
         const getShows = async () => {
             try {
-                const response = await apiRequest(
-                    'http://localhost:5000/api/shows'
-                );
-                if (response.ok) {
-                    const data = await response.json();
-                    setShows(data);
-                } else {
-                    console.error('Failed to get shows:', response.statusText);
-                }
+                const data = await DataService.readRows('shows');
+                setShows(data);
             } catch (error) {
                 console.error('Error getting shows:', error);
             }
         };
 
         getShows();
-    }, []);
+    }, [DataService]);
 
     const openShowDetail = (show: Show) => {
         setSelectedShow(show);
@@ -73,11 +65,8 @@ const Shows: React.FC = () => {
                             className={`d-flex justify-content-between ${styles['show-details']}`}
                         >
                             <div className={styles['show-date-time']}>
-                                <span className={styles['show-time']}>
-                                    {show.time}
-                                </span>
-                                <span className={styles['show-date']}>
-                                    {show.date}
+                                <span className={styles['show-datetime']}>
+                                    {show.datetime}
                                 </span>
                             </div>
                             <span className={styles['show-address']}>

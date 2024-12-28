@@ -1,4 +1,4 @@
-import { ColumnDef, Properties } from '../components/table/Table';
+import { ColDef, Properties } from '../components/table/Table';
 import apiRequest from '../routing/Request';
 import { TableService } from './tableService';
 
@@ -21,7 +21,7 @@ const mapType = (backendType: string): string => {
         case 'TIMESTAMPTZ':
         case 'TIME':
         case 'TIMETZ':
-            return 'date';
+            return 'dateString';
         case 'BOOLEAN':
             return 'boolean';
         case 'TEXT':
@@ -35,6 +35,11 @@ const mapType = (backendType: string): string => {
         default:
             return 'object';
     }
+};
+
+const timestampFormatter = (params: any) => {
+    const date = new Date(params.value);
+    return date.toLocaleString();
 };
 
 class DataService implements TableService {
@@ -55,17 +60,24 @@ class DataService implements TableService {
         }
 
         const properties = await response.json();
-        console.log('DataService::getTableProperties', properties);
 
-        const columns: ColumnDef[] = properties.columns.map((col: any) => ({
-            field: col.name,
-            headerName: col.name,
-            editable: true,
-            sortable: true,
-            cellDataType: mapType(col.type),
-        }));
+        const columns: ColDef[] = properties.columns.map((col: any) => {
+            const columnDef: ColDef = {
+                field: col.name,
+                headerName: col.name,
+                editable: true,
+                sortable: true,
+                cellDataType: mapType(col.type),
+            };
 
-        const primaryKeys: ColumnDef[] = properties.primary_key.map(
+            if (columnDef.cellDataType === 'dateString') {
+                columnDef.valueFormatter = timestampFormatter;
+            }
+
+            return columnDef;
+        });
+
+        const primaryKeys: ColDef[] = properties.primary_key.map(
             (key: any) => ({
                 field: key.name,
                 headerName: key.name,
