@@ -9,9 +9,9 @@ const ThankYou: React.FC<ThankYouProps> = ({ song }) => {
         <div>
             <p>
                 We’re thrilled to have you here to make the night unforgettable!
-                Your vote for <strong>{song}</strong> is in, and the energy is
-                building. The 10 songs with the most votes will close out the
-                set, so don’t stop now — bring your buds, text your crew, DM
+                Your request for <strong>{song}</strong> is in, and the energy
+                is building. The 10 songs with the most requests will close out
+                the set, so don’t stop now — bring your buds, text your crew, DM
                 your crush and get them down here. Let’s make this a night to
                 remember!
             </p>

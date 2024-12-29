@@ -14,27 +14,11 @@ const ShowDetail: React.FC<ShowDetailProps> = ({ show, onClose }) => {
         address
     )}`;
 
-    const formatDateTime = (datetime: string) => {
-        const date = new Date(datetime);
-        const formattedDate = date.toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric',
-        });
-        const formattedTime = date.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true,
-        });
-        return `${formattedDate} ${formattedTime}`;
-    };
-
     return (
         <Modal onClose={onClose}>
             <h2 className="modal-title">{show.name}</h2>
             <p>
-                <strong>When:</strong> {formatDateTime(show.datetime)}
+                <strong>When:</strong> {show.datetime}
             </p>
             <p>
                 <strong>Where:</strong> {show.venue}

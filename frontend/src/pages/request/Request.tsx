@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Modal from '../../components/modal/Modal';
-import styles from './Vote.module.css';
+import styles from './Request.module.css';
 
 interface Song {
     song_name: string;
     band: string;
 }
 
-const Vote: React.FC = () => {
+const Request: React.FC = () => {
     const [songs, setSongs] = useState<Song[]>([]);
     const [selectedSong, setSelectedSong] = useState<string | null>(null);
 
@@ -17,9 +17,9 @@ const Vote: React.FC = () => {
             .then((data) => setSongs(data));
     }, []);
 
-    const handleVote = () => {
+    const handleRequest = () => {
         if (selectedSong) {
-            fetch('/api/vote', {
+            fetch('/api/request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ song: selectedSong }),
@@ -33,13 +33,13 @@ const Vote: React.FC = () => {
 
     return (
         <div>
-            <h2>Vote Now!</h2>
+            <h2>Request Now!</h2>
             <div className="list-group">
                 {songs.map((song, index) => (
                     <button
                         key={index}
                         type="button"
-                        className={styles.voteButton}
+                        className={styles.requestButton}
                         onClick={() => setSelectedSong(song.song_name)}
                     >
                         <div className={styles.songDetails}>
@@ -55,7 +55,6 @@ const Vote: React.FC = () => {
             {selectedSong && (
                 <Modal onClose={() => setSelectedSong(null)}>
                     {' '}
-                    {/* Use the custom modal */}
                     <h3>Confirm Your Selection</h3>
                     <p>Are you sure you want to select:</p>
                     <p>
@@ -65,7 +64,7 @@ const Vote: React.FC = () => {
                         <button
                             type="button"
                             className="btn btn-custom"
-                            onClick={handleVote}
+                            onClick={handleRequest}
                         >
                             Confirm
                         </button>
@@ -76,4 +75,4 @@ const Vote: React.FC = () => {
     );
 };
 
-export default Vote;
+export default Request;

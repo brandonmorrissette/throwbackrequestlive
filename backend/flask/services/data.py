@@ -1,4 +1,6 @@
+import logging
 from contextlib import contextmanager
+from datetime import datetime
 
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.exc import SQLAlchemyError
@@ -53,33 +55,26 @@ class DataService:
         if table_name not in self.metadata.tables:
             raise ValueError(f"Table {table_name} does not exist.")
 
-    def read_rows(
-        self,
-        table_name,
-        filters=None,
-        limit=None,
-        offset=None,
-        sort_by=None,
-        sort_order="asc",
-    ):
+    def read_rows(self, table_name, filters=None):
+        logging.debug(f"Reading rows from {table_name} with filters: {filters}")
         self.refresh_metadata()
         table = self.metadata.tables.get(table_name)
 
         if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
+
         with self.session_scope() as session:
             query = session.query(table)
-            if filters:
-                query = query.filter_by(**filters)
-            if sort_by:
-                sort_column = getattr(table.c, sort_by)
-                if sort_order == "desc":
-                    sort_column = sort_column.desc()
-                query = query.order_by(sort_column)
-            if limit:
-                query = query.limit(limit)
-            if offset:
-                query = query.offset(offset)
+
+            # if filters:
+            #     filters_mapped = _map_filters(filters, table)
+            #     logging.debug(f"Filters mapped: {filters_mapped}")
+            #     query = query.filter(*filters_mapped)
+
+            test_datetime = datetime(2024, 12, 28, 0, 0)
+            query = query.filter(table.c.datetime >= test_datetime)
+
+            logging.debug(f"Query: {query}")
             return [row._asdict() for row in query.all()]
 
     def write_rows(self, table_name, rows):
@@ -145,3 +140,54 @@ def _serialize(obj, seen=None):
         return _serialize(obj.__dict__, seen=seen)
     else:
         raise TypeError(f"Type {type(obj)} is not serializable")
+
+
+def _map_filters(filters, table):
+    """
+    Maps filter strings into SQLAlchemy filter expressions.
+
+    Args:
+        filters (list of str): List of filter strings like ["datetime >= 2024-12-28T00:00:00"].
+        table (SQLAlchemy Table): The SQLAlchemy table to retrieve column objects from.
+
+    Returns:
+        list: List of SQLAlchemy filter expressions.
+    """
+    filter_expressions = []
+
+    for filter_str in filters:
+        try:
+            column_name, operator, value = filter_str.split(maxsplit=2)
+            logging.debug(
+                f"Column: {column_name}, Operator: {operator}, Value: {value}"
+            )
+
+            column = getattr(table.c, column_name)
+
+            try:
+                value = datetime.fromisoformat(value)
+                logging.debug(f"Value is datetime: {value}")
+            except ValueError:
+                pass
+
+            if operator == ">=":
+                filter_expression = column >= value
+            elif operator == "<=":
+                filter_expression = column <= value
+            elif operator == "=":
+                filter_expression = column == value
+            elif operator == ">":
+                filter_expression = column > value
+            elif operator == "<":
+                filter_expression = column < value
+            elif operator == "!=":
+                filter_expression = column != value
+            else:
+                raise ValueError(f"Unsupported operator: {operator}")
+
+            filter_expressions.append(filter_expression)
+
+        except ValueError:
+            raise ValueError(f"Invalid filter format: {filter_str}")
+
+    return filter_expressions

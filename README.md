@@ -1,10 +1,6 @@
 To Do
 
 -   Table Serialization
--   BIG naming refactor.
-    -   superuser becomes site_admin
-    -   admin becomes db_admin
-    -   the routes in the front end should closely align with the routes in the backend, without exposing implementation
 -   The deployment for the full app does not work. There is some unclear timing issue for the runtime stack. Every iteration some differnt exception pops up making it BRUTAL to troubleshoot.
     -   I want to use docker-compose and isolate the front end and the back end deployments completely
 -   Standardize stack inputs (project name and env are going to every single one. Standardize that. Probably don't need to pass ID for everyone. I THINK we can infer somehow.)
@@ -24,6 +20,9 @@ To Do
 -   Group management for super user
     -   Roles in general? Review.
     -   Split groups from Cognito service. Probably split into multiple services.
+-   Cognito user updates
+    -   superuser becomes site_admin
+    -   admin becomes db_admin
 -   Explore removing boto3 from user_pool construct. Or at least isolate it there.
 -   Fix Login form sizing
 -   Login hangs on error

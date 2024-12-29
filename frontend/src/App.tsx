@@ -12,7 +12,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import Admin from './pages/admin/Admin';
 import Home from './pages/home/Home';
 import Login from './pages/login/Login';
-import Vote from './pages/request/Vote';
+import Request from './pages/request/Request';
 import ProtectedRoute from './routing/ProtectedRoute';
 
 const App: React.FC = () => {
@@ -24,7 +24,7 @@ const App: React.FC = () => {
                     <ContentWrapper>
                         <Routes>
                             <Route path="/" element={<Home />} />
-                            <Route path="/vote" element={<Vote />} />
+                            <Route path="/request" element={<Request />} />
                             <Route path="/login" element={<Login />} />
                             <Route
                                 path="/admin"

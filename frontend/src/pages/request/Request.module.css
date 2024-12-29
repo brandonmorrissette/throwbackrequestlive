@@ -1,4 +1,4 @@
-.voteButton {
+.requestButton {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -14,23 +14,23 @@
     transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
 }
 
-.voteButton:hover {
+.requestButton:hover {
     background-color: var(--color-accent-darker);
     transform: scale(1.02);
 }
 
-.voteButton .songDetails {
+.requestButton .songDetails {
     display: flex;
     justify-content: space-between;
     width: 100%;
 }
 
-.voteButton .songBand {
+.requestButton .songBand {
     font-weight: bold;
     text-align: left;
 }
 
-.voteButton .songName {
+.requestButton .songName {
     font-style: italic;
     text-align: right;
 }

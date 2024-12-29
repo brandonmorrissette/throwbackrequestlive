@@ -3,13 +3,38 @@ import { default as DataService } from '../../services/data';
 import ShowDetail from './ShowDetails';
 import styles from './Shows.module.css';
 
-export interface Show {
+export class Show {
     name: string;
     datetime: string;
     venue: string;
     street: string;
     city: string;
     state: string;
+
+    constructor(show: Show) {
+        this.name = show.name;
+        this.datetime = this.formatDateTime(show.datetime);
+        this.venue = show.venue;
+        this.street = show.street;
+        this.city = show.city;
+        this.state = show.state;
+    }
+
+    private formatDateTime(datetime: string): string {
+        const date = new Date(datetime);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+        });
+        const formattedTime = date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+        return `${formattedDate} ${formattedTime}`;
+    }
 }
 
 const Shows: React.FC = () => {
@@ -19,8 +44,17 @@ const Shows: React.FC = () => {
     useEffect(() => {
         const getShows = async () => {
             try {
-                const data = await DataService.readRows('shows');
-                setShows(data);
+                const now = new Date();
+                const startOfDay = `${
+                    now.toISOString().split('T')[0]
+                } 00:00:00`;
+
+                console.log('startOfDay:', startOfDay);
+                const filters = [`datetime >= ${startOfDay}`];
+                const data = await DataService.readRows('shows', {
+                    filters: filters,
+                });
+                setShows(data.map((show: any) => new Show(show)));
             } catch (error) {
                 console.error('Error getting shows:', error);
             }

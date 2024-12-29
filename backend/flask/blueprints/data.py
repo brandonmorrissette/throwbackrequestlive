@@ -1,3 +1,4 @@
+import json
 from collections.abc import Iterable
 
 from blueprints.blueprint import BaseBlueprint
@@ -37,9 +38,8 @@ class DataBlueprint(BaseBlueprint):
 
         @self._blueprint.route("/tables/shows", methods=["GET"])
         def read_shows():
-            # Need to update to shows in the renaming refactor.
             app.logger.debug("Reading shows")
-            return self._get_rows("events", request)
+            return self._get_rows("shows", request)
 
         @self._blueprint.route("/tables/<table_name>", methods=["GET"])
         @admin_required
@@ -76,20 +76,13 @@ class DataBlueprint(BaseBlueprint):
 
     def _get_rows(self, table_name, request):
         filters = request.args.get("filters")
-        limit = request.args.get("limit")
-        offset = request.args.get("offset")
-        sort_by = request.args.get("sort_by")
-        sort_order = request.args.get("sort_order", "asc")
-
-        app.logger.debug(
-            f"Filters: {filters}, Sort By: {sort_by}, Sort Order: {sort_order}, Limit: {limit}, Offset: {offset}"
-        )
+        if filters:
+            filters = json.loads(filters)
+        app.logger.debug(f"Filters: {filters}")
 
         try:
             self._service.validate_table_name(table_name)
-            rows = self._service.read_rows(
-                table_name, filters, limit, offset, sort_by, sort_order
-            )
+            rows = self._service.read_rows(table_name, filters)
             app.logger.debug(f"First 10 Rows: {rows[:10]}")
             return jsonify(rows), 200
         except Exception as e:

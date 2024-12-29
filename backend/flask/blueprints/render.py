@@ -5,8 +5,8 @@ from flask import current_app as app
 class RenderBlueprint(BaseBlueprint):
 
     def _register_routes(self):
-        @self._blueprint.route("/vote")
-        def render_vote():
+        @self._blueprint.route("/request")
+        def render_request():
             return app.send_static_file("index.html")
 
         @self._blueprint.route("/admin")

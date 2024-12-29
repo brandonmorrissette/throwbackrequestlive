@@ -92,9 +92,32 @@ class DataService implements TableService {
         );
     }
 
-    async readRows(tableName: string): Promise<any> {
+    async readRows(
+        tableName: string,
+        options?: {
+            filters?: string[];
+            limit?: number;
+            offset?: number;
+            sort_by?: string;
+            sort_order?: 'asc' | 'desc';
+        }
+    ): Promise<any> {
+        const queryParams = new URLSearchParams();
+
+        if (options?.filters)
+            queryParams.append('filters', JSON.stringify(options.filters));
+        if (options?.limit)
+            queryParams.append('limit', JSON.stringify(options.limit));
+        if (options?.offset)
+            queryParams.append('offset', JSON.stringify(options.offset));
+        if (options?.sort_by) queryParams.append('sort_by', options.sort_by);
+        if (options?.sort_order)
+            queryParams.append('sort_order', options.sort_order);
+
         console.log('DataService::readRows', tableName);
-        const response = await apiRequest(`${API_BASE_URL}/${tableName}`);
+        const response = await apiRequest(
+            `${API_BASE_URL}/${tableName}?${queryParams.toString()}`
+        );
         if (!response.ok) {
             throw new Error('Failed to fetch table data');
         }
