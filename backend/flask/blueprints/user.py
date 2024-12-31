@@ -1,9 +1,12 @@
 from blueprints.blueprint import BaseBlueprint
 from flask import current_app as app
 from flask import jsonify, request
+from services.cognito import CognitoService
 
 
 class UserBlueprint(BaseBlueprint):
+    _service: CognitoService
+
     def _register_routes(self):
 
         @self._blueprint.route("/users", methods=["GET"])

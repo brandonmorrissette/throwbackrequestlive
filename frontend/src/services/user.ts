@@ -3,7 +3,7 @@ import apiRequest from '../routing/Request';
 import { TableService } from './tableService';
 
 class UserService implements TableService {
-    async getTableProperties(tableName: string): Promise<any> {
+    async getTable(tableName: string): Promise<any> {
         const columns = [
             new ColDef({
                 field: 'Username',

@@ -7,8 +7,8 @@ from blueprints.data import DataBlueprint
 from blueprints.render import RenderBlueprint
 from blueprints.user import UserBlueprint
 from flask import Flask
-from flask.json.provider import DefaultJSONProvider
 from flask_jwt_extended import JWTManager
+from providers.json import JSONProvider
 from services.auth import AuthService
 from services.cognito import CognitoService
 from services.data import DataService
@@ -38,13 +38,6 @@ CONFIG = {
         "REDIS_PORT": os.getenv("REDIS_PORT", 6379),
     },
 }
-
-
-class JSONProvider(DefaultJSONProvider):
-    def default(self, obj):
-        if isinstance(obj, time):
-            return None
-        return super().default(obj)
 
 
 def _create_app():

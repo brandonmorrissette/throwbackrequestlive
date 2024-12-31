@@ -16,7 +16,7 @@ const DataManagement: React.FC = () => {
 
     useEffect(() => {
         if (selectedTable) {
-            fetchTableProperties(selectedTable);
+            fetchTable(selectedTable);
             fetchRows(selectedTable);
         }
     }, [selectedTable]);
@@ -30,9 +30,9 @@ const DataManagement: React.FC = () => {
         }
     };
 
-    const fetchTableProperties = async (tableName: string) => {
+    const fetchTable = async (tableName: string) => {
         try {
-            const data = await DataService.getTableProperties(tableName);
+            const data = await DataService.getTable(tableName);
             setTableProperties(data);
         } catch (error) {
             console.error('Error fetching table properties:', error);

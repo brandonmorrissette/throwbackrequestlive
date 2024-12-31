@@ -51,17 +51,17 @@ class DataService implements TableService {
         return response.json();
     }
 
-    async getTableProperties(tableName: string): Promise<any> {
-        const response = await apiRequest(
-            `${API_BASE_URL}/${tableName}/properties`
-        );
+    async getTable(tableName: string): Promise<any> {
+        console.log('DataService::getTable', tableName);
+        const response = await apiRequest(`${API_BASE_URL}/${tableName}`);
         if (!response.ok) {
-            throw new Error('Failed to fetch table properties');
+            throw new Error('Failed to fetch table');
         }
 
-        const properties = await response.json();
+        const table = await response.json();
+        console.log('DataService::getTable', table);
 
-        const columns: ColDef[] = properties.columns.map((col: any) => {
+        const columns: ColDef[] = table.columns.map((col: any) => {
             const columnDef: ColDef = {
                 field: col.name,
                 headerName: col.name,
@@ -77,19 +77,12 @@ class DataService implements TableService {
             return columnDef;
         });
 
-        const primaryKeys: ColDef[] = properties.primary_key.map(
-            (key: any) => ({
-                field: key.name,
-                headerName: key.name,
-            })
-        );
+        const primaryKeys: ColDef[] = table.primary_key.map((key: any) => ({
+            field: key.name,
+            headerName: key.name,
+        }));
 
-        return new Properties(
-            properties.name,
-            columns,
-            primaryKeys,
-            properties
-        );
+        return new Properties(table.name, columns, primaryKeys, table);
     }
 
     async readRows(
@@ -116,7 +109,7 @@ class DataService implements TableService {
 
         console.log('DataService::readRows', tableName);
         const response = await apiRequest(
-            `${API_BASE_URL}/${tableName}?${queryParams.toString()}`
+            `${API_BASE_URL}/${tableName}/rows?${queryParams.toString()}`
         );
         if (!response.ok) {
             throw new Error('Failed to fetch table data');
@@ -126,7 +119,7 @@ class DataService implements TableService {
 
     async writeRows(tableName: string, rows: any[]): Promise<void> {
         console.log('DataService::writeRows', tableName);
-        const response = await apiRequest(`${API_BASE_URL}/${tableName}`, {
+        const response = await apiRequest(`${API_BASE_URL}/${tableName}/rows`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

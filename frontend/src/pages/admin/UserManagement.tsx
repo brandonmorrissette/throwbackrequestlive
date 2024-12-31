@@ -14,21 +14,21 @@ type User = {
 
 const UserManagement: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
-    const [tableProperties, setTableProperties] = useState<any>({});
+    const [table, setTable] = useState<any>({});
     const [feedback, setFeedback] = useState('');
 
     useEffect(() => {
-        fetchTableProperties();
+        fetchTable();
     }, []);
 
     useEffect(() => {
         fetchUsersData();
     }, []);
 
-    const fetchTableProperties = async () => {
+    const fetchTable = async () => {
         try {
-            const data = await UserService.getTableProperties('users');
-            setTableProperties(data);
+            const data = await UserService.getTable('users');
+            setTable(data);
         } catch (error) {
             setFeedback('Error fetching table properties.');
         }
@@ -49,7 +49,7 @@ const UserManagement: React.FC = () => {
             {feedback && <p>{feedback}</p>}
 
             <TableServiceProvider service={userService}>
-                <Table properties={tableProperties} data={users} />
+                <Table properties={table} data={users} />
             </TableServiceProvider>
         </div>
     );

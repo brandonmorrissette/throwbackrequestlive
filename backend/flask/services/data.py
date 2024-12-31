@@ -1,10 +1,14 @@
 import logging
 from contextlib import contextmanager
-from datetime import datetime
 
+from providers.sqlalchemy import SQLALchemyJSONProvider
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
+
+
+def get_json_provider_class():
+    return SQLALchemyJSONProvider
 
 
 class DataService:
@@ -23,10 +27,10 @@ class DataService:
         self.engine = create_engine(DATABASE_URL, pool_pre_ping=True)
         self.metadata = MetaData(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine)
-        self.refresh_metadata()
+        self._refresh_metadata()
 
     @contextmanager
-    def session_scope(self):
+    def _session_scope(self):
         session = self.Session()
         try:
             yield session
@@ -37,19 +41,17 @@ class DataService:
         finally:
             session.close()
 
-    def refresh_metadata(self):
+    def _refresh_metadata(self):
         self.metadata.reflect()
 
     def list_tables(self):
-        self.refresh_metadata()
+        self._refresh_metadata()
         return self.metadata.tables.keys()
 
-    def get_table_properties(self, table_name):
-        self.refresh_metadata()
-        table = self.metadata.tables.get(table_name)
-        if table is None:
-            raise ValueError(f"Table {table_name} does not exist.")
-        return table
+    def get_table(self, table_name):
+        self._refresh_metadata()
+        self.validate_table_name(table_name)
+        return self.metadata.tables.get(table_name)
 
     def validate_table_name(self, table_name):
         if table_name not in self.metadata.tables:
@@ -57,34 +59,31 @@ class DataService:
 
     def read_rows(self, table_name, filters=None):
         logging.debug(f"Reading rows from {table_name} with filters: {filters}")
-        self.refresh_metadata()
+        self._refresh_metadata()
         table = self.metadata.tables.get(table_name)
 
         if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
 
-        with self.session_scope() as session:
+        with self._session_scope() as session:
             query = session.query(table)
 
-            # if filters:
-            #     filters_mapped = _map_filters(filters, table)
-            #     logging.debug(f"Filters mapped: {filters_mapped}")
-            #     query = query.filter(*filters_mapped)
-
-            test_datetime = datetime(2024, 12, 28, 0, 0)
-            query = query.filter(table.c.datetime >= test_datetime)
+            if filters:
+                filters_mapped = _map_filters(filters, table)
+                logging.debug(f"Filters mapped: {filters_mapped}")
+                query = query.filter(*filters_mapped)
 
             logging.debug(f"Query: {query}")
             return [row._asdict() for row in query.all()]
 
     def write_rows(self, table_name, rows):
-        self.refresh_metadata()
+        self._refresh_metadata()
         table = self.metadata.tables.get(table_name)
         if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
 
         primary_key = list(table.primary_key.columns)[0].name
-        with self.session_scope() as session:
+        with self._session_scope() as session:
             existing_ids = {
                 row[primary_key] for row in session.query(table.c[primary_key]).all()
             }
@@ -109,37 +108,14 @@ class DataService:
                 )
 
     def execute_custom_query(self, query, params=None):
-        with self.session_scope() as session:
+        with self._session_scope() as session:
             result = session.execute(query, params)
             return result.fetchall()
 
     def get_database_version(self):
-        with self.session_scope() as session:
+        with self._session_scope() as session:
             version = session.execute("SELECT version()").scalar()
             return version
-
-
-def _serialize(obj, seen=None):
-    if seen is None:
-        seen = set()
-
-    if isinstance(obj, (int, float, str, bool, type(None))):
-        return obj
-
-    # I like this implementation better than what I have in data blueprint
-    # But I never got it working. Infinitely recursive.
-    # I tried comparing ids but memories did not align
-    # Tried hashing but some objects weren't hashable and it felt like the same exact issue.
-    # It's first on the tech debt list.
-
-    if hasattr(obj, "items"):
-        return {key: _serialize(value, seen=seen) for key, value in obj.items()}
-    elif hasattr(obj, "__iter__") and not isinstance(obj, (str, bytes)):
-        return [_serialize(item, seen=seen) for item in obj]
-    elif hasattr(obj, "__dict__"):
-        return _serialize(obj.__dict__, seen=seen)
-    else:
-        raise TypeError(f"Type {type(obj)} is not serializable")
 
 
 def _map_filters(filters, table):
@@ -164,11 +140,11 @@ def _map_filters(filters, table):
 
             column = getattr(table.c, column_name)
 
-            try:
-                value = datetime.fromisoformat(value)
-                logging.debug(f"Value is datetime: {value}")
-            except ValueError:
-                pass
+            # try:
+            #     value = datetime.fromisoformat(value)
+            #     logging.debug(f"Value is datetime: {value}")
+            # except ValueError:
+            #     pass
 
             if operator == ">=":
                 filter_expression = column >= value

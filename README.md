@@ -34,3 +34,4 @@ To Do
 -   Dynamic table properties for user flow
 -   Environment logging configuration
 -   Only Update Cognito users when there have been actual updates
+-   SQL Alchemy OOP/Models
