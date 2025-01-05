@@ -1,48 +1,16 @@
-import { ColDef, Properties } from '../components/table/Table';
+import { ColDef } from '../components/table/ColDef';
+import { Options } from '../components/table/Options';
 import apiRequest from '../routing/Request';
-import { TableService } from './tableService';
 
 const API_BASE_URL = '/api/tables';
 
-const mapType = (backendType: string): string => {
-    switch (backendType.toUpperCase()) {
-        case 'INTEGER':
-        case 'SMALLINT':
-        case 'BIGINT':
-        case 'SERIAL':
-        case 'BIGSERIAL':
-        case 'DECIMAL':
-        case 'NUMERIC':
-        case 'REAL':
-        case 'DOUBLE PRECISION':
-            return 'number';
-        case 'DATE':
-        case 'TIMESTAMP':
-        case 'TIMESTAMPTZ':
-        case 'TIME':
-        case 'TIMETZ':
-            return 'dateString';
-        case 'BOOLEAN':
-            return 'boolean';
-        case 'TEXT':
-        case 'CHAR':
-        case 'VARCHAR':
-        case 'UUID':
-        case 'JSON':
-        case 'JSONB':
-        case backendType.match(/^VARCHAR/i) ? backendType : '':
-            return 'text';
-        default:
-            return 'object';
-    }
-};
+export interface IDataService {
+    getTable(tableName: string): Promise<any>;
+    readRows(tableName: string): Promise<any[]>;
+    writeRows(tableName: string, rows: any[]): Promise<void>;
+}
 
-const timestampFormatter = (params: any) => {
-    const date = new Date(params.value);
-    return date.toLocaleString();
-};
-
-class DataService implements TableService {
+class DataService implements IDataService {
     async getTableNames(): Promise<string[]> {
         const response = await apiRequest(`${API_BASE_URL}`);
         if (!response.ok) {
@@ -52,37 +20,37 @@ class DataService implements TableService {
     }
 
     async getTable(tableName: string): Promise<any> {
-        console.log('DataService::getTable', tableName);
         const response = await apiRequest(`${API_BASE_URL}/${tableName}`);
         if (!response.ok) {
             throw new Error('Failed to fetch table');
         }
 
         const table = await response.json();
-        console.log('DataService::getTable', table);
 
         const columns: ColDef[] = table.columns.map((col: any) => {
-            const columnDef: ColDef = {
+            const columnDef: ColDef = new ColDef({
                 field: col.name,
                 headerName: col.name,
-                editable: true,
-                sortable: true,
+                editable: !col.autoincrement,
                 cellDataType: mapType(col.type),
-            };
-
-            if (columnDef.cellDataType === 'dateString') {
-                columnDef.valueFormatter = timestampFormatter;
-            }
+                autoIncrement: col.autoincrement,
+                ...col,
+            });
 
             return columnDef;
         });
 
-        const primaryKeys: ColDef[] = table.primary_key.map((key: any) => ({
-            field: key.name,
-            headerName: key.name,
-        }));
+        const primaryKeys: ColDef[] = table.primary_key.map(
+            (key: any) =>
+                new ColDef({
+                    field: key.name,
+                    headerName: key.name,
+                    ...key,
+                })
+        );
 
-        return new Properties(table.name, columns, primaryKeys, table);
+        console.log('DataService::getTable::Properties:', table);
+        return new Options(table.name, columns, primaryKeys, table);
     }
 
     async readRows(
@@ -114,7 +82,9 @@ class DataService implements TableService {
         if (!response.ok) {
             throw new Error('Failed to fetch table data');
         }
-        return response.json();
+        const rows = await response.json();
+        console.log('DataService::readRows::rows', rows);
+        return rows;
     }
 
     async writeRows(tableName: string, rows: any[]): Promise<void> {
@@ -133,3 +103,19 @@ class DataService implements TableService {
 }
 
 export default new DataService();
+
+const mapType = (backendType: string): string => {
+    switch (backendType) {
+        case 'int':
+        case 'float':
+            return 'number';
+        case 'datetime':
+            return 'datetime';
+        case 'bool':
+            return 'boolean';
+        case 'str':
+            return 'text';
+        default:
+            return 'object';
+    }
+};

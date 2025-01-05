@@ -1,8 +1,9 @@
-import { ColDef, Properties } from '../components/table/Table';
+import { ColDef } from '../components/table/ColDef';
+import { Options } from '../components/table/Options';
 import apiRequest from '../routing/Request';
-import { TableService } from './tableService';
+import { IDataService } from './data';
 
-class UserService implements TableService {
+class UserService implements IDataService {
     async getTable(tableName: string): Promise<any> {
         const columns = [
             new ColDef({
@@ -51,7 +52,7 @@ class UserService implements TableService {
         const primaryKeys = [
             new ColDef({ field: 'Username', headerName: 'Username' }),
         ];
-        return new Properties(tableName, columns, primaryKeys);
+        return new Options(tableName, columns, primaryKeys);
     }
 
     async readRows(tableName: string): Promise<any> {

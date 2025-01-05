@@ -1,8 +1,8 @@
 import React, { createContext, ReactNode, useContext } from 'react';
-import { TableService } from '../services/tableService';
+import { IDataService } from '../services/data';
 
 interface ServiceContextProps {
-    tableService: TableService;
+    tableService: IDataService;
 }
 
 const ServiceContext = createContext<ServiceContextProps | undefined>(
@@ -11,7 +11,7 @@ const ServiceContext = createContext<ServiceContextProps | undefined>(
 
 export const TableServiceProvider: React.FC<{
     children: ReactNode;
-    service: TableService;
+    service: IDataService;
 }> = ({ children, service }) => {
     return (
         <ServiceContext.Provider value={{ tableService: service }}>

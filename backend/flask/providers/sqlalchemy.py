@@ -1,6 +1,7 @@
 import logging
 import types
 from collections.abc import Iterable, Mapping
+from datetime import datetime
 
 from providers.json import JSONProvider
 from sqlalchemy import (
@@ -91,7 +92,7 @@ class SQLALchemyJSONProvider(JSONProvider):
         elif isinstance(primitive, Float):
             return float.__name__
         elif isinstance(primitive, DateTime):
-            return str.__name__
+            return datetime.__name__
         else:
             return str.__name__
 
@@ -124,10 +125,6 @@ class SQLALchemyJSONProvider(JSONProvider):
         for attribute_key in attribute_keys:
             if attribute_key in excluded_attributes:
                 continue
-            # if attribute_key in flattened_attributes:
-            #     logging.debug(f"Flattening Attribute: {attribute_key}")
-            #     attributes[attribute_key] = str(attribute_key)
-            #     continue
 
             attribute = getattr(table, attribute_key)
             logging.debug(f"Serializing Attribute: {attribute_key}, Value: {attribute}")

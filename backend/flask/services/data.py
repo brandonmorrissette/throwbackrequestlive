@@ -31,14 +31,18 @@ class DataService:
 
     @contextmanager
     def _session_scope(self):
+        logging.debug("Creating session")
         session = self.Session()
         try:
             yield session
+            logging.debug("Committing session")
             session.commit()
         except SQLAlchemyError as e:
+            logging.error(f"Error in session: {e}. Rolling back.")
             session.rollback()
             raise e
         finally:
+            logging.debug("Closing session")
             session.close()
 
     def _refresh_metadata(self):
@@ -84,33 +88,38 @@ class DataService:
 
         primary_key = list(table.primary_key.columns)[0].name
         with self._session_scope() as session:
-            existing_ids = {
+            sql_alchemy_ids = {
                 row[primary_key] for row in session.query(table.c[primary_key]).all()
             }
-            new_ids = {row[primary_key] for row in rows if primary_key in row}
+            front_end_ids = {row[primary_key] for row in rows if primary_key in row}
 
-            rows_to_delete = existing_ids - new_ids
+            rows_to_delete = sql_alchemy_ids - front_end_ids
             if rows_to_delete:
+                logging.debug(f"Rows to delete: {rows_to_delete}")
                 session.execute(
                     table.delete().where(table.c[primary_key].in_(rows_to_delete))
                 )
 
-            new_rows = [row for row in rows if row[primary_key] not in existing_ids]
-            if new_rows:
-                session.execute(table.insert(), new_rows)
+            # Need to update to support auto increment
+            rows_to_add = [
+                row for row in rows if row[primary_key] not in sql_alchemy_ids
+            ]
+            if rows_to_add:
+                logging.debug(f"Rows to add: {rows_to_add}")
+                logging.debug(f"Primary Key: {table.primary_key.columns}")
+                logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+                session.execute(table.insert(), rows_to_add)
 
-            rows_to_update = [row for row in rows if row[primary_key] in existing_ids]
+            rows_to_update = [
+                row for row in rows if row[primary_key] in sql_alchemy_ids
+            ]
             for row in rows_to_update:
+                logging.debug(f"Row to update: {row}")
                 session.execute(
                     table.update()
                     .where(table.c[primary_key] == row[primary_key])
                     .values(**row)
                 )
-
-    def execute_custom_query(self, query, params=None):
-        with self._session_scope() as session:
-            result = session.execute(query, params)
-            return result.fetchall()
 
     def get_database_version(self):
         with self._session_scope() as session:
@@ -139,12 +148,6 @@ def _map_filters(filters, table):
             )
 
             column = getattr(table.c, column_name)
-
-            # try:
-            #     value = datetime.fromisoformat(value)
-            #     logging.debug(f"Value is datetime: {value}")
-            # except ValueError:
-            #     pass
 
             if operator == ">=":
                 filter_expression = column >= value

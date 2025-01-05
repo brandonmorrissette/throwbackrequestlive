@@ -54,7 +54,7 @@ const DataManagement: React.FC = () => {
             <TableSelector tables={tables} onSelectTable={setSelectedTable} />
             {selectedTable && (
                 <TableServiceProvider service={DataService}>
-                    <Table properties={tableProperties} data={rows} />
+                    <Table options={tableProperties} data={rows} />
                 </TableServiceProvider>
             )}
         </div>

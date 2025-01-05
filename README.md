@@ -1,6 +1,7 @@
 To Do
 
--   Table Serialization
+-   Support for Auto Incrementing
+-   Solve Choose File button formatting in Table
 -   The deployment for the full app does not work. There is some unclear timing issue for the runtime stack. Every iteration some differnt exception pops up making it BRUTAL to troubleshoot.
     -   I want to use docker-compose and isolate the front end and the back end deployments completely
 -   Standardize stack inputs (project name and env are going to every single one. Standardize that. Probably don't need to pass ID for everyone. I THINK we can infer somehow.)

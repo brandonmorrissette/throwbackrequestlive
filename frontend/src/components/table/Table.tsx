@@ -1,82 +1,41 @@
 import {
     AllCommunityModule,
-    ColDef as BaseColDef,
     GridReadyEvent,
     ModuleRegistry,
     RowSelectionOptions,
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
-import { parse } from 'papaparse';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useServices } from '../../contexts/TableServiceContext';
+import { TableService } from '../../services/table';
+import { Options } from './Options';
+import { Row } from './Row';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-export class ColDef implements BaseColDef {
-    field: string = '';
-    headerName: string = '';
-    editable?: boolean = false;
-    sortable?: boolean = false;
-    valueFormatter?: (params: any) => string;
-    cellDataType?: string;
-
-    constructor(init: Partial<ColDef>) {
-        Object.assign(this, init);
-    }
-}
-
-interface RowData {
-    [key: string]: any;
-}
-
-export class Properties {
-    name: string;
-    columns: ColDef[];
-    primaryKeys: ColDef[];
-
-    constructor(
-        name: string,
-        columns: ColDef[],
-        primaryKeys?: ColDef[],
-        ...additionalProps: any[]
-    ) {
-        this.name = name;
-        this.columns = columns;
-        this.primaryKeys = primaryKeys || [];
-
-        additionalProps.forEach((prop) => {
-            Object.entries(prop).forEach(([key, value]) => {
-                if (!(key in this)) {
-                    (this as any)[key] = value;
-                } else {
-                    console.log('Property already exists:', key);
-                }
-            });
-        });
-    }
-}
-
-type TableProps = {
-    data: RowData[];
-    properties: Properties;
-};
-
-const Table: React.FC<TableProps> = ({ data, properties }) => {
+const Table: React.FC<{
+    data: Row[];
+    options: Options;
+}> = ({ data, options: init }) => {
     const { tableService } = useServices();
-    const [rowData, setRowData] = useState<RowData[]>(data);
-    const [tableProperties, setProperties] = useState<Properties>(properties);
+    const [rowData, setRowData] = useState<Row[]>(data);
+    const [options, setOptions] = useState<Options>(init);
     const [gridApi, setGridApi] = useState<any>(null);
-    const [selectedRows, setSelectedRows] = useState<RowData[]>([]);
+    const [selectedRows, setSelectedRows] = useState<Row[]>([]);
     const [unsavedChanges, setUnsavedChanges] = useState(false);
 
+    const tableServiceInstance = useMemo(
+        () => new TableService(tableService),
+        [tableService]
+    );
+
     useEffect(() => {
-        console.log('Table::useEffect', data);
         setRowData(data);
     }, [data]);
 
     useEffect(() => {
-        setProperties(properties);
-    }, [properties]);
+        setOptions(init);
+    }, [init]);
 
     useEffect(() => {
         return () => {
@@ -97,10 +56,10 @@ const Table: React.FC<TableProps> = ({ data, properties }) => {
 
     const onCellValueChanged = (event: any) => {
         const updatedRowData = rowData.map((row) => {
-            const isPrimaryKeyMatch = tableProperties.primaryKeys.every(
-                (key) => row[key.field] === event.data[key.field]
-            );
-            return isPrimaryKeyMatch ? event.data : row;
+            if (row.id === event.data.id) {
+                return { ...row, [event.colDef.field]: event.newValue };
+            }
+            return row;
         });
         setRowData(updatedRowData);
         setUnsavedChanges(true);
@@ -108,21 +67,24 @@ const Table: React.FC<TableProps> = ({ data, properties }) => {
 
     const addRow = () => {
         if (gridApi) {
-            const newRow: RowData = {} as RowData;
-            gridApi.applyTransaction({ add: [newRow] });
-            setRowData((prevRowData) => [...prevRowData, newRow]);
+            const updatedRowData = tableServiceInstance.addRow(
+                gridApi,
+                options,
+                rowData
+            );
+            setRowData(updatedRowData);
             setUnsavedChanges(true);
         }
     };
 
     const deleteRow = () => {
         if (gridApi && selectedRows.length > 0) {
-            gridApi.applyTransaction({ remove: selectedRows });
-
-            setRowData((prevRowData) =>
-                prevRowData.filter((row) => !selectedRows.includes(row))
+            const updatedRowData = tableServiceInstance.deleteRow(
+                gridApi,
+                selectedRows,
+                rowData
             );
-
+            setRowData(updatedRowData);
             setSelectedRows([]);
             setUnsavedChanges(true);
         }
@@ -130,9 +92,9 @@ const Table: React.FC<TableProps> = ({ data, properties }) => {
 
     const saveChanges = async () => {
         try {
-            await tableService.writeRows(tableProperties.name, rowData);
-            const updatedRows = await tableService.readRows(
-                tableProperties.name
+            const updatedRows = await tableServiceInstance.saveChanges(
+                options,
+                rowData
             );
             setRowData(updatedRows);
             setUnsavedChanges(false);
@@ -141,31 +103,16 @@ const Table: React.FC<TableProps> = ({ data, properties }) => {
         }
     };
 
-    const rowSelection = useMemo<
-        RowSelectionOptions | 'single' | 'multiple'
-    >(() => {
-        return {
-            mode: 'multiRow',
-        };
-    }, []);
-
-    const rowClassRules = {
-        'selected-row': (params: any) => params.node.isSelected(),
-    };
-
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            parse(file, {
-                header: true,
-                complete: (results: { data: any }) => {
-                    const data = results.data as RowData[];
-                    setRowData((prevRowData) => [...prevRowData, ...data]);
-                },
-                error: (error: unknown) => {
-                    console.error('Error parsing CSV file:', error);
-                },
-            });
+            tableServiceInstance.handleFileUpload(
+                file,
+                options,
+                rowData,
+                setRowData,
+                setUnsavedChanges
+            );
         }
     };
 
@@ -178,18 +125,27 @@ const Table: React.FC<TableProps> = ({ data, properties }) => {
             <div
                 className="ag-theme-quartz"
                 style={{
-                    height: 400,
+                    height: '60vh',
                     padding: '10px',
                     margin: '0 auto',
                 }}
             >
                 <AgGridReact
                     rowData={rowData}
-                    columnDefs={tableProperties.columns}
-                    rowSelection={rowSelection}
+                    columnDefs={options.columns}
+                    rowSelection={useMemo<
+                        RowSelectionOptions | 'single' | 'multiple'
+                    >(() => {
+                        return {
+                            mode: 'multiRow',
+                        };
+                    }, [])}
                     onGridReady={onGridReady}
                     onCellValueChanged={onCellValueChanged}
-                    rowClassRules={rowClassRules}
+                    rowClassRules={{
+                        'selected-row': (params: any) =>
+                            params.node.isSelected(),
+                    }}
                 />
             </div>
             <div className="button-group">

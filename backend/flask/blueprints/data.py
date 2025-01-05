@@ -73,7 +73,7 @@ class DataBlueprint(BaseBlueprint):
         def write_rows(table_name):
             data = request.get_json()
             rows = data.get("rows", [])
-            app.logger.debug(f"Writing rows to {table_name}: {rows}")
+            app.logger.debug(f"Writing rows to {table_name}")
             try:
                 self._service.validate_table_name(table_name)
                 result = self._service.write_rows(table_name, rows)

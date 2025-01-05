@@ -49,7 +49,7 @@ const UserManagement: React.FC = () => {
             {feedback && <p>{feedback}</p>}
 
             <TableServiceProvider service={userService}>
-                <Table properties={table} data={users} />
+                <Table options={table} data={users} />
             </TableServiceProvider>
         </div>
     );
