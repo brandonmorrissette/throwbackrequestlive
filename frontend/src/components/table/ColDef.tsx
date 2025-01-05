@@ -31,6 +31,14 @@ export class ColDef implements BaseColDef {
                 const date = new Date(params.value);
                 return date.toLocaleString();
             };
+            this.valueParser = (params: any) => {
+                console.log('valueParser::params', params);
+                const parsedDate = new Date(params.newValue);
+                console.log('valueParser::parsedDate', parsedDate);
+                return isNaN(parsedDate.getTime())
+                    ? params.oldValue
+                    : parsedDate.toISOString();
+            };
         }
     }
 }
