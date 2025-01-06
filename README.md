@@ -1,7 +1,7 @@
 To Do
 
--   Support for Auto Incrementing
 -   Solve Choose File button formatting in Table
+-   Support for Auto Incrementing
 -   The deployment for the full app does not work. There is some unclear timing issue for the runtime stack. Every iteration some differnt exception pops up making it BRUTAL to troubleshoot.
     -   I want to use docker-compose and isolate the front end and the back end deployments completely
 -   Standardize stack inputs (project name and env are going to every single one. Standardize that. Probably don't need to pass ID for everyone. I THINK we can infer somehow.)
@@ -14,7 +14,8 @@ To Do
 -   Explore the ExecutionRole for StorageStack. I'd like a central Execution role but that is causing circular dependencies.
 -   Learn React and other front end libraries used
     -   Context
-    -   Proper inheritance for AG Grid ColumnDefs and AG Grid in general
+    -   Proper modeling for AG Grid ColumnDefs and AG Grid in general
+    -   Review DateTimeCellEditor
 -   Footer covers up bottom still
 -   Update cognito_service to validate JWT
 -   Much better password reset
