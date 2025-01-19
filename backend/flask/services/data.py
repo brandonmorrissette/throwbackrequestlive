@@ -27,6 +27,7 @@ class DataService:
         self.engine = create_engine(DATABASE_URL, pool_pre_ping=True)
         self.metadata = MetaData(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine)
+        logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
         self._refresh_metadata()
 
     @contextmanager
@@ -93,22 +94,17 @@ class DataService:
             }
             front_end_ids = {row[primary_key] for row in rows if primary_key in row}
 
+            rows_to_add = [row for row in rows if row.get(primary_key) is None]
+            if rows_to_add:
+                logging.debug(f"Rows to add: {rows_to_add}")
+                session.execute(table.insert(), rows_to_add)
+
             rows_to_delete = sql_alchemy_ids - front_end_ids
             if rows_to_delete:
                 logging.debug(f"Rows to delete: {rows_to_delete}")
                 session.execute(
                     table.delete().where(table.c[primary_key].in_(rows_to_delete))
                 )
-
-            # Need to update to support auto increment
-            rows_to_add = [
-                row for row in rows if row[primary_key] not in sql_alchemy_ids
-            ]
-            if rows_to_add:
-                logging.debug(f"Rows to add: {rows_to_add}")
-                logging.debug(f"Primary Key: {table.primary_key.columns}")
-                logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
-                session.execute(table.insert(), rows_to_add)
 
             rows_to_update = [
                 row for row in rows if row[primary_key] in sql_alchemy_ids

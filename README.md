@@ -1,6 +1,8 @@
 To Do
 
--   Solve Choose File button formatting in Table
+-   The write flow for rows feels off.
+    -   Most of my data is passed to table from DataManagement, which uses the table service to interact with backend
+    -   My table takes the data, and the data service. It then uses the service to write to the backend. Something about this feels weird.
 -   Support for Auto Incrementing
 -   The deployment for the full app does not work. There is some unclear timing issue for the runtime stack. Every iteration some differnt exception pops up making it BRUTAL to troubleshoot.
     -   I want to use docker-compose and isolate the front end and the back end deployments completely
@@ -37,3 +39,4 @@ To Do
 -   Environment logging configuration
 -   Only Update Cognito users when there have been actual updates
 -   SQL Alchemy OOP/Models
+-   Default datetime to something more user friendly
