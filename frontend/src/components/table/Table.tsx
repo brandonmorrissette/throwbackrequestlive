@@ -69,7 +69,6 @@ const Table: React.FC<{
         if (gridApi) {
             const updatedRowData = tableServiceInstance.addRow(
                 gridApi,
-                options,
                 rowData
             );
             setRowData(updatedRowData);
@@ -108,7 +107,6 @@ const Table: React.FC<{
         if (file) {
             tableServiceInstance.handleFileUpload(
                 file,
-                options,
                 rowData,
                 setRowData,
                 setUnsavedChanges
