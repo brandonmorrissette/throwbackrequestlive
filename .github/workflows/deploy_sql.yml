@@ -1,0 +1,83 @@
+name: Deploy SQL Files
+
+on:
+    workflow_call:
+        inputs:
+            environment:
+                required: true
+                type: string
+        secrets:
+            AWS_ACCESS_KEY_ID:
+                required: true
+            AWS_SECRET_ACCESS_KEY:
+                required: true
+            AWS_REGION:
+                required: true
+
+jobs:
+    fetch-cdk-outputs:
+        name: Fetch CDK Outputs
+        uses: ./.github/workflows/fetch_cdk_outputs.yml
+        with:
+            environment: ${{ inputs.environment }}
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    run-sql-task:
+        needs: fetch-cdk-outputs
+        runs-on: ubuntu-latest
+        steps:
+            - name: Run Fargate Task
+              run: |
+                  # Fetch the CloudFormation outputs
+                  OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
+
+                  # Log the OUTPUTS for debugging
+                  echo "=== Raw OUTPUTS ==="
+                  echo "$OUTPUTS"
+                  echo "==================="
+
+                  # Check if OUTPUTS is empty
+                  if [[ -z "$OUTPUTS" ]]; then
+                      echo "ERROR: OUTPUTS is empty!"
+                      exit 1
+                  fi
+
+                  declare -A CFN_OUTPUTS
+
+                  for row in $(echo "$OUTPUTS" | jq -c ".[] | .[]"); do
+                      # Extract the key and value from each output, use fallback value if jq fails
+                      OUTPUT_KEY=$(echo "$row" | jq -r ".OutputKey" 2>/dev/null || echo "JQ_PARSING_ERROR")
+                      OUTPUT_VALUE=$(echo "$row" | jq -r ".OutputValue" 2>/dev/null || echo "JQ_PARSING_ERROR")
+
+                      # Log each extracted key-value pair
+                      echo "Extracted OUTPUT_KEY=$OUTPUT_KEY, OUTPUT_VALUE=$OUTPUT_VALUE"
+
+                      # If jq parsing failed (i.e., the value is "JQ_PARSING_ERROR"), continue to next iteration
+                      if [[ "$OUTPUT_KEY" == "JQ_PARSING_ERROR" || "$OUTPUT_VALUE" == "JQ_PARSING_ERROR" ]]; then
+                          echo "Warning: jq parsing error for key: $OUTPUT_KEY, skipping this entry."
+                          continue
+                      fi
+
+                      # Format the key to lower case and replace ":" with "_"
+                      OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
+
+                      # Store the key-value pair in the associative array
+                      CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
+
+                      # Output to confirm the values
+                      echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
+                  done
+
+                  # Now running the ECS task
+                  aws ecs run-task \
+                  --cluster "${CFN_OUTPUTS[ecsclustername]}" \
+                  --task-definition "${CFN_OUTPUTS[sqltaskdefinitionarn]}" \
+                  --launch-type FARGATE \
+                  --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}"
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}

@@ -1,58 +1,42 @@
+To Do
 
-# Welcome to your CDK Python project!
-
-This is a blank project for CDK development with Python.
-
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
-
-To manually create a virtualenv on MacOS and Linux:
-
-```
-$ python -m venv .venv
-```
-
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
-
-```
-$ source .venv/bin/activate
-```
-
-If you are a Windows platform, you would activate the virtualenv like this:
-
-```
-% .venv\Scripts\activate.bat
-```
-
-Once the virtualenv is activated, you can install the required dependencies.
-
-```
-$ pip install -r requirements.txt
-```
-
-At this point you can now synthesize the CloudFormation template for this code.
-
-```
-$ cdk synth
-```
-
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
-
-## Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
+-   The write flow for rows feels off.
+    -   Most of my data is passed to table from DataManagement, which uses the table service to interact with backend
+    -   My table takes the data, and the data service. It then uses the service to write to the backend. Something about this feels weird.
+-   Support for Auto Incrementing
+-   The deployment for the full app does not work. There is some unclear timing issue for the runtime stack. Every iteration some differnt exception pops up making it BRUTAL to troubleshoot.
+    -   I want to use docker-compose and isolate the front end and the back end deployments completely
+-   Standardize stack inputs (project name and env are going to every single one. Standardize that. Probably don't need to pass ID for everyone. I THINK we can infer somehow.)
+-   Clean up stack tagging a bit.
+-   Design correct pattern for depenency management bettwen stacks
+-   Clean and consistent error handling/logging
+    -   Cognito (maybe additional) services return appropriate failures to front end
+-   File by file analysis. I want to understand ever line of code and if it's needed AND best practice. Will review with AI.
+-   Code quality and testing
+-   Explore the ExecutionRole for StorageStack. I'd like a central Execution role but that is causing circular dependencies.
+-   Learn React and other front end libraries used
+    -   Context
+    -   Proper modeling for AG Grid ColumnDefs and AG Grid in general
+    -   Review DateTimeCellEditor
+-   Footer covers up bottom still
+-   Update cognito_service to validate JWT
+-   Much better password reset
+-   Group management for super user
+    -   Roles in general? Review.
+    -   Split groups from Cognito service. Probably split into multiple services.
+-   Cognito user updates
+    -   superuser becomes site_admin
+    -   admin becomes db_admin
+-   Explore removing boto3 from user_pool construct. Or at least isolate it there.
+-   Fix Login form sizing
+-   Login hangs on error
+-   Consider tables and data in an ETL context for future proofing
+-   Break up front end and back end containers
+    -   Consider breaking out postgress instance for local storage
+-   DRY in the cognito and data services with SQLAlchemy. It's small enough I don't know if I care, but feels like something that could grow.
+-   additionalProps typing in DataManagement
+-   Dynamic table properties for user flow
+-   Environment logging configuration
+-   Only Update Cognito users when there have been actual updates
+-   SQL Alchemy OOP/Models
+-   Default datetime to something more user friendly

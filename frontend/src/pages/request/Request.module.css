@@ -1,0 +1,36 @@
+.requestButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 10px 0;
+    padding: 15px;
+    border: transparent;
+    border-radius: 10px;
+    background-color: var(--color-accent);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+}
+
+.requestButton:hover {
+    background-color: var(--color-accent-darker);
+    transform: scale(1.02);
+}
+
+.requestButton .songDetails {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.requestButton .songBand {
+    font-weight: bold;
+    text-align: left;
+}
+
+.requestButton .songName {
+    font-style: italic;
+    text-align: right;
+}

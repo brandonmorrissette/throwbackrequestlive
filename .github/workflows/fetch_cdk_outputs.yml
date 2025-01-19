@@ -1,0 +1,57 @@
+name: Fetch CDK Outputs
+
+on:
+    workflow_call:
+        inputs:
+            environment:
+                required: true
+                type: string
+        secrets:
+            AWS_ACCESS_KEY_ID:
+                required: true
+            AWS_SECRET_ACCESS_KEY:
+                required: true
+            AWS_REGION:
+                required: true
+
+jobs:
+    # OUTPUTS DO NOT WORK. I CANNOT SOLVE CURRENTLY BUT DID NOT WANT TO DITCH THIS EFFORT
+    fetch-outputs:
+        runs-on: ubuntu-latest
+        outputs:
+            ecsclustername: ${{ steps.fetch.outputs.ecsclustername }}
+            sqltaskdefarn: ${{ steps.fetch.outputs.sqltaskdefarn }}
+            subnetid: ${{ steps.fetch.outputs.subnetid }}
+            securitygroupid: ${{ steps.fetch.outputs.securitygroupid }}
+            hard-code-test: ${{ steps.fetch.outputs.hard-code-test }}
+        steps:
+            - name: Fetch CDK Outputs Dynamically
+              id: fetch
+              run: |
+                  STACK_NAME=${{ github.event.repository.name }}-environment-setup-stack-${{ inputs.environment }}
+                  OUTPUTS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs" --output json)
+
+                  for row in $(echo "$OUTPUTS" | jq -c '.[]'); do
+                      OUTPUT_KEY=$(echo "$row" | jq -r '.OutputKey')
+                      OUTPUT_VALUE=$(echo "$row" | jq -r '.OutputValue')
+
+                      OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]_')
+                      echo "Setting $OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE"
+                      echo "$OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE" >> "$GITHUB_OUTPUT"
+                      echo "Written to $GITHUB_OUTPUT: $OUTPUT_KEY_FORMATTED=$OUTPUT_VALUE"
+                  done
+
+                  echo "Explcit Hard Code Test"
+                  echo "hard-code-test=hard-code-value" >> "$GITHUB_OUTPUT"
+                  echo "Written to $GITHUB_OUTPUT: hard-code-test=hard-code-value"
+                  echo "hard-code-test=${{steps.fetch.outputs.hard-code-test}}"
+
+                  echo "Validation: Fetching outputs after setting them"
+                  echo "ecsclustername=${{ steps.fetch.outputs.ecsclustername }}"
+                  echo "sqltaskdefarn=${{ steps.fetch.outputs.sqltaskdefarn }}"
+                  echo "subnetid=${{ steps.fetch.outputs.subnetid }}"
+                  echo "securitygroupid=${{ steps.fetch.outputs.securitygroupid }}"
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}

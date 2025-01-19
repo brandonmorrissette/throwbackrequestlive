@@ -1,0 +1,32 @@
+.list-group-item .show-title {
+    display: flex;
+    justify-content: space-between;
+}
+
+.list-group-item .show-name {
+    text-align: left;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.list-group-item .show-venue {
+    text-align: right;
+    font-style: italic;
+    font-size: 1.1rem;
+}
+
+.list-group-item .show-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+.list-group-item .show-datetime {
+    text-align: left;
+    flex: 1;
+}
+
+.list-group-item .show-address {
+    text-align: right;
+    flex: 1;
+}
