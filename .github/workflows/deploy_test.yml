@@ -1,0 +1,93 @@
+name: Deploy App
+
+on:
+    workflow_dispatch:
+
+jobs:
+    deploy-network-stack:
+        uses: ./.github/workflows/deploy_stack.yml
+        name: Deploy Network Stack
+        with:
+            stack-name: network-stack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    deploy-compute-stack:
+        needs: deploy-network-stack
+        name: Deploy Compute Stack
+        uses: ./.github/workflows/deploy_stack.yml
+        with:
+            stack-name: compute-stack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    deploy-environment-setup-stack:
+        needs: [deploy-compute-stack]
+        name: Deploy Environment Setup Stack
+        uses: ./.github/workflows/deploy_stack.yml
+        with:
+            stack-name: environment-setup-stack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    deploy-storage-stack:
+        needs: deploy-network-stack
+        name: Deploy Storage Stack
+        uses: ./.github/workflows/deploy_stack.yml
+        with:
+            stack-name: storage-stack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    deploy-user-management-stack:
+        uses: ./.github/workflows/deploy_stack.yml
+        needs: deploy-storage-stack
+        name: Deploy User Management Stack
+        with:
+            stack-name: user-management-stack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    deploy-runtime-stack:
+        needs: [deploy-compute-stack, deploy-storage-stack]
+        name: Deploy Runtime Stack
+        uses: ./.github/workflows/deploy_stack.yml
+        with:
+            stack-name: runtime-stack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    deploy-sql-files:
+        name: Deploy SQL Files
+        needs: [deploy-storage-stack, deploy-environment-setup-stack]
+        uses: ./.github/workflows/deploy_sql.yml
+        with:
+            environment: production
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    deploy-superuser:
+        name: Deploy Super User
+        needs: [deploy-user-management-stack, deploy-environment-setup-stack]
+        uses: ./.github/workflows/deploy_superuser.yml
+        with:
+            environment: production
+            project_name: ${{ env.PROJECT_NAME }}
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
