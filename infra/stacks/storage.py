@@ -2,6 +2,7 @@ from aws_cdk import CfnOutput, Stack
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
+from aws_cdk import aws_logs as logs
 from constructs import Construct
 from constructs.rds import RdsConstruct
 
@@ -13,8 +14,6 @@ class StorageStack(Stack):
         id: str,
         vpc: ec2.Vpc,
         project_name: str,
-        log_group,
-        security_group,
         **kwargs,
     ):
         super().__init__(scope, id, **kwargs)
@@ -55,8 +54,6 @@ class StorageStack(Stack):
             "sql-task-definition",
             memory_limit_mib=512,
             cpu=256,
-            # I'd rather use the environment setup execution role, but it keeps causing a circular dependency
-            # due to the container requiring secrets. It's been a real tail chase.
             execution_role=iam.Role(
                 self,
                 "sql-task-execution-role",
@@ -83,7 +80,11 @@ class StorageStack(Stack):
             ],
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="sql-deployment",
-                log_group=log_group,
+                log_group=logs.LogGroup(
+                    self,
+                    "sql-container-log-group",
+                    log_group_name=f"/{project_name}-sql-container-logs-{self.node.id}",
+                ),
             ),
             secrets={
                 "DB_USER": ecs.Secret.from_secrets_manager(
@@ -98,12 +99,44 @@ class StorageStack(Stack):
             },
         )
 
+        security_group = ec2.SecurityGroup(
+            self,
+            "TaskSecurityGroup",
+            vpc=vpc,
+            description="Allow ECS tasks to communicate with RDS",
+            allow_all_outbound=True,
+        )
         security_group.add_ingress_rule(
             ec2.Peer.any_ipv4(), ec2.Port.tcp(5432), "Allow PostgreSQL access"
         )
+
+        CfnOutput(self, "security-group-id", value=security_group.security_group_id)
 
         CfnOutput(
             self,
             "sql-task-definition-arn",
             value=sql_task_definition.task_definition_arn,
         )
+
+        admin_policy = iam.ManagedPolicy(
+            self,
+            "admin-rds-policy",
+            statements=[
+                iam.PolicyStatement(
+                    actions=[
+                        "rds-db:connect",
+                        "rds-db:executeStatement",
+                        "rds-db:batchExecuteStatement",
+                    ],
+                    resources=[self.rds_construct.db_instance.instance_arn],
+                )
+            ],
+        )
+
+        self.admin_role = iam.Role(
+            self,
+            "admin-role",
+            assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
+        )
+
+        self.admin_role.add_managed_policy(admin_policy)

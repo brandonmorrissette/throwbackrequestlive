@@ -39,17 +39,6 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    deploy-environment-setup-stack:
-        needs: [deploy-compute-stack]
-        name: Deploy Environment Setup Stack
-        uses: ./.github/workflows/deploy_stack.yml
-        with:
-            stack-name: environment-setup-stack
-        secrets:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-
     deploy-storage-stack:
         needs: deploy-network-stack
         name: Deploy Storage Stack
@@ -85,7 +74,7 @@ jobs:
 
     deploy-sql-files:
         name: Deploy SQL Files
-        needs: [deploy-storage-stack, deploy-environment-setup-stack]
+        needs: [deploy-storage-stack]
         uses: ./.github/workflows/deploy_sql.yml
         with:
             environment: production
@@ -96,7 +85,7 @@ jobs:
 
     deploy-superuser:
         name: Deploy Super User
-        needs: [deploy-user-management-stack, deploy-environment-setup-stack]
+        needs: [deploy-user-management-stack]
         uses: ./.github/workflows/deploy_superuser.yml
         with:
             environment: ${{ inputs.environment }}

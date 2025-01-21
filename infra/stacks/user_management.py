@@ -3,6 +3,7 @@ from aws_cdk import CfnOutput, Stack
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
+from aws_cdk import aws_logs as logs
 from constructs import Construct
 from constructs.userpool import UserPoolConstruct
 
@@ -13,11 +14,9 @@ class UserManagementStack(Stack):
         self,
         scope: Construct,
         id: str,
-        rds,
         project_name: str,
         env,
-        execution_role,
-        log_group,
+        superuser_policies=None,
         **kwargs,
     ) -> None:
         super().__init__(scope, id, **kwargs)
@@ -32,57 +31,12 @@ class UserManagementStack(Stack):
             **kwargs,
         )
 
-        admin_rds_policy = iam.ManagedPolicy(
-            self,
-            "admin-rds-policy",
-            statements=[
-                iam.PolicyStatement(
-                    actions=[
-                        "rds-db:connect",
-                        "rds-db:executeStatement",
-                        "rds-db:batchExecuteStatement",
-                    ],
-                    resources=[rds.instance_arn],
-                )
-            ],
-        )
-
-        cognito_policy = iam.ManagedPolicy(
-            self,
-            "cognito-policy",
-            statements=[
-                iam.PolicyStatement(
-                    actions=[
-                        "cognito-idp:AdminCreateUser",
-                        "cognito-idp:AdminDeleteUser",
-                        "cognito-idp:AdminUpdateUserAttributes",
-                        "cognito-idp:AdminAddUserToGroup",
-                        "cognito-idp:AdminRemoveUserFromGroup",
-                        "cognito-idp:AdminCreateGroup",
-                        "cognito-idp:AdminDeleteGroup",
-                        "cognito-idp:AdminUpdateGroup",
-                    ],
-                    resources=[
-                        f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{self.user_pool_construct.user_pool.user_pool_id}"
-                    ],
-                )
-            ],
-        )
-
         admin_group = cognito.CfnUserPoolGroup(
             self,
             "admin-group",
             user_pool_id=self.user_pool_construct.user_pool.user_pool_id,
             group_name="admin",
         )
-
-        admin_role = iam.Role(
-            self,
-            "admin-role",
-            assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
-        )
-
-        admin_role.add_managed_policy(admin_rds_policy)
 
         superuser_group = cognito.CfnUserPoolGroup(
             self,
@@ -96,8 +50,33 @@ class UserManagementStack(Stack):
             "superuser-role",
             assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
         )
-        superuser_role.add_managed_policy(admin_rds_policy)
-        superuser_role.add_managed_policy(cognito_policy)
+        superuser_role.add_managed_policy(
+            iam.ManagedPolicy(
+                self,
+                "cognito-policy",
+                statements=[
+                    iam.PolicyStatement(
+                        actions=[
+                            "cognito-idp:AdminCreateUser",
+                            "cognito-idp:AdminDeleteUser",
+                            "cognito-idp:AdminUpdateUserAttributes",
+                            "cognito-idp:AdminAddUserToGroup",
+                            "cognito-idp:AdminRemoveUserFromGroup",
+                            "cognito-idp:AdminCreateGroup",
+                            "cognito-idp:AdminDeleteGroup",
+                            "cognito-idp:AdminUpdateGroup",
+                        ],
+                        resources=[
+                            f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{self.user_pool_construct.user_pool.user_pool_id}"
+                        ],
+                    )
+                ],
+            )
+        )
+
+        if superuser_policies:
+            for policy in superuser_policies:
+                superuser_role.add_managed_policy(policy)
 
         superuser_task_role = iam.Role(
             self,
@@ -132,7 +111,17 @@ class UserManagementStack(Stack):
             "superuser-task-definition",
             memory_limit_mib=512,
             cpu=256,
-            execution_role=execution_role,
+            execution_role=iam.Role(
+                self,
+                "superuser-execution-role",
+                role_name=f"{project_name}-superuser-execution-role",
+                assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+                managed_policies=[
+                    iam.ManagedPolicy.from_aws_managed_policy_name(
+                        "service-role/AmazonECSTaskExecutionRolePolicy"
+                    )
+                ],
+            ),
             task_role=superuser_task_role,
         )
 
@@ -143,7 +132,11 @@ class UserManagementStack(Stack):
             ),
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="superuser-creation",
-                log_group=log_group,
+                log_group=logs.LogGroup(
+                    self,
+                    "superuser-container-log-group",
+                    log_group_name=f"/ecs/{project_name}-superuser-container-logs-{self.node.id}",
+                ),
             ),
         )
 
