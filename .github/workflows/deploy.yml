@@ -86,7 +86,7 @@ jobs:
         uses: ./.github/workflows/deploy_superuser.yml
         with:
             environment: production
-            project_name: ${{ env.PROJECT_NAME }}
+            project_name: ${{ github.event.repository.name }}
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
