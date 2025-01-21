@@ -2,6 +2,9 @@ name: Deploy App Test
 
 on:
     workflow_dispatch:
+    push:
+        branches:
+            - '*'
 
 jobs:
     deploy-network-stack:

@@ -1,6 +1,9 @@
 name: Deploy Stack Test
 
 on:
+    push:
+        branches:
+            - '*'
     workflow_call:
         inputs:
             stack-name:
