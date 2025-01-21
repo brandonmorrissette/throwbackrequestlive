@@ -13,21 +13,6 @@ on:
                 required: true
             AWS_REGION:
                 required: true
-    workflow_dispatch:
-        inputs:
-            stack-name:
-                description: 'The Stack Name to deploy'
-                required: true
-                default: ''
-            AWS_ACCESS_KEY_ID:
-                required: false
-                default: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY:
-                required: false
-                default: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION:
-                required: false
-                default: ${{ secrets.AWS_REGION }}
 
 jobs:
     deploy-stack:
