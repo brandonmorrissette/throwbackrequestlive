@@ -1,11 +1,6 @@
 To Do
 
--   The write flow for rows feels off.
-    -   Most of my data is passed to table from DataManagement, which uses the table service to interact with backend
-    -   My table takes the data, and the data service. It then uses the service to write to the backend. Something about this feels weird.
--   Support for Auto Incrementing
 -   The deployment for the full app does not work. There is some unclear timing issue for the runtime stack. Every iteration some differnt exception pops up making it BRUTAL to troubleshoot.
-    -   I want to use docker-compose and isolate the front end and the back end deployments completely
 -   Standardize stack inputs (project name and env are going to every single one. Standardize that. Probably don't need to pass ID for everyone. I THINK we can infer somehow.)
 -   Clean up stack tagging a bit.
 -   Design correct pattern for depenency management bettwen stacks
@@ -40,3 +35,7 @@ To Do
 -   Only Update Cognito users when there have been actual updates
 -   SQL Alchemy OOP/Models
 -   Default datetime to something more user friendly
+-   The write flow for rows feels off.
+    -   Most of my data is passed to table from DataManagement, which uses the table service to interact with backend
+    -   My table takes the data, and the data service. It then uses the service to write to the backend. Something about this feels weird.
+-   Support for Auto Incrementing

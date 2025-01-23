@@ -1,3 +1,4 @@
+from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ssm as ssm
 from constructs import Construct
@@ -8,7 +9,9 @@ class ClusterConstruct(Construct):
         super().__init__(scope, id)
 
         self.cluster = ecs.Cluster(self, "throwback-request-live-cluster", vpc=vpc)
-        ssm.StringParameter(self, "EcsClusterNameParam",
+        ssm.StringParameter(
+            self,
+            "EcsClusterNameParam",
             parameter_name=f"/{project_name}/ecs-cluster-name",
-            string_value=self.cluster.cluster_name
+            string_value=self.cluster.cluster_name,
         )

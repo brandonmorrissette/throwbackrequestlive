@@ -4,7 +4,6 @@ import os
 import aws_cdk as cdk
 from aws_cdk import aws_iam as iam
 from stacks.compute import ComputeStack
-from stacks.environment_setup import EnvironmentSetupStack
 from stacks.network import NetworkStack
 from stacks.runtime import RuntimeStack
 from stacks.storage import StorageStack
@@ -52,24 +51,12 @@ compute_stack = ComputeStack(
 apply_tags(compute_stack, tags=tags)
 compute_stack.add_dependency(network_stack)
 
-environment_setup_stack = EnvironmentSetupStack(
-    app,
-    f"{project_name}-environment-setup-stack-{environment_name}",
-    project_name=project_name,
-    env=env,
-    cluster=compute_stack.cluster_construct.cluster,
-)
-apply_tags(environment_setup_stack, tags=tags)
-environment_setup_stack.add_dependency(compute_stack)
-
 storage_stack = StorageStack(
     app,
     f"{project_name}-storage-stack-{environment_name}",
     env=env,
     vpc=network_stack.vpc_constrcut.vpc,
     project_name=project_name,
-    log_group=environment_setup_stack.log_group,
-    security_group=environment_setup_stack.security_group,
 )
 apply_tags(storage_stack, tags=tags)
 storage_stack.add_dependency(network_stack)
@@ -78,10 +65,7 @@ user_management_stack = UserManagementStack(
     app,
     f"{project_name}-user-management-stack-{environment_name}",
     env=env,
-    rds=storage_stack.rds_construct.db_instance,
     project_name=project_name,
-    execution_role=environment_setup_stack.execution_role,
-    log_group=environment_setup_stack.log_group,
 )
 apply_tags(user_management_stack, tags=tags)
 user_management_stack.add_dependency(storage_stack)
