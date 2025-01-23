@@ -71,7 +71,7 @@ jobs:
 
     deploy-superuser:
         name: Deploy Super User
-        needs: [deploy-user-management-stack]
+        needs: [deploy-user-management-stack, deploy-storage-stack]
         uses: ./.github/workflows/deploy_superuser.yml
         with:
             environment: production
