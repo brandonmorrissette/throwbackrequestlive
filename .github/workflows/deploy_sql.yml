@@ -30,15 +30,7 @@ jobs:
       - name: Fetch CloudFormation Outputs for All Stacks
         id: fetch_outputs
         run: |
-          STACKS=$(aws cloudformation describe-stacks --query "Stacks[*].{StackName:StackName, Outputs:Outputs}" --output json)
-
-          echo "=== RAW STACKS ==="
-          echo "$STACKS"
-          echo "=================="
-
-          # Extract outputs for all stacks
-          echo "$STACKS" | jq -c '.[]' | while read stack; do
-            OUTPUTS=$(echo "$stack" | jq -r '.Outputs')
+            OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
 
             echo "=== Raw OUTPUTS ==="
             echo "$OUTPUTS"
@@ -54,7 +46,6 @@ jobs:
             echo "TASK_DEFINITION_ARN=$TASK_DEFINITION_ARN" >> $GITHUB_ENV
             echo "SUBNET_ID=$SUBNET_ID" >> $GITHUB_ENV
             echo "SECURITY_GROUP_ID=$SECURITY_GROUP_ID" >> $GITHUB_ENV
-          done
         env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
