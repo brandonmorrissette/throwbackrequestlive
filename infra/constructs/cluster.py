@@ -16,4 +16,4 @@ class ClusterConstruct(Construct):
             parameter_name=f"/{project_name}/ecs-cluster-name",
             string_value=self.cluster.cluster_name,
         )
-        CfnOutput(self, "ecsclustername", value=self.cluster.cluster_name)
+        CfnOutput(self, "ecs-cluster-name", value=self.cluster.cluster_name)
