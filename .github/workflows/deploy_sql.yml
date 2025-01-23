@@ -16,7 +16,6 @@ on:
 
 jobs:
     run-sql-task:
-        needs: fetch-cdk-outputs
         runs-on: ubuntu-latest
         steps:
             - name: Run Fargate Task
