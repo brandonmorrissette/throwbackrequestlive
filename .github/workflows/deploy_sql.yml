@@ -22,9 +22,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          aws-access-key-id: ${{ inputs.aws_access_key_id }}
-          aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
-          aws-region: ${{ inputs.aws_region }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Fetch CloudFormation Outputs for All Stacks
         id: fetch_outputs
