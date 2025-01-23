@@ -36,16 +36,20 @@ jobs:
             echo "$OUTPUTS"
             echo "==================="
 
-            # Extract required outputs
-            ECS_CLUSTER_NAME=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="ecsclustername") | .OutputValue')
-            TASK_DEFINITION_ARN=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="sqltaskdefinitionarn") | .OutputValue')
-            SUBNET_ID=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="subnetid") | .OutputValue')
-            SECURITY_GROUP_ID=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="securitygroupid") | .OutputValue')
+            declare -A CFN_OUTPUTS
+            
+            for row in $(echo "$OUTPUTS" | jq -c ".[] | .[]"); do
+                echo "Extracted OUTPUT_KEY=$OUTPUT_KEY, OUTPUT_VALUE=$OUTPUT_VALUE"
+                CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
 
-            echo "ECS_CLUSTER_NAME=$ECS_CLUSTER_NAME" >> $GITHUB_ENV
-            echo "TASK_DEFINITION_ARN=$TASK_DEFINITION_ARN" >> $GITHUB_ENV
-            echo "SUBNET_ID=$SUBNET_ID" >> $GITHUB_ENV
-            echo "SECURITY_GROUP_ID=$SECURITY_GROUP_ID" >> $GITHUB_ENV
+                # Output to confirm the values
+                echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
+            done
+
+            echo "ECS_CLUSTER_NAME=${CFN_OUTPUTS[ecsclustername]}" >> $GITHUB_ENV
+            echo "TASK_DEFINITION_ARN=${CFN_OUTPUTS[superusertaskdefinitionarn]}" >> $GITHUB_ENV
+            echo "SUBNET_ID=${CFN_OUTPUTS[subnetid]}" >> $GITHUB_ENV
+            echo "SECURITY_GROUP_ID=${CFN_OUTPUTS[securitygroupid]}" >> $GITHUB_ENV
         env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
