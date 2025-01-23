@@ -32,9 +32,17 @@ jobs:
         run: |
           STACKS=$(aws cloudformation describe-stacks --query "Stacks[*].{StackName:StackName, Outputs:Outputs}" --output json)
 
+          echo "=== RAW STACKS ==="
+          echo "$STACKS"
+          echo "=================="
+
           # Extract outputs for all stacks
           echo "$STACKS" | jq -c '.[]' | while read stack; do
             OUTPUTS=$(echo "$stack" | jq -r '.Outputs')
+
+            echo "=== Raw OUTPUTS ==="
+            echo "$OUTPUTS"
+            echo "==================="
 
             # Extract required outputs
             ECS_CLUSTER_NAME=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="ecsclustername") | .OutputValue')
