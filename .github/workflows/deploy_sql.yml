@@ -39,11 +39,13 @@ jobs:
             declare -A CFN_OUTPUTS
             
             for row in $(echo "$OUTPUTS" | jq -c ".[] | .[]"); do
+                OUTPUT_KEY=$(echo "$row" | jq -r '.OutputKey')
+                OUTPUT_VALUE=$(echo "$row" | jq -r '.OutputValue')
                 echo "Extracted OUTPUT_KEY=$OUTPUT_KEY, OUTPUT_VALUE=$OUTPUT_VALUE"
-                CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
+                CFN_OUTPUTS[$OUTPUT_KEY]=$OUTPUT_VALUE
 
                 # Output to confirm the values
-                echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
+                echo "Set CFN_OUTPUTS[$OUTPUT_KEY] = $OUTPUT_VALUE"
             done
 
             echo "ECS_CLUSTER_NAME=${CFN_OUTPUTS[ecsclustername]}" >> $GITHUB_ENV
