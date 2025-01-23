@@ -15,58 +15,49 @@ on:
                 required: true
 
 jobs:
-    run-sql-task:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Run Fargate Task
-              run: |
-                  # Fetch the CloudFormation outputs
-                  OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
+  run-ecs-task:
+    runs-on: ubuntu-latest
 
-                  # Log the OUTPUTS for debugging
-                  echo "=== Raw OUTPUTS ==="
-                  echo "$OUTPUTS"
-                  echo "==================="
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ inputs.aws_access_key_id }}
+          aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
+          aws-region: ${{ inputs.aws_region }}
 
-                  # Check if OUTPUTS is empty
-                  if [[ -z "$OUTPUTS" ]]; then
-                      echo "ERROR: OUTPUTS is empty!"
-                      exit 1
-                  fi
+      - name: Fetch CloudFormation Outputs for All Stacks
+        id: fetch_outputs
+        run: |
+          STACKS=$(aws cloudformation describe-stacks --query "Stacks[*].{StackName:StackName, Outputs:Outputs}" --output json)
 
-                  declare -A CFN_OUTPUTS
+          # Extract outputs for all stacks
+          echo "$STACKS" | jq -c '.[]' | while read stack; do
+            OUTPUTS=$(echo "$stack" | jq -r '.Outputs')
 
-                  for row in $(echo "$OUTPUTS" | jq -c ".[] | .[]"); do
-                      # Extract the key and value from each output, use fallback value if jq fails
-                      OUTPUT_KEY=$(echo "$row" | jq -r ".OutputKey" 2>/dev/null || echo "JQ_PARSING_ERROR")
-                      OUTPUT_VALUE=$(echo "$row" | jq -r ".OutputValue" 2>/dev/null || echo "JQ_PARSING_ERROR")
+            # Extract required outputs
+            ECS_CLUSTER_NAME=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="ecsclustername") | .OutputValue')
+            TASK_DEFINITION_ARN=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="sqltaskdefinitionarn") | .OutputValue')
+            SUBNET_ID=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="subnetid") | .OutputValue')
+            SECURITY_GROUP_ID=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="securitygroupid") | .OutputValue')
 
-                      # Log each extracted key-value pair
-                      echo "Extracted OUTPUT_KEY=$OUTPUT_KEY, OUTPUT_VALUE=$OUTPUT_VALUE"
+            echo "ECS_CLUSTER_NAME=$ECS_CLUSTER_NAME" >> $GITHUB_ENV
+            echo "TASK_DEFINITION_ARN=$TASK_DEFINITION_ARN" >> $GITHUB_ENV
+            echo "SUBNET_ID=$SUBNET_ID" >> $GITHUB_ENV
+            echo "SECURITY_GROUP_ID=$SECURITY_GROUP_ID" >> $GITHUB_ENV
+          done
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
 
-                      # If jq parsing failed (i.e., the value is "JQ_PARSING_ERROR"), continue to next iteration
-                      if [[ "$OUTPUT_KEY" == "JQ_PARSING_ERROR" || "$OUTPUT_VALUE" == "JQ_PARSING_ERROR" ]]; then
-                          echo "Warning: jq parsing error for key: $OUTPUT_KEY, skipping this entry."
-                          continue
-                      fi
-
-                      # Format the key to lower case and replace ":" with "_"
-                      OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
-
-                      # Store the key-value pair in the associative array
-                      CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
-
-                      # Output to confirm the values
-                      echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
-                  done
-
-                  # Now running the ECS task
-                  aws ecs run-task \
-                  --cluster "${CFN_OUTPUTS[ecsclustername]}" \
-                  --task-definition "${CFN_OUTPUTS[sqltaskdefinitionarn]}" \
-                  --launch-type FARGATE \
-                  --network-configuration "awsvpcConfiguration={subnets=[\"${CFN_OUTPUTS[subnetid]}\"],securityGroups=[\"${CFN_OUTPUTS[securitygroupid]}\"],assignPublicIp=ENABLED}"
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
+      - name: Run ECS Task
+        run: |
+          aws ecs run-task \
+            --cluster "$ECS_CLUSTER_NAME" \
+            --task-definition "$TASK_DEFINITION_ARN" \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}"
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
