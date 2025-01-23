@@ -60,7 +60,7 @@ jobs:
 
     deploy-sql-files:
         name: Deploy SQL Files
-        needs: [deploy-storage-stack, deploy-environment-setup-stack]
+        needs: [deploy-storage-stack]
         uses: ./.github/workflows/deploy_sql.yml
         with:
             environment: production
@@ -71,7 +71,7 @@ jobs:
 
     deploy-superuser:
         name: Deploy Super User
-        needs: [deploy-user-management-stack, deploy-environment-setup-stack]
+        needs: [deploy-user-management-stack]
         uses: ./.github/workflows/deploy_superuser.yml
         with:
             environment: production
