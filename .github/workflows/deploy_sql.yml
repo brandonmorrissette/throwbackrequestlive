@@ -76,7 +76,8 @@ jobs:
                   aws ecs run-task \
                     --cluster "$ECS_CLUSTER_NAME" \
                     --task-definition "$TASK_DEFINITION_ARN" \
-                    --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID]}"
+                    --launch-type FARGATE \
+                    --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}"
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
