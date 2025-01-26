@@ -28,7 +28,6 @@ runs:
 
               OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
               while IFS= read -r element; do
-                  echo "Processing element: $element"
                   OUTPUT_KEY=$(echo "$element" | jq -r ".OutputKey")
                   OUTPUT_VALUE=$(echo "$element" | jq -r ".OutputValue")
 
@@ -37,13 +36,6 @@ runs:
                   CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
                   echo "CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = ${CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]}"
               done <<< "$(echo "$OUTPUTS" | jq -c ".[] | .[]")"
-
-
-              echo "CFN_OUTPUTS:"
-              for key in "${!CFN_OUTPUTS[@]}"; do
-                echo "CFN_OUTPUTS[$key] = ${CFN_OUTPUTS[$key]}"
-              done
-
 
               echo "ECS_CLUSTER_NAME=${CFN_OUTPUTS[ecsclustername]}" >> $GITHUB_ENV
               echo "SUPER_USER_TASK_DEFINITION_ARN=${CFN_OUTPUTS[superusertaskdefinitionarn]}" >> $GITHUB_ENV
