@@ -38,6 +38,7 @@ runs:
                   echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
               done
 
+              echo "CFN_OUTPUTS:"
               for key in "${!CFN_OUTPUTS[@]}"; do
                 echo "CFN_OUTPUTS[$key] = ${CFN_OUTPUTS[$key]}"
               done
