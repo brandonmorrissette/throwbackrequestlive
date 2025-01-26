@@ -27,20 +27,17 @@ runs:
               declare -A CFN_OUTPUTS
 
               OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
-              for element in $(echo "$OUTPUTS" | jq -c ".[] | .[]" 2>/dev/null); do
+              while IFS= read -r element; do
                   echo "Processing element: $element"
-                  OUTPUT_KEY=$(echo "$element" | jq -r ".OutputKey" 2>/dev/null)
-                  OUTPUT_VALUE=$(echo "$element" | jq -r ".OutputValue" 2>/dev/null)
+                  OUTPUT_KEY=$(echo "$element" | jq -r ".OutputKey")
+                  OUTPUT_VALUE=$(echo "$element" | jq -r ".OutputValue")
 
-                  if [[ -n "$OUTPUT_KEY" && -n "$OUTPUT_VALUE" ]]; then
-                      OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
-                    
-                      CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
-                      echo "CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = ${CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]}"
-                  else
-                      echo "Skipping invalid element: $element"
-                  fi
-              done
+                  OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
+
+                  CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
+                  echo "CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = ${CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]}"
+              done <<< "$(echo "$OUTPUTS" | jq -c ".[] | .[]")"
+
 
               echo "CFN_OUTPUTS:"
               for key in "${!CFN_OUTPUTS[@]}"; do
