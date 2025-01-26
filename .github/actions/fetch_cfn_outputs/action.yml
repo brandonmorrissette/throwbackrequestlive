@@ -27,7 +27,7 @@ runs:
               declare -A CFN_OUTPUTS
 
               OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
-              echo "$OUTPUTS" | jq -c ".[] | .[]" | while IFS= read -r element; do
+              for element in $(echo "$OUTPUTS" | jq -c ".[] | .[]"); do
                   echo "Processing element: $element"
                   OUTPUT_KEY=$(echo "$element" | jq -r ".OutputKey")
                   OUTPUT_VALUE=$(echo "$element" | jq -r ".OutputValue")
