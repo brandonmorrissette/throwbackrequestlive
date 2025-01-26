@@ -25,6 +25,9 @@ jobs:
               run: |
                   echo "Project Name: ${{ inputs.project_name }}"
 
+            - name: Checkout code
+              uses: actions/checkout@v3
+
             - name: Fetch CFN Outputs
               uses: ./.github/actions/fetch_cfn_outputs
               with:
