@@ -23,7 +23,6 @@ on:
 jobs:
     fetch-outputs:
         runs-on: ubuntu-latest
-
         steps:
             - name: Fetch CFN Outputs for All Stacks
               id: fetch_outputs
