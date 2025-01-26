@@ -16,57 +16,32 @@ on:
     workflow_dispatch:
 
 jobs:
-  run-ecs-task:
-    runs-on: ubuntu-latest
+    run-ecs-task:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+        steps:
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v3
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Fetch CloudFormation Outputs for All Stacks
-        id: fetch_outputs
-        run: |
-          STACKS=$(aws cloudformation describe-stacks --query "Stacks[*].{StackName:StackName, Outputs:Outputs}" --output json)
+            - name: Fetch CloudFormation Outputs
+              uses: ./.github/workflows/fetch-cfn-outputs.yml
+              with:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
 
-          echo "=== RAW STACKS ==="
-          echo "$STACKS"
-          echo "=================="
-
-          # Extract outputs for all stacks
-          echo "$STACKS" | jq -c '.[]' | while read stack; do
-            OUTPUTS=$(echo "$stack" | jq -r '.Outputs')
-
-            echo "=== Raw OUTPUTS ==="
-            echo "$OUTPUTS"
-            echo "==================="
-
-            # Extract required outputs
-            ECS_CLUSTER_NAME=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="ecsclustername") | .OutputValue')
-            TASK_DEFINITION_ARN=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="sqltaskdefinitionarn") | .OutputValue')
-            SUBNET_ID=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="subnetid") | .OutputValue')
-            SECURITY_GROUP_ID=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="securitygroupid") | .OutputValue')
-
-            echo "ECS_CLUSTER_NAME=$ECS_CLUSTER_NAME" >> $GITHUB_ENV
-            echo "TASK_DEFINITION_ARN=$TASK_DEFINITION_ARN" >> $GITHUB_ENV
-            echo "SUBNET_ID=$SUBNET_ID" >> $GITHUB_ENV
-            echo "SECURITY_GROUP_ID=$SECURITY_GROUP_ID" >> $GITHUB_ENV
-          done
-        env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Run ECS Task
-        run: |
-          aws ecs run-task \
-            --cluster "$ECS_CLUSTER_NAME" \
-            --task-definition "$TASK_DEFINITION_ARN" \
-            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}"
-        env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
+            - name: Run ECS Task
+              run: |
+                  aws ecs run-task \
+                    --cluster "$ECS_CLUSTER_NAME" \
+                    --task-definition "$TASK_DEFINITION_ARN" \
+                    --launch-type FARGATE \
+                    --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}"
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}

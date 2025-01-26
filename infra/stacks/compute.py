@@ -1,4 +1,4 @@
-from aws_cdk import Stack
+from aws_cdk import CfnOutput, Stack
 from constructs import Construct
 from constructs.cluster import ClusterConstruct
 
@@ -10,4 +10,7 @@ class ComputeStack(Stack):
         super().__init__(scope, id, env=env, **kwargs)
         self.cluster_construct = ClusterConstruct(
             self, "cluster", project_name=project_name, vpc=vpc
+        )
+        CfnOutput(
+            self, "ecs-cluster-name", value=self.cluster_construct.cluster.cluster_name
         )
