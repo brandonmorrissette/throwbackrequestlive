@@ -38,6 +38,11 @@ runs:
                   echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
               done
 
+              for key in "${!CFN_OUTPUTS[@]}"; do
+                echo "CFN_OUTPUTS[$key] = ${CFN_OUTPUTS[$key]}"
+              done
+
+
               echo "ECS_CLUSTER_NAME=${CFN_OUTPUTS[ecsclustername]}" >> $GITHUB_ENV
               echo "TASK_DEFINITION_ARN=${CFN_OUTPUTS[superusertaskdefinitionarn]}" >> $GITHUB_ENV
               echo "SUBNET_ID=${CFN_OUTPUTS[subnetid]}" >> $GITHUB_ENV
