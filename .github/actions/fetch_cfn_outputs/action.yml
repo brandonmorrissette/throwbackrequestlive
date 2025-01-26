@@ -1,12 +1,6 @@
 name: Fetch CFN Outputs
-
-on:
-    workflow_call:
-
-jobs:
-    echo-success:
-        runs-on: ubuntu-latest
-
+runs:
+    using: 'composite'
         steps:
             - name: Echo Success
               run: echo "Success"
