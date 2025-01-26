@@ -1,6 +1,7 @@
-name: Fetch CFN Outputs
+name: 'Fetch CFN Outputs'
+description: 'An MVP action to test invocation'
 runs:
     using: 'composite'
-        steps:
-            - name: Echo Success
-              run: echo "Success"
+    steps:
+        - name: Echo Success
+          run: echo "Success"
