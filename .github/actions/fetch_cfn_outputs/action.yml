@@ -32,7 +32,7 @@ runs:
 
               declare -A CFN_OUTPUTS
 
-              for row in $(echo "$OUTPUTS" | jq -c ".[] | .[]"); do
+              echo "$OUTPUTS" | jq -c ".[][]" | while IFS= read -r row; do
                   echo "Processing row: $row"
                   OUTPUT_KEY=$(echo "$row" | jq -r ".OutputKey")
                   OUTPUT_VALUE=$(echo "$row" | jq -r ".OutputValue")
