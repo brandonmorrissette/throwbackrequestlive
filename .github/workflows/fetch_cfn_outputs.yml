@@ -12,13 +12,13 @@ on:
             AWS_REGION:
                 required: true
                 type: string
-        secrets:
-            AWS_ACCESS_KEY_ID:
-                required: true
-            AWS_SECRET_ACCESS_KEY:
-                required: true
-            AWS_REGION:
-                required: true
+        # secrets:
+        #     AWS_ACCESS_KEY_ID:
+        #         required: true
+        #     AWS_SECRET_ACCESS_KEY:
+        #         required: true
+        #     AWS_REGION:
+        #         required: true
 
 jobs:
     fetch-outputs:
@@ -67,6 +67,6 @@ jobs:
                   echo "SUBNET_ID=${CFN_OUTPUTS[subnetid]}" >> $GITHUB_ENV
                   echo "SECURITY_GROUP_ID=${CFN_OUTPUTS[securitygroupid]}" >> $GITHUB_ENV
               env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
+                  AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ inputs.AWS_REGION }}
