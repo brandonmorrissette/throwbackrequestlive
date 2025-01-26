@@ -24,18 +24,13 @@ runs:
         - name: Fetch CFN Outputs for All Stacks
           shell: bash
           run: |
-              OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
-
-              echo "=== Raw OUTPUTS ==="
-              echo "$OUTPUTS"
-              echo "==================="
-
               declare -A CFN_OUTPUTS
 
-              echo "$OUTPUTS" | jq -c ".[][]" | while IFS= read -r row; do
-                  echo "Processing row: $row"
-                  OUTPUT_KEY=$(echo "$row" | jq -r ".OutputKey")
-                  OUTPUT_VALUE=$(echo "$row" | jq -r ".OutputValue")
+              OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
+              echo "$OUTPUTS" | jq -c ".[][]" | while IFS= read -r element; do
+                  echo "Processing element: $element"
+                  OUTPUT_KEY=$(echo "$element" | jq -r ".OutputKey")
+                  OUTPUT_VALUE=$(echo "$element" | jq -r ".OutputValue")
 
                   OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
 
@@ -47,3 +42,5 @@ runs:
               echo "TASK_DEFINITION_ARN=${CFN_OUTPUTS[superusertaskdefinitionarn]}" >> $GITHUB_ENV
               echo "SUBNET_ID=${CFN_OUTPUTS[subnetid]}" >> $GITHUB_ENV
               echo "SECURITY_GROUP_ID=${CFN_OUTPUTS[securitygroupid]}" >> $GITHUB_ENV
+
+              cat $GITHUB_ENV
