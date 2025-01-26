@@ -1,8 +1,59 @@
-name: 'Fetch CFN Outputs'
-description: 'An MVP action to test invocation'
+name: 'Fetch CloudFormation Outputs'
+description: 'Fetches outputs from all CloudFormation stacks and sets them as environment variables'
+inputs:
+    AWS_ACCESS_KEY_ID:
+        description: 'AWS Access Key ID'
+        required: true
+    AWS_SECRET_ACCESS_KEY:
+        description: 'AWS Secret Access Key'
+        required: true
+    AWS_REGION:
+        description: 'AWS Region'
+        required: true
+
 runs:
     using: 'composite'
     steps:
-        - name: Echo Success
+        - name: Configure AWS credentials
+          run: |
+              echo "AWS_ACCESS_KEY_ID=${{ inputs.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+              echo "AWS_SECRET_ACCESS_KEY=${{ inputs.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+              echo "AWS_REGION=${{ inputs.AWS_REGION }}" >> $GITHUB_ENV
+
+        - name: Fetch CFN Outputs for All Stacks
           shell: bash
-          run: echo "Success"
+          run: |
+              OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
+
+              echo "=== Raw OUTPUTS ==="
+              echo "$OUTPUTS"
+              echo "==================="
+
+              declare -A CFN_OUTPUTS
+
+              for row in $(echo "$OUTPUTS" | jq -c ".[] | .[]"); do
+                  # Extract the key and value from each output, use fallback value if jq fails
+                  OUTPUT_KEY=$(echo "$row" | jq -r ".OutputKey" 2>/dev/null || echo "JQ_PARSING_ERROR")
+                  OUTPUT_VALUE=$(echo "$row" | jq -r ".OutputValue" 2>/dev/null || echo "JQ_PARSING_ERROR")
+
+                  # If jq parsing failed (i.e., the value is "JQ_PARSING_ERROR"), continue to next iteration
+                  if [[ "$OUTPUT_KEY" == "JQ_PARSING_ERROR" || "$OUTPUT_VALUE" == "JQ_PARSING_ERROR" ]]; then
+                      echo "Warning: jq parsing error for key: $OUTPUT_KEY, skipping this entry."
+                      continue
+                  fi
+
+                  # Format the key to lower case and replace ":" with "_"
+                  OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
+
+                  # Store the key-value pair in the associative array
+                  CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
+
+                  # Output to confirm the values
+                  echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
+              done
+
+              # Set output variables for use in the workflow
+              echo "ECS_CLUSTER_NAME=${CFN_OUTPUTS[ecsclustername]}" >> $GITHUB_ENV
+              echo "TASK_DEFINITION_ARN=${CFN_OUTPUTS[superusertaskdefinitionarn]}" >> $GITHUB_ENV
+              echo "SUBNET_ID=${CFN_OUTPUTS[subnetid]}" >> $GITHUB_ENV
+              echo "SECURITY_GROUP_ID=${CFN_OUTPUTS[securitygroupid]}" >> $GITHUB_ENV
