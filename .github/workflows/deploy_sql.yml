@@ -27,7 +27,10 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ secrets.AWS_REGION }}
 
-            - name: Fetch CloudFormation Outputs
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Fetch CFN Outputs
               uses: ./.github/workflows/fetch_cfn_outputs.yml
 
             - name: Run ECS Task
