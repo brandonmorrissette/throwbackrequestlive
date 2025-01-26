@@ -27,8 +27,11 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ secrets.AWS_REGION }}
 
-            - name: Fetch CloudFormation Outputs
-              uses: ./.github/workflows/fetch-cfn-outputs.yml
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Fetch CFN Outputs
+              uses: ./.github/actions/fetch_cfn_outputs
               with:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -38,7 +41,7 @@ jobs:
               run: |
                   aws ecs run-task \
                     --cluster "$ECS_CLUSTER_NAME" \
-                    --task-definition "$TASK_DEFINITION_ARN" \
+                    --task-definition "$SQL_TASK_DEFINITION_ARN" \
                     --launch-type FARGATE \
                     --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}"
               env:
