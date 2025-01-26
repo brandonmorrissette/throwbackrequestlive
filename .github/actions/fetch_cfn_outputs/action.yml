@@ -29,8 +29,8 @@ runs:
               OUTPUTS=$(aws cloudformation describe-stacks --query "Stacks[].Outputs" --output json)
               for element in $(echo "$OUTPUTS" | jq -c ".[] | .[]" 2>/dev/null); do
                   echo "Processing element: $element"
-                  OUTPUT_KEY=$(echo "$element" | jq -r ".OutputKey")
-                  OUTPUT_VALUE=$(echo "$element" | jq -r ".OutputValue")
+                  OUTPUT_KEY=$(echo "$element" | jq -r ".OutputKey" 2>/dev/null)
+                  OUTPUT_VALUE=$(echo "$element" | jq -r ".OutputValue" 2>/dev/null)
 
                   OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
 
