@@ -35,7 +35,7 @@ runs:
                   OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
 
                   CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
-                  echo "Set CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = $OUTPUT_VALUE"
+                  echo "CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = ${CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]}"
               done
 
               echo "CFN_OUTPUTS:"
