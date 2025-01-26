@@ -32,10 +32,14 @@ runs:
                   OUTPUT_KEY=$(echo "$element" | jq -r ".OutputKey" 2>/dev/null)
                   OUTPUT_VALUE=$(echo "$element" | jq -r ".OutputValue" 2>/dev/null)
 
-                  OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
-
-                  CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
-                  echo "CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = ${CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]}"
+                  if [[ -n "$OUTPUT_KEY" && -n "$OUTPUT_VALUE" ]]; then
+                      OUTPUT_KEY_FORMATTED=$(echo "$OUTPUT_KEY" | tr "[:upper:]" "[:lower:]" | tr -cd "[:alnum:]_")
+                    
+                      CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]=$OUTPUT_VALUE
+                      echo "CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED] = ${CFN_OUTPUTS[$OUTPUT_KEY_FORMATTED]}"
+                  else
+                      echo "Skipping invalid element: $element"
+                  fi
               done
 
               echo "CFN_OUTPUTS:"
