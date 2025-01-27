@@ -1,4 +1,4 @@
-from aws_cdk import Duration
+from aws_cdk import Duration, RemovalPolicy
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
@@ -97,6 +97,7 @@ class RuntimeEcsConstruct(Construct):
                     log_group=aws_logs.LogGroup(
                         self, "log-group", retention=aws_logs.RetentionDays.ONE_WEEK
                     ),
+                    removal_policy=RemovalPolicy.DESTROY,
                 ),
                 environment={
                     "COGNITO_APP_CLIENT_ID": ssm.StringParameter.from_string_parameter_name(
