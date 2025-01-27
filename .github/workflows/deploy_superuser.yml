@@ -2,10 +2,6 @@ name: Deploy Super User
 
 on:
     workflow_call:
-        inputs:
-            project_name:
-                required: true
-                type: string
         secrets:
             AWS_ACCESS_KEY_ID:
                 required: true
@@ -19,10 +15,6 @@ jobs:
     run-superuser-task:
         runs-on: ubuntu-latest
         steps:
-            - name: Debug project_name input
-              run: |
-                  echo "Project Name: ${{ inputs.project_name }}"
-
             - name: Checkout code
               uses: actions/checkout@v3
 
