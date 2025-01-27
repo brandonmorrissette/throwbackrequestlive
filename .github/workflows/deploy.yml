@@ -74,7 +74,6 @@ jobs:
         needs: [deploy-user-management-stack, deploy-storage-stack]
         uses: ./.github/workflows/deploy_superuser.yml
         with:
-            environment: production
             project_name: ${{ github.event.repository.name }}
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
