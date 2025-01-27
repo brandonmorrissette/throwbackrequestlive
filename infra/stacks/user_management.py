@@ -1,5 +1,5 @@
 import boto3
-from aws_cdk import CfnOutput, Stack
+from aws_cdk import CfnOutput, RemovalPolicy, Stack
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
@@ -136,6 +136,7 @@ class UserManagementStack(Stack):
                     self,
                     "superuser-container-log-group",
                     log_group_name=f"/ecs/{project_name}-superuser-container-logs-{self.node.id}",
+                    removal_policy=RemovalPolicy.DESTROY,
                 ),
             ),
         )
