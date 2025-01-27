@@ -4,6 +4,16 @@ on:
     workflow_dispatch:
 
 jobs:
+    deploy-user-management-stack:
+        uses: ./.github/workflows/deploy_stack.yml
+        name: Deploy User Management Stack
+        with:
+            stack-name: user-management-stack
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+
     deploy-network-stack:
         uses: ./.github/workflows/deploy_stack.yml
         name: Deploy Network Stack
@@ -31,17 +41,6 @@ jobs:
         uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: storage-stack
-        secrets:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-
-    deploy-user-management-stack:
-        uses: ./.github/workflows/deploy_stack.yml
-        needs: deploy-storage-stack
-        name: Deploy User Management Stack
-        with:
-            stack-name: user-management-stack
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

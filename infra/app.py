@@ -33,6 +33,14 @@ apply_tags(
 )
 apply_tags(app, tags)
 
+user_management_stack = UserManagementStack(
+    app,
+    f"{project_name}-user-management-stack-{environment_name}",
+    env=env,
+    project_name=project_name,
+)
+apply_tags(user_management_stack, tags=tags)
+
 network_stack = NetworkStack(
     app,
     f"{project_name}-network-stack-{environment_name}",
@@ -60,15 +68,6 @@ storage_stack = StorageStack(
 )
 apply_tags(storage_stack, tags=tags)
 storage_stack.add_dependency(network_stack)
-
-user_management_stack = UserManagementStack(
-    app,
-    f"{project_name}-user-management-stack-{environment_name}",
-    env=env,
-    project_name=project_name,
-)
-apply_tags(user_management_stack, tags=tags)
-user_management_stack.add_dependency(storage_stack)
 
 runtime_stack = RuntimeStack(
     app,
