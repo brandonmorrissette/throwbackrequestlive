@@ -84,8 +84,8 @@ class StorageStack(Stack):
                     self,
                     "sql-container-log-group",
                     log_group_name=f"/{project_name}-sql-container-logs-{self.node.id}",
+                    removal_policy=RemovalPolicy.DESTROY,
                 ),
-                removal_policy=RemovalPolicy.DESTROY,
             ),
             secrets={
                 "DB_USER": ecs.Secret.from_secrets_manager(

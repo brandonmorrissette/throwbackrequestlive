@@ -95,9 +95,11 @@ class RuntimeEcsConstruct(Construct):
                 log_driver=ecs.LogDrivers.aws_logs(
                     stream_prefix="throwback-request-live",
                     log_group=aws_logs.LogGroup(
-                        self, "log-group", retention=aws_logs.RetentionDays.ONE_WEEK
+                        self,
+                        "log-group",
+                        retention=aws_logs.RetentionDays.ONE_WEEK,
+                        removal_policy=RemovalPolicy.DESTROY,
                     ),
-                    removal_policy=RemovalPolicy.DESTROY,
                 ),
                 environment={
                     "COGNITO_APP_CLIENT_ID": ssm.StringParameter.from_string_parameter_name(
