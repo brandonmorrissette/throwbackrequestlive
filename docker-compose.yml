@@ -14,7 +14,6 @@ services:
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-            - COGNITO_REGION=${COGNITO_REGION}
             - COGNITO_APP_CLIENT_ID=${COGNITO_APP_CLIENT_ID}
             - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
             - JWT_SECRET_KEY=${JWT_SECRET_KEY}
@@ -22,7 +21,6 @@ services:
             - DB_PASSWORD=${DB_PASSWORD}
             - DB_HOST=${DB_HOST}
             - DB_NAME=${DB_NAME}
-            - DB_ENGINE=${DB_ENGINE}
             - DB_PORT=${DB_PORT}
         ports:
             - '5000:5000'
