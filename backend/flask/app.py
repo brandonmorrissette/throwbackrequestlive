@@ -22,6 +22,7 @@ CONFIG = {
     "cognito": {
         "COGNITO_APP_CLIENT_ID": os.getenv("COGNITO_APP_CLIENT_ID"),
         "COGNITO_USER_POOL_ID": os.getenv("COGNITO_USER_POOL_ID"),
+        "COGNITO_REGION": os.getenv("COGNITO_REGION"),
     },
     "database": {
         "DB_USER": os.getenv("DB_USER"),
