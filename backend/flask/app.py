@@ -1,6 +1,5 @@
 import logging
 import os
-from datetime import time
 
 from blueprints.auth import AuthBlueprint
 from blueprints.data import DataBlueprint

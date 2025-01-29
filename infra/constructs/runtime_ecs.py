@@ -106,11 +106,9 @@ class RuntimeEcsConstruct(Construct):
                         self, "AppClientId", f"{project_name}-user-pool-app-client-id"
                     ).string_value,
                     "COGNITO_USER_POOL_ID": user_pool_id,
-                    "JWT_SECRET": jwt_secret.secret_value.to_string(),
                     "DB_NAME": ssm.StringParameter.from_string_parameter_name(
                         self, "DbName", f"/{project_name}/db-name"
                     ).string_value,
-                    "DB_ENGINE": db_instance.engine.engine_type,
                 },
                 secrets={
                     "DB_USER": ecs.Secret.from_secrets_manager(
@@ -122,6 +120,7 @@ class RuntimeEcsConstruct(Construct):
                     "DB_HOST": ecs.Secret.from_secrets_manager(
                         db_instance.secret, field="host"
                     ),
+                    "JWT_SECRET": ecs.Secret.from_secrets_manager(jwt_secret),
                 },
                 task_role=task_role,
             ),

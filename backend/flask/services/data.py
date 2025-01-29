@@ -24,6 +24,7 @@ class DataService:
             f"{DB_ENGINE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
         )
 
+        logging.debug(f"Connecting to database: {DATABASE_URL}")
         self.engine = create_engine(DATABASE_URL, pool_pre_ping=True)
         self.metadata = MetaData(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine)
