@@ -1,4 +1,5 @@
 from aws_cdk import IAspect, Tags
+from aws_cdk.core import CfnResource
 from config import Config
 from constructs import IConstruct
 
@@ -9,7 +10,7 @@ class ConfigTaggingAspect(IAspect):
         self.env = env
 
     def visit(self, node: IConstruct):
-        if isinstance(node, IConstruct):
+        if isinstance(node, CfnResource):
             for key, value in vars(self.env).items():
                 if value:
                     Tags.of(node).add(key, str(value))
