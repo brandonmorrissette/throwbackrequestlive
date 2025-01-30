@@ -4,6 +4,7 @@ from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs as logs
+from config import Config
 from constructs import Construct
 from constructs.userpool import UserPoolConstruct
 
@@ -13,22 +14,22 @@ class UserManagementStack(Stack):
     def __init__(
         self,
         scope: Construct,
-        id: str,
-        project_name: str,
-        env,
-        superuser_policies=None,
-        **kwargs,
+        config: Config,
     ) -> None:
-        super().__init__(scope, id, **kwargs)
+        super().__init__(
+            scope,
+            f"{config.project_name}-{config.environment_name}-user-management",
+            env=config.cdk_environment,
+        )
 
         self._cognito_client = boto3.client("cognito-idp")
+        project_name = config.project_name
         user_pool_name = f"{project_name}-user-pool"
         self.user_pool_construct = UserPoolConstruct(
             self,
             f"{project_name}-user-pool-construct",
             user_pool_name,
             self._cognito_client,
-            **kwargs,
         )
 
         admin_group = cognito.CfnUserPoolGroup(
@@ -67,16 +68,12 @@ class UserManagementStack(Stack):
                             "cognito-idp:AdminUpdateGroup",
                         ],
                         resources=[
-                            f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{self.user_pool_construct.user_pool.user_pool_id}"
+                            f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{self.user_pool_construct.user_pool.user_pool_id}"
                         ],
                     )
                 ],
             )
         )
-
-        if superuser_policies:
-            for policy in superuser_policies:
-                superuser_role.add_managed_policy(policy)
 
         superuser_task_role = iam.Role(
             self,
@@ -127,9 +124,7 @@ class UserManagementStack(Stack):
 
         superuser_task_definition.add_container(
             "superuser-container",
-            image=ecs.ContainerImage.from_asset(
-                "infra/environment_setup/create_superuser"
-            ),
+            image=ecs.ContainerImage.from_asset("infra/setup/create_superuser"),
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="superuser-creation",
                 log_group=logs.LogGroup(

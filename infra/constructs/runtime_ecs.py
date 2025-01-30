@@ -20,7 +20,6 @@ class RuntimeEcsConstruct(Construct):
         env,
         vpc,
         db_instance,
-        **kwargs,
     ) -> None:
         super().__init__(scope, id)
 
