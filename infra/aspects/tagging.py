@@ -1,5 +1,4 @@
-from aws_cdk import IAspect, Tags
-from aws_cdk.core import CfnResource
+from aws_cdk import CfnResource, IAspect, Tags
 from config import Config
 from constructs import IConstruct
 
