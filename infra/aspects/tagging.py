@@ -1,8 +1,10 @@
+import jsii
 from aws_cdk import CfnResource, IAspect, Tags
 from config import Config
 from constructs import IConstruct
 
 
+@jsii.implements(IAspect)
 class ConfigTaggingAspect(IAspect):
 
     def __init__(self, config: Config):
