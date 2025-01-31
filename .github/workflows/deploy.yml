@@ -13,6 +13,7 @@ jobs:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
 
     deploy-network-stack:
         uses: ./.github/workflows/deploy_stack.yml
@@ -23,6 +24,7 @@ jobs:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
 
     deploy-compute-stack:
         needs: deploy-network-stack
@@ -34,6 +36,7 @@ jobs:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
 
     deploy-storage-stack:
         needs: deploy-network-stack
@@ -45,6 +48,7 @@ jobs:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
 
     deploy-runtime-stack:
         needs: [deploy-compute-stack, deploy-storage-stack]
@@ -56,6 +60,7 @@ jobs:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
 
     deploy-sql-files:
         name: Deploy SQL Files
