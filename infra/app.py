@@ -2,6 +2,7 @@
 import os
 
 import aws_cdk as cdk
+import Tags
 from aspects.tagging import ConfigTaggingAspect
 from config import Config
 from stacks.compute import ComputeStack
@@ -21,7 +22,10 @@ config = Config(
         region=os.getenv("AWS_REGION"),
     ),
 )
-cdk.Aspects.of(app).add(ConfigTaggingAspect(config))
+# cdk.Aspects.of(app).add(ConfigTaggingAspect(config))
+for attribute in config.__dict__:
+    if not attribute.startswith("_"):
+        Tags.of(app).add(attribute, getattr(config, attribute))
 
 user_management_stack = UserManagementStack(app, config)
 network_stack = NetworkStack(app, config)
