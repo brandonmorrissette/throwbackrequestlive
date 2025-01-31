@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import logging
 import os
 
 import aws_cdk as cdk
@@ -22,6 +23,8 @@ config = Config(
         region=os.getenv("AWS_REGION"),
     ),
 )
+
+logging.info(f"Config: {config}")
 # Aspects.of(app).add(ConfigTaggingAspect(config))
 Tags.of(app).add("project_name", config.project_name)
 Tags.of(app).add("environment_name", config.environment_name)
