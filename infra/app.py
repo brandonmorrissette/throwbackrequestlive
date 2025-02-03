@@ -17,17 +17,16 @@ config = Config(
     os.getenv(
         "PROJECT_NAME", os.path.basename(os.path.dirname(os.path.dirname(__file__)))
     ),
-    os.getenv("ENVIRONMENT_NAME", "no-env"),
+    os.getenv("ENVIRONMENT_NAME"),
     cdk.Environment(
         account=os.getenv("AWS_ACCOUNT"),
         region=os.getenv("AWS_REGION"),
     ),
 )
 
-logging.info(f"Config: {config}")
-# Aspects.of(app).add(ConfigTaggingAspect(config))
-Tags.of(app).add("project_name", config.project_name)
-Tags.of(app).add("environment_name", config.environment_name)
+Aspects.of(app).add(ConfigTaggingAspect(config))
+# Tags.of(app).add("project_name", config.project_name)
+# Tags.of(app).add("environment_name", config.environment_name)
 
 user_management_stack = UserManagementStack(app, config)
 network_stack = NetworkStack(app, config)
