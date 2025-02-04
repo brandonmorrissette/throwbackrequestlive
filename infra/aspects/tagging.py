@@ -11,6 +11,6 @@ class ConfigTaggingAspect:
         self.config = config
 
     def visit(self, node: IConstruct):
-        if isinstance(node, IConstruct):
+        if hasattr(node, "node"):
             Tags.of(node).add("project_name", self.config.project_name)
             Tags.of(node).add("environment_name", self.config.environment_name)
