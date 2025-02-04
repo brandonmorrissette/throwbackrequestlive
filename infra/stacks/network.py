@@ -1,18 +1,15 @@
-from aws_cdk import CfnOutput, Stack
+from aws_cdk import CfnOutput
 from aws_cdk import aws_ec2 as ec2
 from config import Config
 from constructs import Construct
 from constructs.cert import CertConstruct
 from constructs.vpc import VpcConstruct
+from stack import Stack
 
 
 class NetworkStack(Stack):
     def __init__(self, scope: Construct, config: Config) -> None:
-        super().__init__(
-            scope,
-            f"{config.project_name}-{config.environment_name}-network",
-            env=config.cdk_environment,
-        )
+        super().__init__(scope, config, suffix="network")
 
         self.vpc_constrcut = VpcConstruct(self, "vpc", project_name=config.project_name)
         self.cert_construct = CertConstruct(self, "cert")

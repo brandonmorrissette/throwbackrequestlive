@@ -1,5 +1,5 @@
 import boto3
-from aws_cdk import CfnOutput, RemovalPolicy, Stack
+from aws_cdk import CfnOutput, RemovalPolicy
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
@@ -7,6 +7,7 @@ from aws_cdk import aws_logs as logs
 from config import Config
 from constructs import Construct
 from constructs.userpool import UserPoolConstruct
+from stack import Stack
 
 
 class UserManagementStack(Stack):
@@ -16,11 +17,7 @@ class UserManagementStack(Stack):
         scope: Construct,
         config: Config,
     ) -> None:
-        super().__init__(
-            scope,
-            f"{config.project_name}-{config.environment_name}-user-management",
-            env=config.cdk_environment,
-        )
+        super().__init__(scope, config, suffix="user-management")
 
         self._cognito_client = boto3.client("cognito-idp")
         project_name = config.project_name
