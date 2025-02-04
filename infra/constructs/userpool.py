@@ -1,32 +1,33 @@
 import logging
 
+import boto3
 from aws_cdk import RemovalPolicy, Token
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ssm as ssm
+from config import Config
 from constructs import Construct
 
 logging.basicConfig(level=logging.INFO)
 
 
 class UserPoolConstruct(Construct):
-    def __init__(
-        self, scope: Construct, id: str, userpool_name, cognito_client
-    ) -> None:
-        super().__init__(scope, id)
-        self._cognito_client = cognito_client
+    def __init__(self, scope: Construct, config: Config) -> None:
+        super().__init__(scope, f"{config.project_name}-user-pool-construct")
+        self._cognito_client = boto3.client("cognito-idp")
+        user_pool_name = f"{config.project_name}-user-pool"
 
-        self.user_pool = self._user_pool(userpool_name)
-        self._post_user_pool_id(userpool_name, self.user_pool.user_pool_id)
-        self.app_client = self._app_client(userpool_name)
-        self._post_app_client_id(f"{userpool_name}-app-client", self.app_client.ref)
+        self.user_pool = self._user_pool(user_pool_name)
+        self._post_user_pool_id(user_pool_name, self.user_pool.user_pool_id)
+        self.app_client = self._app_client(user_pool_name)
+        self._post_app_client_id(f"{user_pool_name}-app-client", self.app_client.ref)
 
-    def _user_pool(self, userpool_name):
-        user_pool = self._get_user_pool_by_name(userpool_name)
+    def _user_pool(self, user_pool_name):
+        user_pool = self._get_user_pool_by_name(user_pool_name)
         if not user_pool:
             user_pool = cognito.UserPool(
                 self,
-                f"{userpool_name}-{self.node.addr}",
-                user_pool_name=userpool_name,
+                f"{user_pool_name}-{self.node.addr}",
+                user_pool_name=user_pool_name,
                 self_sign_up_enabled=False,
                 sign_in_aliases=cognito.SignInAliases(email=True),
                 password_policy=cognito.PasswordPolicy(
