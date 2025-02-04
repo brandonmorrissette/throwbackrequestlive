@@ -2,7 +2,7 @@
 import os
 
 import aws_cdk as cdk
-from aspects.tagging import ConfigTaggingAspect
+from aspects.tagging import TaggingAspect
 from aws_cdk import Aspects, Tags
 from config import Config
 from stacks.compute import ComputeStack
@@ -23,9 +23,7 @@ config = Config(
     ),
 )
 
-Aspects.of(app).add(ConfigTaggingAspect(config))
-# Tags.of(app).add("project_name", config.project_name)
-# Tags.of(app).add("environment_name", config.environment_name)
+Aspects.of(app).add(TaggingAspect(config))
 
 user_management_stack = UserManagementStack(app, config)
 network_stack = NetworkStack(app, config)
