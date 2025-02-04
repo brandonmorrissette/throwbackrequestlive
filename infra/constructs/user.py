@@ -15,19 +15,14 @@ class SuperUserConstruct(Construct):
         self, scope: Construct, config: Config, user_pool_construct: UserPoolConstruct
     ) -> None:
         super().__init__(scope, "superuser-construct")
-        superuser_group = cognito.CfnUserPoolGroup(
-            self,
-            "SuperuserGroup",
-            user_pool_id=user_pool_construct.user_pool.user_pool_id,
-            group_name="superuser",
-        )
 
-        superuser_role = iam.Role(
+        role = iam.Role(
             self,
             "superuser-role",
             assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
         )
-        superuser_role.add_managed_policy(
+
+        role.add_managed_policy(
             iam.ManagedPolicy(
                 self,
                 "cognito-policy",
@@ -51,7 +46,7 @@ class SuperUserConstruct(Construct):
             )
         )
 
-        superuser_task_role = iam.Role(
+        task_role = iam.Role(
             self,
             "SuperuserTaskRole",
             assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
@@ -95,7 +90,7 @@ class SuperUserConstruct(Construct):
                     )
                 ],
             ),
-            task_role=superuser_task_role,
+            task_role=task_role,
         )
 
         self.task_definition.add_container(

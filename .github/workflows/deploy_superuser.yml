@@ -32,6 +32,15 @@ jobs:
                     --task-definition "$SUPER_USER_TASK_DEFINITION_ARN" \
                     --launch-type FARGATE \
                     --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}"
+                    --overrides '{
+                        "containerOverrides": [{
+                            "name": "superuser-container",
+                            "environment": [
+                                {"name": "PROJECT_NAME", "value": "'${{ github.repository }}'"},
+                                {"name": "SUPERUSER_EMAIL", "value": "'${{ secrets.SUPERUSER_EMAIL }}'"}
+                            ]
+                        }]
+                    }'
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

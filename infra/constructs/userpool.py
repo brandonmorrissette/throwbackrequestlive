@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.INFO)
 class UserPoolConstruct(Construct):
     def __init__(self, scope: Construct, config: Config) -> None:
         super().__init__(scope, f"{config.project_name}-user-pool-construct")
+
         self._cognito_client = boto3.client("cognito-idp")
         user_pool_name = f"{config.project_name}-user-pool"
 
