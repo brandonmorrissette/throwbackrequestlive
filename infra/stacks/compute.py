@@ -2,7 +2,7 @@ from aws_cdk import CfnOutput
 from config import Config
 from constructs import Construct
 from constructs.cluster import ClusterConstruct
-from stack import Stack
+from stacks.stack import Stack
 
 
 class ComputeStack(Stack):

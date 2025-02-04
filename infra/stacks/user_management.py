@@ -7,7 +7,7 @@ from aws_cdk import aws_logs as logs
 from config import Config
 from constructs import Construct
 from constructs.userpool import UserPoolConstruct
-from stack import Stack
+from stacks.stack import Stack
 
 
 class UserManagementStack(Stack):

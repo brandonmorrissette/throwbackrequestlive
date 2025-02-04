@@ -2,7 +2,7 @@ from config import Config
 from constructs import Construct
 from constructs.route_53 import Route53Construct
 from constructs.runtime_ecs import RuntimeEcsConstruct
-from stack import Stack
+from stacks.stack import Stack
 
 
 class RuntimeStack(Stack):

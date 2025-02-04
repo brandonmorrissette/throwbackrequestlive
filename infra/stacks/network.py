@@ -4,7 +4,7 @@ from config import Config
 from constructs import Construct
 from constructs.cert import CertConstruct
 from constructs.vpc import VpcConstruct
-from stack import Stack
+from stacks.stack import Stack
 
 
 class NetworkStack(Stack):

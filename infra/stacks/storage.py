@@ -6,7 +6,7 @@ from aws_cdk import aws_logs as logs
 from config import Config
 from constructs import Construct
 from constructs.rds import RdsConstruct
-from stack import Stack
+from stacks.stack import Stack
 
 
 class StorageStack(Stack):
