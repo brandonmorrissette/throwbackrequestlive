@@ -61,9 +61,7 @@ class RdsConstruct(Construct):
                                 "secretsmanager:GetSecretValue",
                                 "secretsmanager:DescribeSecret",
                             ],
-                            resources=[
-                                self.rds_construct.db_instance.secret.secret_arn
-                            ],
+                            resources=[self.db_instance.secret.secret_arn],
                         ),
                         iam.PolicyStatement(
                             actions=["rds-db:connect"],
@@ -116,14 +114,14 @@ class RdsConstruct(Construct):
             ),
             secrets={
                 "DB_USER": ecs.Secret.from_secrets_manager(
-                    self.rds_construct.db_instance.secret, field="username"
+                    self.db_instance.secret, field="username"
                 ),
                 "DB_PASSWORD": ecs.Secret.from_secrets_manager(
-                    self.rds_construct.db_instance.secret, field="password"
+                    self.db_instance.secret, field="password"
                 ),
             },
             environment={
-                "DB_HOST": self.rds_construct.db_instance.db_instance_endpoint_address,
+                "DB_HOST": self.db_instance.db_instance_endpoint_address,
             },
         )
 
@@ -148,7 +146,7 @@ class RdsConstruct(Construct):
                         "rds-db:executeStatement",
                         "rds-db:batchExecuteStatement",
                     ],
-                    resources=[self.rds_construct.db_instance.instance_arn],
+                    resources=[self.db_instance.instance_arn],
                 )
             ],
         )
