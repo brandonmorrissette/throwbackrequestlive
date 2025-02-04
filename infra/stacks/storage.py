@@ -1,4 +1,4 @@
-from aws_cdk import CfnOutput, RemovalPolicy, Stack
+from aws_cdk import CfnOutput, RemovalPolicy
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
@@ -6,6 +6,7 @@ from aws_cdk import aws_logs as logs
 from config import Config
 from constructs import Construct
 from constructs.rds import RdsConstruct
+from stacks.stack import Stack
 
 
 class StorageStack(Stack):
@@ -15,11 +16,7 @@ class StorageStack(Stack):
         config: Config,
         vpc: ec2.Vpc,
     ):
-        super().__init__(
-            scope,
-            f"{config.project_name}-{config.environment_name}-storage",
-            env=config.cdk_environment,
-        )
+        super().__init__(scope, config, suffix="storage")
 
         self.rds_construct = RdsConstruct(
             self, "rds", vpc=vpc, project_name=config.project_name

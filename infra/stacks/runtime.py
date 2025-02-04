@@ -1,8 +1,8 @@
-from aws_cdk import Stack
 from config import Config
 from constructs import Construct
 from constructs.route_53 import Route53Construct
 from constructs.runtime_ecs import RuntimeEcsConstruct
+from stacks.stack import Stack
 
 
 class RuntimeStack(Stack):
@@ -15,11 +15,8 @@ class RuntimeStack(Stack):
         db_instance,
         vpc,
     ):
-        super().__init__(
-            scope,
-            f"{config.project_name}-{config.environment_name}-runtime",
-            env=config.cdk_environment,
-        )
+        super().__init__(scope, config, suffix="runtime")
+
         fargate_service = RuntimeEcsConstruct(
             self,
             "runtime-ecs",

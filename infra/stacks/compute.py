@@ -1,19 +1,18 @@
-from aws_cdk import CfnOutput, Stack
+from aws_cdk import CfnOutput
 from config import Config
 from constructs import Construct
 from constructs.cluster import ClusterConstruct
+from stacks.stack import Stack
 
 
 class ComputeStack(Stack):
     def __init__(self, scope: Construct, config: Config, vpc: str):
-        super().__init__(
-            scope,
-            f"{config.project_name}-{config.environment_name}-compute",
-            env=config.cdk_environment,
-        )
+        super().__init__(scope, config, suffix="compute")
+
         self.cluster_construct = ClusterConstruct(
             self, "cluster", project_name=config.project_name, vpc=vpc
         )
+
         CfnOutput(
             self, "ecs-cluster-name", value=self.cluster_construct.cluster.cluster_name
         )
