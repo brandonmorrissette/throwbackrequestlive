@@ -1,11 +1,5 @@
 To Do
 
-# AWS Resources
-
--   Standardize stack inputs (project name and env are going to every single one. Standardize that. Probably don't need to pass ID for everyone. I THINK we can infer somehow.)
--   Clean up stack tagging a bit.
--   Design correct pattern for depenency management bettwen stacks
-
 # Error handling and logging
 
 -   Clean and consistent error handling/logging
