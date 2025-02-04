@@ -65,7 +65,7 @@ class SuperUserConstruct(Construct):
                                 "cognito-idp:AdminAddUserToGroup",
                             ],
                             resources=[
-                                f"arn:aws:cognito-idp:{self.region}:{self.account}:userpool/{user_pool_construct.user_pool.user_pool_id}"
+                                f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_construct.user_pool.user_pool_id}"
                             ],
                         ),
                         iam.PolicyStatement(
