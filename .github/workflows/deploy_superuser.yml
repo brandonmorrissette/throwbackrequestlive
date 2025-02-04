@@ -36,7 +36,7 @@ jobs:
                         "containerOverrides": [{
                             "name": "superuser-container",
                             "environment": [
-                                {"name": "PROJECT_NAME", "value": "'${{ github.repository }}'"},
+                                {"name": "PROJECT_NAME", "value": "'${{ github.event.repository.name }}'"},
                                 {"name": "SUPERUSER_EMAIL", "value": "'${{ vars.SUPERUSER_EMAIL }}'"}
                             ]
                         }]
