@@ -105,9 +105,7 @@ class RuntimeEcsConstruct(Construct):
                         self, "AppClientId", f"{project_name}-user-pool-app-client-id"
                     ).string_value,
                     "COGNITO_USER_POOL_ID": user_pool_id,
-                    "DB_NAME": ssm.StringParameter.from_string_parameter_name(
-                        self, "DbName", f"/{project_name}/db-name"
-                    ).string_value,
+                    "DB_NAME": project_name,
                 },
                 secrets={
                     "DB_USER": ecs.Secret.from_secrets_manager(
