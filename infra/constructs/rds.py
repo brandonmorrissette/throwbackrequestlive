@@ -14,17 +14,11 @@ class RdsConstruct(Construct):
         super().__init__(scope, id)
 
         rds_security_group = ec2.SecurityGroup(self, "rds-security-group", vpc=vpc)
+
         rds_security_group.add_ingress_rule(
             ec2.Peer.ipv4(vpc.vpc_cidr_block),
             ec2.Port.tcp(5432),
             "Allow ECS to access RDS",
-        )
-
-        ssm.StringParameter(
-            self,
-            "DbNameParam",
-            parameter_name=f"/{config.project_name}/db-name",
-            string_value=config.project_name,
         )
 
         self.db_instance = rds.DatabaseInstance(
