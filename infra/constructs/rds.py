@@ -10,8 +10,8 @@ from constructs import Construct
 
 
 class RdsConstruct(Construct):
-    def __init__(self, scope: Construct, id: str, vpc, config: Config) -> None:
-        super().__init__(scope, id)
+    def __init__(self, scope: Construct, vpc, config: Config) -> None:
+        super().__init__(scope, "rds")
 
         rds_security_group = ec2.SecurityGroup(self, "rds-security-group", vpc=vpc)
 

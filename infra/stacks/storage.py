@@ -15,7 +15,7 @@ class StorageStack(Stack):
     ):
         super().__init__(scope, config, suffix="storage")
 
-        self.rds_construct = RdsConstruct(self, "rds", vpc, config)
+        self.rds_construct = RdsConstruct(self, vpc, config)
 
         CfnOutput(
             self,
