@@ -1,5 +1,4 @@
 from aws_cdk import Duration, RemovalPolicy
-from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
@@ -7,6 +6,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs
 from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_cdk import aws_ssm as ssm
+from config import Config
 from constructs import Construct
 
 
@@ -14,18 +14,12 @@ class RuntimeEcsConstruct(Construct):
     def __init__(
         self,
         scope: Construct,
-        id: str,
-        project_name,
+        config: Config,
         certificate,
-        env,
         vpc,
         db_instance,
     ) -> None:
-        super().__init__(scope, id)
-
-        docker_image = ecr_assets.DockerImageAsset(
-            self, "throwback-request-live-image", directory="."
-        )
+        super().__init__(scope, "runtime-ecs")
 
         jwt_secret = secretsmanager.Secret(
             self,
@@ -37,7 +31,7 @@ class RuntimeEcsConstruct(Construct):
         )
 
         user_pool_id = ssm.StringParameter.from_string_parameter_name(
-            self, "UserPoolId", f"{project_name}-user-pool-id"
+            self, "UserPoolId", f"{config.project_name}-user-pool-id"
         ).string_value
 
         task_role = iam.Role(
@@ -58,7 +52,7 @@ class RuntimeEcsConstruct(Construct):
                                 "cognito-idp:AdminGetUser",
                             ],
                             resources=[
-                                f"arn:aws:cognito-idp:{env.region}:{env.account}:userpool/{user_pool_id}"
+                                f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_id}"
                             ],
                         ),
                         iam.PolicyStatement(
@@ -76,9 +70,13 @@ class RuntimeEcsConstruct(Construct):
             cluster_name=ssm.StringParameter.from_string_parameter_name(
                 self,
                 "EcsClusterNameParam",
-                string_parameter_name=f"/{project_name}/ecs-cluster-name",
+                string_parameter_name=f"/{config.project_name}/ecs-cluster-name",
             ).string_value,
             vpc=vpc,
+        )
+
+        docker_image = ecr_assets.DockerImageAsset(
+            self, f"{config.project_name}-{config.project_name}-image", directory="."
         )
 
         self.runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
@@ -102,10 +100,12 @@ class RuntimeEcsConstruct(Construct):
                 ),
                 environment={
                     "COGNITO_APP_CLIENT_ID": ssm.StringParameter.from_string_parameter_name(
-                        self, "AppClientId", f"{project_name}-user-pool-app-client-id"
+                        self,
+                        "AppClientId",
+                        f"{config.project_name}-user-pool-app-client-id",
                     ).string_value,
                     "COGNITO_USER_POOL_ID": user_pool_id,
-                    "DB_NAME": project_name,
+                    "DB_NAME": config.project_name,
                 },
                 secrets={
                     "DB_USER": ecs.Secret.from_secrets_manager(

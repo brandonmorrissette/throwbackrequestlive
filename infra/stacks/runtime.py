@@ -19,11 +19,9 @@ class RuntimeStack(Stack):
 
         fargate_service = RuntimeEcsConstruct(
             self,
-            "runtime-ecs",
-            project_name=config.project_name,
+            config,
             certificate=certificate,
             vpc=vpc,
-            env=config.cdk_environment,
             db_instance=db_instance,
         ).runtime_service
 
