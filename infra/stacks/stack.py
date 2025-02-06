@@ -1,6 +1,6 @@
 from config import Config
 from constructs import IConstruct as AwsCdKIConstruct
-from constructs import Stack as AwsCdkStack
+from stacks.stack import Stack as AwsCdkStack
 
 
 class Stack(AwsCdkStack, AwsCdKIConstruct):
