@@ -11,8 +11,8 @@ class NetworkStack(Stack):
     def __init__(self, scope: Construct, config: Config) -> None:
         super().__init__(scope, config, suffix="network")
 
-        self.vpc_constrcut = VpcConstruct(self, "vpc", project_name=config.project_name)
-        self.cert_construct = CertConstruct(self, "cert")
+        self.vpc_constrcut = VpcConstruct(self, config, suffix="vpc")
+        self.cert_construct = CertConstruct(self, config, suffix="cert")
 
         CfnOutput(
             self,
