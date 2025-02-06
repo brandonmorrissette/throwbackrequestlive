@@ -1,9 +1,9 @@
 from aws_cdk import Stack as AwsCdkStack
 from config import Config
-from constructs import IConstruct as AwsCdKIConstruct
+from resources.resource import Resource
 
 
-class Stack(AwsCdkStack, AwsCdKIConstruct):
+class Stack(AwsCdkStack, Resource):
     def __init__(self, scope, config: Config, suffix=None, **kwargs):
-        AwsCdKIConstruct.__init__(self, scope, config, suffix)
+        Resource.__init__(self, scope, config, suffix)
         super().__init__(self.scope, self.id, env=config.cdk_environment, **kwargs)
