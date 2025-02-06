@@ -5,7 +5,12 @@ from resources.resource import Resource
 
 class Construct(AwsCdKConstruct, Resource):
     def __init__(
-        self, scope: AwsCdKConstruct, config: Config, suffix=None, **kwargs
+        self,
+        scope: AwsCdKConstruct,
+        config: Config,
+        id: str | None = None,
+        suffix: str | None = None,
+        **kwargs
     ) -> None:
-        Resource.__init__(self, scope, config, suffix)
+        Resource.__init__(self, scope, config, id, suffix)
         super().__init__(self.scope, self.id, env=config.cdk_environment, **kwargs)

@@ -12,9 +12,14 @@ from stacks.stack import Stack
 
 class SuperUserConstruct(Construct):
     def __init__(
-        self, scope: Construct, config: Config, user_pool_construct: UserPoolConstruct
+        self,
+        scope: Construct,
+        config: Config,
+        user_pool_construct: UserPoolConstruct,
+        id: str | None = None,
+        suffix: str | None = "-superuser",
     ) -> None:
-        super().__init__(scope, "superuser-construct")
+        super().__init__(scope, config, id, suffix)
 
         role = iam.Role(
             self,

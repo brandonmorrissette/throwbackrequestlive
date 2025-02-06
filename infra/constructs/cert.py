@@ -2,19 +2,17 @@ from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_route53 as route53
 from config import Config
 from constructs import Construct
-from resources.resource import Resource
 
 
-class CertConstruct(Construct, Resource):
+class CertConstruct(Construct):
     def __init__(
         self,
         scope: Construct,
         config: Config,
         id: str | None = None,
-        suffix: str | None = None,
+        suffix: str | None = "-cert",
     ) -> None:
-        Resource.__init__(self, scope, config, id, suffix)
-        super().__init__(self.scope, self.id)
+        super().__init__(scope, config, id, suffix)
 
         self.hosted_zone = route53.HostedZone.from_lookup(
             self, "hosed-zone", domain_name="throwbackrequestlive.com"

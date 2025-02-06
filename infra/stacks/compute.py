@@ -9,9 +9,7 @@ class ComputeStack(Stack):
     def __init__(self, scope: Construct, config: Config, vpc: str):
         super().__init__(scope, config, suffix="compute")
 
-        self.cluster_construct = ClusterConstruct(
-            self, "cluster", project_name=config.project_name, vpc=vpc
-        )
+        self.cluster_construct = ClusterConstruct(self, config, vpc=vpc)
 
         CfnOutput(
             self, "ecs-cluster-name", value=self.cluster_construct.cluster.cluster_name
