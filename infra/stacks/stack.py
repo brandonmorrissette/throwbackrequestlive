@@ -1,11 +1,9 @@
-from aws_cdk import Stack as AwsCdkStack
 from config import Config
+from constructs import IConstruct as AwsCdKIConstruct
+from constructs import Stacj as AwsCdkStack
 
 
-class Stack(AwsCdkStack):
+class Stack(AwsCdkStack, AwsCdKIConstruct):
     def __init__(self, scope, config: Config, suffix=None, **kwargs):
-        id = f"{config.project_name}-{config.environment_name}"
-        if suffix:
-            id = f"{id}-{suffix}"
-
-        super().__init__(scope, id, env=config.cdk_environment, **kwargs)
+        AwsCdKIConstruct.__init__(self, scope, config, suffix)
+        super().__init__(self.scope, self.id, env=config.cdk_environment, **kwargs)
