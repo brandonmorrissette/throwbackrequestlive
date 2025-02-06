@@ -19,7 +19,7 @@ class SuperUserConstruct(Construct):
         id: str | None = None,
         suffix: str | None = "superuser",
     ) -> None:
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, id=id, suffix=suffix)
 
         role = iam.Role(
             self,

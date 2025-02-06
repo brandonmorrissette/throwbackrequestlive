@@ -21,7 +21,7 @@ class RuntimeEcsConstruct(Construct):
         id: str | None = None,
         suffix: str | None = "runtime-ecs",
     ) -> None:
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, id=id, suffix=suffix)
 
         jwt_secret = secretsmanager.Secret(
             self,

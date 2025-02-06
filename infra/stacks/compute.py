@@ -14,7 +14,7 @@ class ComputeStack(Stack):
         id: str | None = None,
         suffix: str | None = "compute",
     ) -> None:
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, id=id, suffix=suffix)
 
         self.cluster_construct = ClusterConstruct(self, config, vpc=vpc)
 

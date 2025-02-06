@@ -15,7 +15,7 @@ class NetworkStack(Stack):
         id: str | None = None,
         suffix: str | None = "network",
     ) -> None:
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, id=id, suffix=suffix)
 
         self.vpc_constrcut = VpcConstruct(self, config)
         self.cert_construct = CertConstruct(self, config)

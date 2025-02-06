@@ -18,7 +18,7 @@ class RdsConstruct(Construct):
         id: str | None = None,
         suffix: str | None = "rds",
     ) -> None:
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, id=id, suffix=suffix)
 
         rds_security_group = ec2.SecurityGroup(self, "rds-security-group", vpc=vpc)
 

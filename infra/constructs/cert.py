@@ -12,7 +12,7 @@ class CertConstruct(Construct):
         id: str | None = None,
         suffix: str | None = "cert",
     ) -> None:
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, id=id, suffix=suffix)
 
         self.hosted_zone = route53.HostedZone.from_lookup(
             self, "hosed-zone", domain_name="throwbackrequestlive.com"
