@@ -10,7 +10,7 @@ class CertConstruct(Construct):
         scope: Construct,
         config: Config,
         id: str | None = None,
-        suffix: str | None = "-cert",
+        suffix: str | None = "cert",
     ) -> None:
         super().__init__(scope, config, id, suffix)
 

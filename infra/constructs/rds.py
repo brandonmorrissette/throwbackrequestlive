@@ -16,7 +16,7 @@ class RdsConstruct(Construct):
         vpc,
         config: Config,
         id: str | None = None,
-        suffix: str | None = "-rds",
+        suffix: str | None = "rds",
     ) -> None:
         super().__init__(scope, config, id, suffix)
 

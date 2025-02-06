@@ -11,7 +11,7 @@ class VpcConstruct(Construct, Resource):
         scope: Construct,
         config: Config,
         id: str | None = None,
-        suffix: str | None = None,
+        suffix: str | None = "vpc",
     ) -> None:
 
         Resource.__init__(self, scope, config, id, suffix)

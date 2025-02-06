@@ -19,7 +19,7 @@ class RuntimeEcsConstruct(Construct):
         vpc,
         db_instance,
         id: str | None = None,
-        suffix: str | None = "-runtime-ecs",
+        suffix: str | None = "runtime-ecs",
     ) -> None:
         super().__init__(scope, config, id, suffix)
 

@@ -17,7 +17,7 @@ class SuperUserConstruct(Construct):
         config: Config,
         user_pool_construct: UserPoolConstruct,
         id: str | None = None,
-        suffix: str | None = "-superuser",
+        suffix: str | None = "superuser",
     ) -> None:
         super().__init__(scope, config, id, suffix)
 

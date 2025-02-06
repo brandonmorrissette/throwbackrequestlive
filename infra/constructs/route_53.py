@@ -12,7 +12,7 @@ class Route53Construct(Construct):
         hosted_zone,
         load_balancer,
         id: str | None = None,
-        suffix: str | None = "-route53",
+        suffix: str | None = "route53",
     ) -> None:
 
         super().__init__(scope, config, id, suffix)

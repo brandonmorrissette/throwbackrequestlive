@@ -8,11 +8,17 @@ from stacks.stack import Stack
 
 
 class NetworkStack(Stack):
-    def __init__(self, scope: Construct, config: Config) -> None:
-        super().__init__(scope, config, suffix="network")
+    def __init__(
+        self,
+        scope: Construct,
+        config: Config,
+        id: str | None = None,
+        suffix: str | None = "network",
+    ) -> None:
+        super().__init__(scope, config, id, suffix)
 
-        self.vpc_constrcut = VpcConstruct(self, config, suffix="vpc")
-        self.cert_construct = CertConstruct(self, config, suffix="cert")
+        self.vpc_constrcut = VpcConstruct(self, config)
+        self.cert_construct = CertConstruct(self, config)
 
         CfnOutput(
             self,

@@ -6,8 +6,15 @@ from stacks.stack import Stack
 
 
 class ComputeStack(Stack):
-    def __init__(self, scope: Construct, config: Config, vpc: str):
-        super().__init__(scope, config, suffix="compute")
+    def __init__(
+        self,
+        scope: Construct,
+        config: Config,
+        vpc: str,
+        id: str | None = None,
+        suffix: str | None = "compute",
+    ) -> None:
+        super().__init__(scope, config, id, suffix)
 
         self.cluster_construct = ClusterConstruct(self, config, vpc=vpc)
 

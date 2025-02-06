@@ -12,7 +12,7 @@ class UserPoolConstruct(Construct):
         scope: Construct,
         config: Config,
         id: str | None = None,
-        suffix: str | None = "-user-pool",
+        suffix: str | None = "user-pool",
     ) -> None:
         super().__init__(scope, config, id, suffix)
 

@@ -12,7 +12,7 @@ class ClusterConstruct(Construct):
         config: Config,
         vpc,
         id: str | None = None,
-        suffix: str | None = "-cluster",
+        suffix: str | None = "cluster",
     ) -> None:
         super().__init__(scope, config, id, suffix)
 

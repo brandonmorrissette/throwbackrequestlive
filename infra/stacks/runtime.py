@@ -14,8 +14,10 @@ class RuntimeStack(Stack):
         hosted_zone: str,
         db_instance,
         vpc,
+        id: str | None = None,
+        suffix: str | None = "runtime",
     ):
-        super().__init__(scope, config, suffix="runtime")
+        super().__init__(scope, config, id, suffix)
 
         fargate_service = RuntimeEcsConstruct(
             self,
