@@ -1,7 +1,7 @@
 import logging
 
-from aws_cdk import Construct as AwsCdKConstruct
 from config import Config
+from constructs import Construct as AwsCdKConstruct
 from resources.resource import Resource
 
 
