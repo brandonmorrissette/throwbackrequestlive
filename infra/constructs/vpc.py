@@ -13,8 +13,6 @@ class VpcConstruct(Construct, Resource):
         id: str | None = None,
         suffix: str | None = "vpc",
     ) -> None:
-
-        Resource.__init__(self, scope, config, id, suffix)
-        super().__init__(self.scope, self.id)
+        super().__init__(scope, config, id, suffix)
 
         self.vpc = ec2.Vpc(self, self.id, max_azs=2)
