@@ -4,7 +4,6 @@ from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs as logs
 from aws_cdk import aws_rds as rds
-from aws_cdk import aws_ssm as ssm
 from config import Config
 from constructs.construct import Construct
 
