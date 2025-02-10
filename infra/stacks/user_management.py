@@ -1,8 +1,4 @@
-from aws_cdk import CfnOutput, RemovalPolicy
-from aws_cdk import aws_cognito as cognito
-from aws_cdk import aws_ecs as ecs
-from aws_cdk import aws_iam as iam
-from aws_cdk import aws_logs as logs
+from aws_cdk import CfnOutput
 from config import Config
 from constructs import Construct
 from constructs.user import SuperUserConstruct

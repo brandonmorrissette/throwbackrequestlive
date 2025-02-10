@@ -1,7 +1,5 @@
-import logging
-
 from config import Config
-from constructs import Construct as AwsCdKConstruct
+from constructs import IConstruct as AwsCdKConstruct
 from resources.resource import Resource
 
 
@@ -14,4 +12,4 @@ class Construct(AwsCdKConstruct, Resource):
         suffix: str | None = None,
     ) -> None:
         Resource.__init__(self, scope, config, id, suffix)
-        super().__init__(scope, id, env=config.cdk_environment)
+        super().__init__(scope, id, environment=config.cdk_environment)
