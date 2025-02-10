@@ -3,7 +3,7 @@ from config import Config
 from resources.resource import Resource
 
 
-class Construct(AwsCdKConstruct, Resource):
+class Construct(AwsCdKConstruct):
     def __init__(
         self,
         scope: AwsCdKConstruct,
@@ -11,5 +11,5 @@ class Construct(AwsCdKConstruct, Resource):
         id: str | None = None,
         suffix: str | None = None,
     ) -> None:
-        Resource.__init__(self, scope, config, id, suffix)
-        super().__init__(self.scope, self.id, env=config.cdk_environment)
+        # Resource.__init__(self, scope, config, id, suffix)
+        super().__init__(scope, f"test-{id}-{suffix}", env=config.cdk_environment)
