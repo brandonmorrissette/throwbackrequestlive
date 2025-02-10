@@ -3,8 +3,8 @@ from aws_cdk import RemovalPolicy, Token
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ssm as ssm
 from config import Config
-from constructs import Construct as AwsCdKConstruct
 from constructs.construct import Construct
+from constructs.construct import Construct as AwsCdKConstruct
 
 
 class UserPoolConstruct(Construct):

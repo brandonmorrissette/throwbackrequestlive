@@ -7,7 +7,7 @@ from aws_cdk import aws_logs
 from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_cdk import aws_ssm as ssm
 from config import Config
-from constructs import Construct
+from constructs.construct import Construct
 
 
 class RuntimeEcsConstruct(Construct):

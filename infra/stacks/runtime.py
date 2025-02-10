@@ -1,5 +1,5 @@
 from config import Config
-from constructs import Construct
+from constructs.construct import Construct
 from constructs.route_53 import Route53Construct
 from constructs.runtime_ecs import RuntimeEcsConstruct
 from stacks.stack import Stack

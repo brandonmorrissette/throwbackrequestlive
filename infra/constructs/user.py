@@ -5,7 +5,7 @@ from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs as logs
 from config import Config
-from constructs import Construct
+from constructs.construct import Construct
 from constructs.userpool import UserPoolConstruct
 from stacks.stack import Stack
 

@@ -1,7 +1,7 @@
 from aws_cdk import CfnOutput
 from config import Config
-from constructs import Construct
 from constructs.cluster import ClusterConstruct
+from constructs.construct import Construct
 from stacks.stack import Stack
 
 

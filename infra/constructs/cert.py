@@ -1,7 +1,7 @@
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_route53 as route53
 from config import Config
-from constructs import Construct
+from constructs.construct import Construct
 
 
 class CertConstruct(Construct):

@@ -1,5 +1,5 @@
 from config import Config
-from constructs import Construct as AwsCdKConstruct
+from constructs.construct import Construct as AwsCdKConstruct
 from resources.resource import Resource
 
 

@@ -1,7 +1,7 @@
 from aws_cdk import aws_route53 as route53
 from aws_cdk import aws_route53_targets as targets
 from config import Config
-from constructs import Construct
+from constructs.construct import Construct
 
 
 class Route53Construct(Construct):
