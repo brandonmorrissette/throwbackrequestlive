@@ -1,12 +1,12 @@
 from config import Config
-from constructs import IConstruct as AwsCdKConstruct
+from constructs import IConstruct
 from resources.resource import Resource
 
 
-class Construct(AwsCdKConstruct, Resource):
+class Construct(IConstruct, Resource):
     def __init__(
         self,
-        scope: AwsCdKConstruct,
+        scope: IConstruct,
         config: Config,
         id: str | None = None,
         suffix: str | None = None,
