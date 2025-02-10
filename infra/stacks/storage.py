@@ -15,7 +15,7 @@ class StorageStack(Stack):
         id: str | None = None,
         suffix: str | None = "storage",
     ):
-        super().__init__(scope, config, id=id, suffix=suffix)
+        super().__init__(scope, config, id, suffix)
 
         self.rds_construct = RdsConstruct(self, vpc, config)
 

@@ -15,7 +15,7 @@ class UserManagementStack(Stack):
         id: str | None = None,
         suffix: str | None = "user-management",
     ) -> None:
-        super().__init__(scope, config, id=id, suffix=suffix)
+        super().__init__(scope, config, id, suffix)
 
         self.user_pool_construct = UserPoolConstruct(self, config)
         self.superuser_construct = SuperUserConstruct(

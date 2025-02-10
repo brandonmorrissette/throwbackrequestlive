@@ -15,7 +15,7 @@ class Route53Construct(Construct):
         suffix: str | None = "route53",
     ) -> None:
 
-        super().__init__(scope, config, id=id, suffix=suffix)
+        super().__init__(scope, config, id, suffix)
 
         route53.ARecord(
             self,

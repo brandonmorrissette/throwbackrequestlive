@@ -17,7 +17,7 @@ class RuntimeStack(Stack):
         id: str | None = None,
         suffix: str | None = "runtime",
     ):
-        super().__init__(scope, config, id=id, suffix=suffix)
+        super().__init__(scope, config, id, suffix)
 
         fargate_service = RuntimeEcsConstruct(
             self,

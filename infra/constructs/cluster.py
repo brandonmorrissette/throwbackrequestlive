@@ -14,7 +14,7 @@ class ClusterConstruct(Construct):
         id: str | None = None,
         suffix: str | None = "cluster",
     ) -> None:
-        super().__init__(scope, config, id=id, suffix=suffix)
+        super().__init__(scope, config, id, suffix)
 
         self.cluster = ecs.Cluster(self, self.id, vpc=vpc)
 
