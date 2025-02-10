@@ -14,7 +14,7 @@ class UserPoolConstruct(Construct):
         id: str | None = None,
         suffix: str | None = "user-pool",
     ) -> None:
-        super().__init__(scope=scope, config=config, id=id, suffix=suffix)
+        super().__init__(scope, config, id=id, suffix=suffix)
 
         self._cognito_client = boto3.client("cognito-idp")
         user_pool_name = f"{config.project_name}-user-pool"
