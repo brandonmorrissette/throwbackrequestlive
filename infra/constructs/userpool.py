@@ -1,18 +1,21 @@
-import logging
-
 import boto3
 from aws_cdk import RemovalPolicy, Token
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ssm as ssm
 from config import Config
-from constructs import Construct
-
-logging.basicConfig(level=logging.INFO)
+from constructs.construct import Construct
+from constructs.construct import Construct as AwsCdKConstruct
 
 
 class UserPoolConstruct(Construct):
-    def __init__(self, scope: Construct, config: Config) -> None:
-        super().__init__(scope, f"{config.project_name}-user-pool-construct")
+    def __init__(
+        self,
+        scope: AwsCdKConstruct,
+        config: Config,
+        id: str | None = None,
+        suffix: str | None = "user-pool",
+    ) -> None:
+        super().__init__(scope, config, id, suffix)
 
         self._cognito_client = boto3.client("cognito-idp")
         user_pool_name = f"{config.project_name}-user-pool"

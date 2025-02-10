@@ -4,14 +4,20 @@ from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs as logs
 from aws_cdk import aws_rds as rds
-from aws_cdk import aws_ssm as ssm
 from config import Config
-from constructs import Construct
+from constructs.construct import Construct
 
 
 class RdsConstruct(Construct):
-    def __init__(self, scope: Construct, vpc, config: Config) -> None:
-        super().__init__(scope, "rds")
+    def __init__(
+        self,
+        scope: Construct,
+        vpc,
+        config: Config,
+        id: str | None = None,
+        suffix: str | None = "rds",
+    ) -> None:
+        super().__init__(scope, config, id, suffix)
 
         rds_security_group = ec2.SecurityGroup(self, "rds-security-group", vpc=vpc)
 

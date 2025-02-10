@@ -7,7 +7,7 @@ from aws_cdk import aws_logs
 from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_cdk import aws_ssm as ssm
 from config import Config
-from constructs import Construct
+from constructs.construct import Construct
 
 
 class RuntimeEcsConstruct(Construct):
@@ -18,8 +18,10 @@ class RuntimeEcsConstruct(Construct):
         certificate,
         vpc,
         db_instance,
+        id: str | None = None,
+        suffix: str | None = "runtime-ecs",
     ) -> None:
-        super().__init__(scope, "runtime-ecs")
+        super().__init__(scope, config, id, suffix)
 
         jwt_secret = secretsmanager.Secret(
             self,
@@ -90,7 +92,7 @@ class RuntimeEcsConstruct(Construct):
                 image=ecs.ContainerImage.from_docker_image_asset(docker_image),
                 container_port=5000,
                 log_driver=ecs.LogDrivers.aws_logs(
-                    stream_prefix="throwback-request-live",
+                    stream_prefix=config.project_name,
                     log_group=aws_logs.LogGroup(
                         self,
                         "log-group",

@@ -3,7 +3,7 @@ import os
 
 import aws_cdk as cdk
 from aspects.tagging import TaggingAspect
-from aws_cdk import Aspects, Tags
+from aws_cdk import Aspects
 from config import Config
 from stacks.compute import ComputeStack
 from stacks.network import NetworkStack
