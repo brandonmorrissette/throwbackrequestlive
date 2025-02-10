@@ -11,5 +11,5 @@ class Construct(AwsCdKConstruct, Resource):
         id: str | None = None,
         suffix: str | None = None,
     ) -> None:
-        Resource(scope, config, id, suffix)
-        super().__init__(self.scope, self.id, env=config.cdk_environment)
+        Resource.__init__(self, scope, config, id, suffix)
+        AwsCdKConstruct.__init__(self, self.scope, self.id, env=config.cdk_environment)
