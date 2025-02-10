@@ -13,6 +13,5 @@ class Construct(AwsCdKConstruct, Resource):
         id: str | None = None,
         suffix: str | None = None,
     ) -> None:
-        # Resource.__init__(self, scope, config, id, suffix)
-        # super().__init__(scope, id, env=config.cdk_environment)
-        logging.info(f"Construct sanity check validation : {scope} {config}")
+        Resource.__init__(self, scope, config, id, suffix)
+        super().__init__(scope, id, env=config.cdk_environment)
