@@ -29,7 +29,7 @@ class RuntimeStack(Stack):
 
         Route53Construct(
             self,
-            "route-53",
+            config,
             hosted_zone=hosted_zone,
             load_balancer=fargate_service.load_balancer,
         )
