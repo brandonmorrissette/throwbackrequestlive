@@ -10,11 +10,7 @@ class Construct:
         self,
         scope: AwsCdKConstruct,
         config: Config,
-        id: str | None = None,
-        suffix: str | None = None,
     ) -> None:
         # Resource.__init__(self, scope, config, id, suffix)
         # super().__init__(scope, id, env=config.cdk_environment)
-        logging.info(
-            f"Construct sanity check validation : {scope} {config} {id} {suffix}"
-        )
+        logging.info(f"Construct sanity check validation : {scope} {config}")
