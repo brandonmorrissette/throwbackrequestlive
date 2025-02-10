@@ -1,4 +1,3 @@
-import boto3
 from aws_cdk import RemovalPolicy
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
