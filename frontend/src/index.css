@@ -130,3 +130,22 @@ button:hover {
 .form-group.text-center button:hover {
     background-color: var(--color-accent-darker);
 }
+
+/****************************************************
+ * Toastify
+ ****************************************************/
+
+.Toastify__toast-container {
+    width: 1200px;
+}
+
+.Toastify__toast {
+    background-color: var(--color-background-dark);
+    color: var(--color-accent);
+    white-space: pre-wrap;
+}
+
+.Toastify__progress-bar {
+    background-color: var(--color-accent-darker);
+    border-radius: 5px;
+}

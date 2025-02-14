@@ -4,6 +4,19 @@ from datetime import datetime, timedelta
 import boto3
 import jwt
 from botocore.exceptions import ClientError
+from exceptions.http import HTTPException
+
+
+class AuthException(HTTPException):
+    """Custom exception to map a boto3 ClientError to an HTTPException"""
+
+    def __init__(self, e: ClientError):
+
+        message = e.response["Error"]["Message"]
+        logging.error(f"Error authenticating user: {message}")
+
+        super().__init__(description=message)
+        self.code = e.response["ResponseMetadata"]["HTTPStatusCode"]
 
 
 class AuthService:
@@ -14,10 +27,9 @@ class AuthService:
         self._client_id = config["cognito"]["COGNITO_APP_CLIENT_ID"]
         self._user_pool_id = config["cognito"]["COGNITO_USER_POOL_ID"]
         self._jwt_secret = config["jwt"]["JWT_SECRET_KEY"]
-        logging.info(f"JWT_SECRET_KEY : {self._jwt_secret}")
         self._jwt_algorithm = "HS256"
 
-    def authenticate_user(self, username, password):
+    def authenticate_user(self, username, password) -> dict:
         try:
             response = self._client.initiate_auth(
                 ClientId=self._client_id,
@@ -40,11 +52,11 @@ class AuthService:
             }
 
         except ClientError as e:
-            raise Exception(f"Authentication failed: {e.response['Error']['Message']}")
+            raise AuthException(e)
 
-    def reset_password(self, username, password, session):
+    def reset_password(self, username, password, session) -> dict:
         try:
-            response = self._client.respond_to_auth_challenge(
+            self._client.respond_to_auth_challenge(
                 ClientId=self._client_id,
                 ChallengeName="NEW_PASSWORD_REQUIRED",
                 ChallengeResponses={"USERNAME": username, "NEW_PASSWORD": password},
@@ -58,7 +70,7 @@ class AuthService:
             }
 
         except ClientError as e:
-            raise Exception(f"Password reset failed: {e.response['Error']['Message']}")
+            raise AuthException(e)
 
     def get_groups_by_username(self, username):
         try:

@@ -5,6 +5,8 @@ import {
     Routes,
     useLocation,
 } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Content from './components/content/Content';
 import Footer from './components/footer/Footer';
 import Header from './components/header/Header';
@@ -37,6 +39,7 @@ const App: React.FC = () => {
                         </Routes>
                     </ContentWrapper>
                     <Footer />
+                    <ToastContainer position="top-center" autoClose={10000} />
                 </div>
             </Router>
         </AuthProvider>

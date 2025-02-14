@@ -117,7 +117,6 @@ class SQLALchemyJSONProvider(JSONProvider):
             "supports_execution",
             "uses_inspection",
         ],
-        # flattened_attributes=["primary_key", "foreign_keys", "indexes"],
     ):
         attribute_keys = self._get_attributes(table)
         logging.debug(f"Table attributes: {attribute_keys}")
