@@ -6,7 +6,7 @@ from decorators.auth import admin_required
 from flask import Flask
 from flask import current_app as app
 from flask import jsonify, request
-from services import data as data_service
+from services.data import DataService, get_json_provider_class
 
 
 def override_json_provider(provider):
@@ -28,7 +28,7 @@ def override_json_provider(provider):
 
 
 class DataBlueprint(BaseBlueprint):
-    _service: data_service.DataService
+    _service: DataService
 
     def _register_routes(self):
         @self._blueprint.route("/tables", methods=["GET"])
@@ -45,7 +45,7 @@ class DataBlueprint(BaseBlueprint):
 
         @self._blueprint.route("/tables/<table_name>", methods=["GET"])
         @admin_required
-        @override_json_provider(data_service.get_json_provider_class())
+        @override_json_provider(get_json_provider_class())
         def get_table(table_name):
             try:
                 app.logger.debug(f"Getting table {table_name}")

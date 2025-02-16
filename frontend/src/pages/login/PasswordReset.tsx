@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useError } from '../../contexts/ErrorContext';
 import apiRequest from '../../routing/Request';
 
 interface PasswordResetProps {
@@ -9,12 +10,11 @@ interface PasswordResetProps {
 const PasswordReset: React.FC<PasswordResetProps> = ({ session, username }) => {
     const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const { setError } = useError();
 
     const handlePasswordReset = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
         try {
             const response = await apiRequest('/api/login', {
@@ -28,14 +28,16 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ session, username }) => {
                 }),
             });
 
-            const data = await response.json();
-            if (data.success) {
+            if (response.success) {
                 window.location.href = '/admin';
             } else {
-                setError('Failed to reset password. Please try again.');
+                throw new Error(
+                    response.error ||
+                        'An unexpected error occurred during password reset.'
+                );
             }
-        } catch (err) {
-            setError('An error occurred. Please try again later.');
+        } catch (error: any) {
+            setError(error);
         } finally {
             setLoading(false);
         }
@@ -44,7 +46,6 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ session, username }) => {
     return (
         <div className="content-wrapper">
             <h2 className="text-center">Set New Password</h2>
-            {error && <p className="error-message">{error}</p>}
             <form onSubmit={handlePasswordReset} className="contact-form">
                 <div className="form-group">
                     <label htmlFor="newPassword">New Password:</label>

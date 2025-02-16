@@ -3,6 +3,10 @@ import React, { useEffect, useState } from 'react';
 import DataManagement from './DataManagement';
 import UserManagement from './UserManagement';
 
+export interface AdminComponent extends React.FC {
+    allowed_groups?: string[];
+}
+
 const Admin: React.FC = () => {
     const [userGroups, setUserGroups] = useState<string[]>([]);
 
@@ -12,7 +16,9 @@ const Admin: React.FC = () => {
         if (token) {
             try {
                 const decodedToken: any = jwtDecode(token);
-                setUserGroups(decodedToken.groups || []);
+                const groups = decodedToken.groups || [];
+                console.log('User groups:', groups);
+                setUserGroups(groups);
             } catch (e) {
                 console.error('Invalid token', e);
                 window.location.href = '/login';
@@ -25,13 +31,17 @@ const Admin: React.FC = () => {
     const renderContent = () => {
         const content = (
             <div>
-                {userGroups.includes('superuser') && (
+                {userGroups.some((element) =>
+                    UserManagement.allowed_groups?.includes(element)
+                ) && (
                     <div>
                         <UserManagement />
                         <hr />
                     </div>
                 )}
-                {userGroups.includes('admin') && (
+                {userGroups.some((element) =>
+                    DataManagement.allowed_groups?.includes(element)
+                ) && (
                     <div>
                         <DataManagement />
                         <hr />
@@ -40,7 +50,15 @@ const Admin: React.FC = () => {
             </div>
         );
 
-        if (content.props.children && content.props.children.length === 0) {
+        console.log('Content:', content);
+        if (
+            content.props.children &&
+            content.props.children.every((child: React.ReactNode) => !child)
+        ) {
+            if (userGroups.length === 0) {
+                return <p>User has no groups.</p>;
+            }
+
             return (
                 <p>No content to display for groups: {userGroups.join(', ')}</p>
             );
