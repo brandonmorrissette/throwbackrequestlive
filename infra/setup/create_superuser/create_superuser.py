@@ -33,7 +33,9 @@ except client.exceptions.UserNotFoundException:
         )
         print(f"User {superuser_email} created successfully.")
         client.admin_add_user_to_group(
-            UserPoolId=user_pool_id, Username=superuser_email, GroupName="superuser"
+            UserPoolId=user_pool_id,
+            Username=superuser_email,
+            GroupName=f"{project_name}-superuser-group",
         )
         print(f"User {superuser_email} added to admin and superuser groups.")
     except botocore.exceptions.ParamValidationError as e:

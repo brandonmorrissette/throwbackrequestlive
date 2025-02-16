@@ -18,16 +18,19 @@ class SuperUserConstruct(Construct):
     ) -> None:
         super().__init__(scope, config, id, suffix)
 
-        role = iam.Role(
+        superuser_group = iam.Group(
             self,
-            "superuser-role",
-            assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
+            "superuser-group",
+            group_name=f"{config.project_name}-superuser-group",
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("AdministratorAccess")
+            ],
         )
 
-        role.add_managed_policy(
-            iam.ManagedPolicy(
+        superuser_group.attach_inline_policy(
+            iam.Policy(
                 self,
-                "cognito-policy",
+                "superuser-group-inline-policy",
                 statements=[
                     iam.PolicyStatement(
                         actions=[
@@ -43,7 +46,7 @@ class SuperUserConstruct(Construct):
                         resources=[
                             f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_construct.user_pool.user_pool_id}"
                         ],
-                    )
+                    ),
                 ],
             )
         )
