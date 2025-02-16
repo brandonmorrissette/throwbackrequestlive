@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Table from '../../components/table/Table';
+import { useError } from '../../contexts/ErrorContext';
 import { TableServiceProvider } from '../../contexts/TableServiceContext';
 import {
     default as UserService,
     default as userService,
 } from '../../services/user';
+import { AdminComponent } from './Admin';
 
 type User = {
     username: string;
@@ -12,10 +14,11 @@ type User = {
     groups: string[];
 };
 
-const UserManagement: React.FC = () => {
+const UserManagement: AdminComponent = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [table, setTable] = useState<any>({});
     const [feedback, setFeedback] = useState('');
+    const { setError } = useError();
 
     useEffect(() => {
         fetchTable();
@@ -29,8 +32,9 @@ const UserManagement: React.FC = () => {
         try {
             const data = await UserService.getTable('users');
             setTable(data);
-        } catch (error) {
+        } catch (error: any) {
             setFeedback('Error fetching table properties.');
+            setError(error);
         }
     };
 
@@ -38,8 +42,9 @@ const UserManagement: React.FC = () => {
         try {
             const data = await UserService.readRows('users');
             setUsers(data);
-        } catch (error) {
+        } catch (error: any) {
             setFeedback('Error fetching users.');
+            setError(error);
         }
     };
 
@@ -54,5 +59,7 @@ const UserManagement: React.FC = () => {
         </div>
     );
 };
+
+UserManagement.allowed_groups = ['supergroup'];
 
 export default UserManagement;

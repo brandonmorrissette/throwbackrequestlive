@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useError } from '../../contexts/ErrorContext';
 import { default as DataService } from '../../services/data';
 import ShowDetail from './ShowDetails';
 import styles from './Shows.module.css';
@@ -40,6 +41,7 @@ export class Show {
 const Shows: React.FC = () => {
     const [shows, setShows] = useState<Show[]>([]);
     const [selectedShow, setSelectedShow] = useState<Show | null>(null);
+    const { setError } = useError();
 
     useEffect(() => {
         const getShows = async () => {
@@ -55,8 +57,10 @@ const Shows: React.FC = () => {
                     filters: filters,
                 });
                 setShows(data.map((show: any) => new Show(show)));
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error getting shows:', error);
+                error.message = "We couldn't get the list of shows.";
+                setError(error);
             }
         };
 

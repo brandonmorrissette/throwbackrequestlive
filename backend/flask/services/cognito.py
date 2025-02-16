@@ -5,6 +5,7 @@ from datetime import datetime
 
 import boto3
 import redis
+from exceptions.boto import raise_http_exception
 
 
 def cognito_json_encoder(obj):
@@ -14,9 +15,10 @@ def cognito_json_encoder(obj):
 
 
 class CognitoService:
+    @raise_http_exception
     def __init__(self, config):
         self._user_pool_id = config["cognito"]["COGNITO_USER_POOL_ID"]
-        self._client = boto3.client(
+        self._cognito_client = boto3.client(
             "cognito-idp", region_name=config["cognito"]["COGNITO_REGION"]
         )
 
@@ -28,14 +30,15 @@ class CognitoService:
             host=self.redis_host, port=self.redis_port, decode_responses=True
         )
 
+    @raise_http_exception
     def read_rows(self):
-        response = self._client.list_users(UserPoolId=self._user_pool_id)
         users = []
+        response = self._cognito_client.list_users(UserPoolId=self._user_pool_id)
         for user in response["Users"]:
             username = user["Username"]
 
             # Move to group service
-            groups_response = self._client.admin_list_groups_for_user(
+            groups_response = self._cognito_client.admin_list_groups_for_user(
                 UserPoolId=self._user_pool_id, Username=username
             )
             groups = [group["GroupName"] for group in groups_response["Groups"]]
@@ -49,6 +52,7 @@ class CognitoService:
 
         return users
 
+    @raise_http_exception
     def write_rows(self, rows):
         existing_usernames = {key for key in self.redis_client.keys()}
         row_usernames = {row["Username"] for row in rows if "Username" in row}
@@ -74,8 +78,9 @@ class CognitoService:
         characters = string.ascii_letters + string.digits + "!@#$%^&*()-_=+"
         return "".join(secrets.choice(characters) for _ in range(12))
 
+    @raise_http_exception
     def _add_user(self, user):
-        response = self._client.admin_create_user(
+        response = self._cognito_client.admin_create_user(
             Username=user["Email"],
             UserPoolId=self._user_pool_id,
             UserAttributes=[
@@ -86,8 +91,9 @@ class CognitoService:
         user = response["User"]
         self._persist_user(user["Username"], user)
 
+    @raise_http_exception
     def _update_user(self, username, user):
-        self._client.admin_update_user_attributes(
+        self._cognito_client.admin_update_user_attributes(
             UserPoolId=self._user_pool_id,
             Username=username,
             UserAttributes=[
@@ -97,8 +103,9 @@ class CognitoService:
 
         self._persist_user(username, user)
 
+    @raise_http_exception
     def _delete_user(self, username):
-        self._client.admin_delete_user(
+        self._cognito_client.admin_delete_user(
             UserPoolId=self._user_pool_id,
             Username=username,
         )

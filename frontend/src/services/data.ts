@@ -13,18 +13,11 @@ export interface IDataService {
 class DataService implements IDataService {
     async getTableNames(): Promise<string[]> {
         const response = await apiRequest(`${API_BASE_URL}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch table names');
-        }
         return response.json();
     }
 
     async getTable(tableName: string): Promise<any> {
         const response = await apiRequest(`${API_BASE_URL}/${tableName}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch table');
-        }
-
         const table = await response.json();
 
         const columns: ColDef[] = table.columns.map((col: any) => {
@@ -79,9 +72,6 @@ class DataService implements IDataService {
         const response = await apiRequest(
             `${API_BASE_URL}/${tableName}/rows?${queryParams.toString()}`
         );
-        if (!response.ok) {
-            throw new Error('Failed to fetch table data');
-        }
         const rows = await response.json();
         console.log('DataService::readRows::rows', rows);
         return rows;
@@ -89,16 +79,13 @@ class DataService implements IDataService {
 
     async writeRows(tableName: string, rows: any[]): Promise<void> {
         console.log('DataService::writeRows', tableName);
-        const response = await apiRequest(`${API_BASE_URL}/${tableName}/rows`, {
+        await apiRequest(`${API_BASE_URL}/${tableName}/rows`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ rows }),
         });
-        if (!response.ok) {
-            throw new Error('Failed to write table data');
-        }
     }
 }
 

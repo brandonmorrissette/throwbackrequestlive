@@ -11,6 +11,7 @@ import Content from './components/content/Content';
 import Footer from './components/footer/Footer';
 import Header from './components/header/Header';
 import { AuthProvider } from './contexts/AuthContext';
+import { ErrorProvider } from './contexts/ErrorContext';
 import Admin from './pages/admin/Admin';
 import Home from './pages/home/Home';
 import Login from './pages/login/Login';
@@ -19,30 +20,35 @@ import ProtectedRoute from './routing/ProtectedRoute';
 
 const App: React.FC = () => {
     return (
-        <AuthProvider>
-            <Router>
-                <div>
-                    <Header />
-                    <ContentWrapper>
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/request" element={<Request />} />
-                            <Route path="/login" element={<Login />} />
-                            <Route
-                                path="/admin"
-                                element={
-                                    <ProtectedRoute redirectTo="/login">
-                                        <Admin />
-                                    </ProtectedRoute>
-                                }
-                            />
-                        </Routes>
-                    </ContentWrapper>
-                    <Footer />
-                    <ToastContainer position="top-center" autoClose={10000} />
-                </div>
-            </Router>
-        </AuthProvider>
+        <ErrorProvider>
+            <AuthProvider>
+                <Router>
+                    <div>
+                        <Header />
+                        <ContentWrapper>
+                            <Routes>
+                                <Route path="/" element={<Home />} />
+                                <Route path="/request" element={<Request />} />
+                                <Route path="/login" element={<Login />} />
+                                <Route
+                                    path="/admin"
+                                    element={
+                                        <ProtectedRoute redirectTo="/login">
+                                            <Admin />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                            </Routes>
+                        </ContentWrapper>
+                        <Footer />
+                        <ToastContainer
+                            position="top-center"
+                            autoClose={10000}
+                        />
+                    </div>
+                </Router>
+            </AuthProvider>
+        </ErrorProvider>
     );
 };
 

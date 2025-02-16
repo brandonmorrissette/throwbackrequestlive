@@ -2,8 +2,6 @@ To Do
 
 # Error handling and logging
 
--   Clean and consistent error handling/logging
-    -   Cognito (maybe additional) services return appropriate failures to front end
 -   Environment logging configuration
 
 # Security
@@ -50,8 +48,6 @@ To Do
 
 # Login
 
--   Fix Login form sizing
--   Login hangs on error
 -   Much better password reset
 
 # App UI
