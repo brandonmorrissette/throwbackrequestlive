@@ -5,7 +5,7 @@ from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs as logs
-from aws_cdk.aws_cognito import CfnUserPoolGroup, EntityAlreadyExistsException
+from aws_cdk.aws_cognito import CfnUserPoolGroup
 from config import Config
 from constructs.construct import Construct
 from constructs.userpool import UserPoolConstruct
@@ -113,14 +113,11 @@ class SuperUserConstruct(Construct):
             ),
         )
 
-        try:
-            CfnUserPoolGroup(
-                self,
-                "superuser-group",
-                group_name="superuser",
-                user_pool_id=user_pool_construct.user_pool.user_pool_id,
-                description="Superuser group with elevated permissions",
-                role_arn=superuser_role.role_arn,
-            )
-        except EntityAlreadyExistsException:
-            logging.info("Superuser group already exists.")
+        CfnUserPoolGroup(
+            self,
+            "superuser-group",
+            group_name="superuser",
+            user_pool_id=user_pool_construct.user_pool.user_pool_id,
+            description="Superuser group with elevated permissions",
+            role_arn=superuser_role.role_arn,
+        )
