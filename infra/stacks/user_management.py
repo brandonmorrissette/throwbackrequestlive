@@ -1,10 +1,9 @@
 from aws_cdk import CfnOutput
 from config import Config
 from constructs import IConstruct
+from constructs.superuser import SuperUserConstruct
 from constructs.userpool import UserPoolConstruct
 from stacks.stack import Stack
-
-from infra.constructs.superuser import SuperUserConstruct
 
 
 class UserManagementStack(Stack):
