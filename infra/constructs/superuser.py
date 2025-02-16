@@ -1,7 +1,11 @@
+import logging
+
 from aws_cdk import RemovalPolicy
+from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs as logs
+from aws_cdk.aws_cognito import CfnUserPoolGroup, EntityAlreadyExistsException
 from config import Config
 from constructs.construct import Construct
 from constructs.userpool import UserPoolConstruct
@@ -18,19 +22,16 @@ class SuperUserConstruct(Construct):
     ) -> None:
         super().__init__(scope, config, id, suffix)
 
-        superuser_group = iam.Group(
+        superuser_role = iam.Role(
             self,
-            "superuser-group",
-            group_name=f"{config.project_name}-superuser-group",
-            managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("AdministratorAccess")
-            ],
+            "superuser-role",
+            assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
         )
 
-        superuser_group.attach_inline_policy(
-            iam.Policy(
+        superuser_role.add_managed_policy(
+            iam.ManagedPolicy(
                 self,
-                "superuser-group-inline-policy",
+                "cognito-policy",
                 statements=[
                     iam.PolicyStatement(
                         actions=[
@@ -46,12 +47,12 @@ class SuperUserConstruct(Construct):
                         resources=[
                             f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_construct.user_pool.user_pool_id}"
                         ],
-                    ),
+                    )
                 ],
             )
         )
 
-        task_role = iam.Role(
+        user_creation_task_role = iam.Role(
             self,
             "SuperuserTaskRole",
             assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
@@ -79,7 +80,7 @@ class SuperUserConstruct(Construct):
             },
         )
 
-        self.task_definition = ecs.FargateTaskDefinition(
+        self.user_creation_task_definition = ecs.FargateTaskDefinition(
             self,
             "superuser-task-definition",
             memory_limit_mib=512,
@@ -95,10 +96,10 @@ class SuperUserConstruct(Construct):
                     )
                 ],
             ),
-            task_role=task_role,
+            task_role=user_creation_task_role,
         )
 
-        self.task_definition.add_container(
+        self.user_creation_task_definition.add_container(
             "superuser-container",
             image=ecs.ContainerImage.from_asset("infra/setup/create_superuser"),
             logging=ecs.LogDrivers.aws_logs(
@@ -111,3 +112,15 @@ class SuperUserConstruct(Construct):
                 ),
             ),
         )
+
+        try:
+            CfnUserPoolGroup(
+                self,
+                "superuser-group",
+                group_name="superuser",
+                user_pool_id=user_pool_construct.user_pool.user_pool_id,
+                description="Superuser group with elevated permissions",
+                role_arn=superuser_role.role_arn,
+            )
+        except EntityAlreadyExistsException:
+            logging.info("Superuser group already exists.")
