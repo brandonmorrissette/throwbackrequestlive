@@ -1,9 +1,5 @@
 To Do
 
-# Error handling and logging
-
--   Environment logging configuration
-
 # Security
 
 -   Update cognito_service to validate JWT

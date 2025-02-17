@@ -39,15 +39,19 @@ CONFIG = {
 }
 
 
-def _create_app():
+def _create_app(DEBUG=False):
     app = Flask(__name__)
     app.json = JSONProvider(app)
-    app.logger.setLevel(logging.DEBUG)
+
+    # Logging
+    LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
+    app.logger.setLevel(LOG_LEVEL)
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=LOG_LEVEL,
         format="%(asctime)s %(name)s:%(levelname)s:%(pathname)s:%(lineno)d:%(message)s",
     )
 
+    # Config
     for current in CONFIG:
         app.config.update(CONFIG[current])
     app.logger.debug(f"Config : {app.config}")
@@ -71,5 +75,6 @@ def _create_app():
 
 
 if __name__ == "__main__":
-    app = _create_app()
-    app.run(host="0.0.0.0", port=5000)
+    DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t", "y", "yes")
+    app = _create_app(DEBUG)
+    app.run(host="0.0.0.0", port=5000, debug=DEBUG)
