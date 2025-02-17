@@ -2,7 +2,7 @@ import json
 from functools import wraps
 
 from blueprints.blueprint import BaseBlueprint
-from decorators.auth import admin_required
+from decorators.auth import restrict_access
 from flask import Flask
 from flask import current_app as app
 from flask import jsonify, request
@@ -32,7 +32,7 @@ class DataBlueprint(BaseBlueprint):
 
     def _register_routes(self):
         @self._blueprint.route("/tables", methods=["GET"])
-        @admin_required
+        @restrict_access(["superuser"])
         def list_tables():
             try:
                 app.logger.debug("Listing tables")
@@ -44,7 +44,7 @@ class DataBlueprint(BaseBlueprint):
                 return jsonify({"error": str(e)}), 500
 
         @self._blueprint.route("/tables/<table_name>", methods=["GET"])
-        @admin_required
+        @restrict_access(["superuser"])
         @override_json_provider(get_json_provider_class())
         def get_table(table_name):
             try:
@@ -64,23 +64,23 @@ class DataBlueprint(BaseBlueprint):
             return read_rows("shows")
 
         @self._blueprint.route("/tables/<table_name>/rows", methods=["GET"])
-        @admin_required
+        @restrict_access(["superuser"])
         def read_rows(table_name):
             return self._get_rows(table_name, request)
 
         @self._blueprint.route("/tables/<table_name>/rows", methods=["PUT"])
-        @admin_required
+        @restrict_access(["superuser"])
         def write_rows(table_name):
             data = request.get_json()
             rows = data.get("rows", [])
             app.logger.debug(f"Writing rows to {table_name}")
-            try:
-                self._service.validate_table_name(table_name)
-                result = self._service.write_rows(table_name, rows)
-                return jsonify(result), 200
-            except Exception as e:
-                app.logger.error(f"Error writing rows: {e}")
-                return jsonify({"error": str(e)}), 500
+            # try:
+            self._service.validate_table_name(table_name)
+            result = self._service.write_rows(table_name, rows)
+            return jsonify(result), 200
+            # except Exception as e:
+            #     app.logger.error(f"Error writing rows: {e}")
+            #     return jsonify({"error": str(e)}), 500
 
     def _get_rows(self, table_name, request):
         filters = request.args.get("filters")

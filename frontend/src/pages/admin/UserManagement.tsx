@@ -60,6 +60,6 @@ const UserManagement: AdminComponent = () => {
     );
 };
 
-UserManagement.allowed_groups = ['supergroup'];
+UserManagement.allowed_groups = ['superuser'];
 
 export default UserManagement;

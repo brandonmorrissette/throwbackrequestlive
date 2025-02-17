@@ -56,12 +56,8 @@ class UserService implements IDataService {
     }
 
     async readRows(tableName: string): Promise<any> {
-        console.info('UserService::readRows', tableName);
-        const response = await apiRequest('/api/users');
-        if (!response.ok) {
-            throw new Error('Failed to fetch user data');
-        }
-        const data = await response.json();
+        const data = await apiRequest(`/api/${tableName}`);
+
         const transformed = data.map((user: any) => {
             const email = user.Attributes.find(
                 (attr: any) => attr.Name === 'email'
@@ -82,8 +78,7 @@ class UserService implements IDataService {
     }
 
     async writeRows(tableName: string, rows: any[]): Promise<void> {
-        console.info('UserService::writeRows', tableName);
-        const response = await apiRequest('/api/users', {
+        const response = await apiRequest(`/api/${tableName}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

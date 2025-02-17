@@ -37,6 +37,6 @@ except client.exceptions.UserNotFoundException:
             Username=superuser_email,
             GroupName="superuser",
         )
-        print(f"User {superuser_email} added to admin and superuser groups.")
+        print(f"User {superuser_email} added to superuser groups.")
     except botocore.exceptions.ParamValidationError as e:
         print(f"Invalid parameters: {e}")

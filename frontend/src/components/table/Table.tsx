@@ -6,6 +6,7 @@ import {
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useError } from '../../contexts/ErrorContext';
 import { useServices } from '../../contexts/TableServiceContext';
 import { TableService } from '../../services/table';
 import { Options } from './Options';
@@ -23,6 +24,7 @@ const Table: React.FC<{
     const [gridApi, setGridApi] = useState<any>(null);
     const [selectedRows, setSelectedRows] = useState<Row[]>([]);
     const [unsavedChanges, setUnsavedChanges] = useState(false);
+    const { setError } = useError();
 
     const tableServiceInstance = useMemo(
         () => new TableService(tableService),
@@ -97,7 +99,8 @@ const Table: React.FC<{
             );
             setRowData(updatedRows);
             setUnsavedChanges(false);
-        } catch (error) {
+        } catch (error: any) {
+            setError(error);
             console.error('Error saving changes:', error);
         }
     };
