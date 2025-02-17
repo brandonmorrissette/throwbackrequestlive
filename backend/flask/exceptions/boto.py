@@ -12,7 +12,7 @@ def raise_http_exception(func):
             exception = HTTPException(e.response["Error"]["Message"])
             exception.code = e.response["ResponseMetadata"]["HTTPStatusCode"]
             logging.error(
-                f"Error in {func.__qualname__}: {exception.code} - {exception.description}"
+                f"ClientError in {func.__qualname__}: {exception.code} - {exception.description}"
             )
             raise exception
 

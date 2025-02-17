@@ -97,12 +97,10 @@ class DataService:
 
             rows_to_add = [row for row in rows if row.get(primary_key) is None]
             if rows_to_add:
-                logging.debug(f"Rows to add: {rows_to_add}")
                 session.execute(table.insert(), rows_to_add)
 
             rows_to_delete = sql_alchemy_ids - front_end_ids
             if rows_to_delete:
-                logging.debug(f"Rows to delete: {rows_to_delete}")
                 session.execute(
                     table.delete().where(table.c[primary_key].in_(rows_to_delete))
                 )
@@ -111,7 +109,6 @@ class DataService:
                 row for row in rows if row.get(primary_key) in sql_alchemy_ids
             ]
             for row in rows_to_update:
-                logging.debug(f"Row to update: {row}")
                 session.execute(
                     table.update()
                     .where(table.c[primary_key] == row[primary_key])

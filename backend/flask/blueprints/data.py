@@ -34,29 +34,21 @@ class DataBlueprint(BaseBlueprint):
         @self._blueprint.route("/tables", methods=["GET"])
         @restrict_access(["superuser"])
         def list_tables():
-            try:
-                app.logger.debug("Listing tables")
-                tables = self._service.list_tables()
-                app.logger.debug(f"Tables: {tables}")
-                return jsonify(list(tables)), 200
-            except Exception as e:
-                app.logger.error(f"Error listing tables: {e}")
-                return jsonify({"error": str(e)}), 500
+            app.logger.debug("Listing tables")
+            tables = self._service.list_tables()
+            app.logger.debug(f"Tables: {tables}")
+            return jsonify(list(tables)), 200
 
         @self._blueprint.route("/tables/<table_name>", methods=["GET"])
         @restrict_access(["superuser"])
         @override_json_provider(get_json_provider_class())
         def get_table(table_name):
-            try:
-                app.logger.debug(f"Getting table {table_name}")
-                self._service.validate_table_name(table_name)
-                table = self._service.get_table(table_name)
-                app.logger.debug(f"Table {table_name}: {table}")
+            app.logger.debug(f"Getting table {table_name}")
+            self._service.validate_table_name(table_name)
+            table = self._service.get_table(table_name)
+            app.logger.debug(f"Table {table_name}: {table}")
 
-                return jsonify(table), 200
-            except Exception as e:
-                app.logger.error(f"Error getting table {table_name}: {e}")
-                return jsonify({"error": str(e)}), 500
+            return jsonify(table), 200
 
         # Public route
         @self._blueprint.route("/tables/shows/rows", methods=["GET"])
@@ -74,13 +66,9 @@ class DataBlueprint(BaseBlueprint):
             data = request.get_json()
             rows = data.get("rows", [])
             app.logger.debug(f"Writing rows to {table_name}")
-            # try:
             self._service.validate_table_name(table_name)
             result = self._service.write_rows(table_name, rows)
             return jsonify(result), 200
-            # except Exception as e:
-            #     app.logger.error(f"Error writing rows: {e}")
-            #     return jsonify({"error": str(e)}), 500
 
     def _get_rows(self, table_name, request):
         filters = request.args.get("filters")
@@ -88,12 +76,8 @@ class DataBlueprint(BaseBlueprint):
             filters = json.loads(filters)
             app.logger.debug(f"Filters: {filters}")
 
-        try:
-            self._service.validate_table_name(table_name)
-            app.logger.debug(f"Getting rows from {table_name}")
-            rows = self._service.read_rows(table_name, filters)
-            app.logger.debug(f"First 10 Rows: {rows[:10]}")
-            return jsonify(rows), 200
-        except Exception as e:
-            app.logger.error(f"Error fetching rows: {e}")
-            return jsonify({"error": str(e)}), 500
+        self._service.validate_table_name(table_name)
+        app.logger.debug(f"Getting rows from {table_name}")
+        rows = self._service.read_rows(table_name, filters)
+        app.logger.debug(f"First 10 Rows: {rows[:10]}")
+        return jsonify(rows), 200

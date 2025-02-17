@@ -1,5 +1,4 @@
 from blueprints.blueprint import BaseBlueprint
-from flask import current_app as app
 from flask import jsonify, request
 from services.auth import AuthService
 
