@@ -108,7 +108,7 @@ class DataService:
                 )
 
             rows_to_update = [
-                row for row in rows if row[primary_key] in sql_alchemy_ids
+                row for row in rows if row.get(primary_key) in sql_alchemy_ids
             ]
             for row in rows_to_update:
                 logging.debug(f"Row to update: {row}")

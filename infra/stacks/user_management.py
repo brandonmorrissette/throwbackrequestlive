@@ -1,7 +1,7 @@
 from aws_cdk import CfnOutput
 from config import Config
 from constructs import IConstruct
-from constructs.user import SuperUserConstruct
+from constructs.superuser import SuperUserConstruct
 from constructs.userpool import UserPoolConstruct
 from stacks.stack import Stack
 
@@ -25,5 +25,5 @@ class UserManagementStack(Stack):
         CfnOutput(
             self,
             "superuser-task-definition-arn",
-            value=self.superuser_construct.task_definition.task_definition_arn,
+            value=self.superuser_construct.user_creation_task_definition.task_definition_arn,
         )

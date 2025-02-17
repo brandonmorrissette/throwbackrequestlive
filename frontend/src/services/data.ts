@@ -12,13 +12,11 @@ export interface IDataService {
 
 class DataService implements IDataService {
     async getTableNames(): Promise<string[]> {
-        const response = await apiRequest(`${API_BASE_URL}`);
-        return response.json();
+        return await apiRequest(`${API_BASE_URL}`);
     }
 
     async getTable(tableName: string): Promise<any> {
-        const response = await apiRequest(`${API_BASE_URL}/${tableName}`);
-        const table = await response.json();
+        const table = await apiRequest(`${API_BASE_URL}/${tableName}`);
 
         const columns: ColDef[] = table.columns.map((col: any) => {
             const columnDef: ColDef = new ColDef({
@@ -42,7 +40,6 @@ class DataService implements IDataService {
                 })
         );
 
-        console.log('DataService::getTable::Properties:', table);
         return new Options(table.name, columns, primaryKeys, table);
     }
 
@@ -68,17 +65,12 @@ class DataService implements IDataService {
         if (options?.sort_order)
             queryParams.append('sort_order', options.sort_order);
 
-        console.log('DataService::readRows', tableName);
-        const response = await apiRequest(
+        return await apiRequest(
             `${API_BASE_URL}/${tableName}/rows?${queryParams.toString()}`
         );
-        const rows = await response.json();
-        console.log('DataService::readRows::rows', rows);
-        return rows;
     }
 
     async writeRows(tableName: string, rows: any[]): Promise<void> {
-        console.log('DataService::writeRows', tableName);
         await apiRequest(`${API_BASE_URL}/${tableName}/rows`, {
             method: 'PUT',
             headers: {
