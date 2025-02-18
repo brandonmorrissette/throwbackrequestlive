@@ -2,18 +2,17 @@ from datetime import datetime, timedelta
 
 import boto3
 import jwt
+from config import Config
 from exceptions.boto import raise_http_exception
 
 
 class AuthService:
     @raise_http_exception
-    def __init__(self, config):
-        self._client = boto3.client(
-            "cognito-idp", region_name=config["cognito"]["COGNITO_REGION"]
-        )
-        self._client_id = config["cognito"]["COGNITO_APP_CLIENT_ID"]
-        self._user_pool_id = config["cognito"]["COGNITO_USER_POOL_ID"]
-        self._jwt_secret = config["jwt"]["JWT_SECRET_KEY"]
+    def __init__(self, config: Config):
+        self._client = boto3.client("cognito-idp", region_name=config.COGNITO_REGION)
+        self._client_id = config.COGNITO_APP_CLIENT_ID
+        self._user_pool_id = config.COGNITO_USER_POOL_ID
+        self._jwt_secret = config.JWT_SECRET_KEY
         self._jwt_algorithm = "HS256"
 
     @raise_http_exception
