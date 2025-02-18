@@ -1,6 +1,7 @@
 import logging
 from contextlib import contextmanager
 
+from config import Config
 from providers.sqlalchemy import SQLALchemyJSONProvider
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,17 +13,8 @@ def get_json_provider_class():
 
 
 class DataService:
-    def __init__(self, config):
-        DB_USER = config["database"]["DB_USER"]
-        DB_PASSWORD = config["database"]["DB_PASSWORD"]
-        DB_HOST = config["database"]["DB_HOST"]
-        DB_NAME = config["database"]["DB_NAME"]
-        DB_ENGINE = config["database"].get("DB_ENGINE", "postgresql")
-        DB_PORT = config["database"].get("DB_PORT", 5432)
-
-        DATABASE_URL = (
-            f"{DB_ENGINE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-        )
+    def __init__(self, config: Config):
+        DATABASE_URL = f"{config.DB_ENGINE}://{config.DB_USER}:{config.DB_PASSWORD}@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
 
         logging.debug(f"Connecting to database: {DATABASE_URL}")
         self.engine = create_engine(DATABASE_URL, pool_pre_ping=True)

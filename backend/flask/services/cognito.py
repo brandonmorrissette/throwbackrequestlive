@@ -5,6 +5,7 @@ from datetime import datetime
 
 import boto3
 import redis
+from config import Config
 from exceptions.boto import raise_http_exception
 
 
@@ -16,18 +17,16 @@ def cognito_json_encoder(obj):
 
 class CognitoService:
     @raise_http_exception
-    def __init__(self, config):
-        self._user_pool_id = config["cognito"]["COGNITO_USER_POOL_ID"]
+    def __init__(self, config: Config):
+        self._user_pool_id = config.COGNITO_USER_POOL_ID
         self._cognito_client = boto3.client(
-            "cognito-idp", region_name=config["cognito"]["COGNITO_REGION"]
+            "cognito-idp", region_name=config.COGNITO_REGION
         )
 
-        redis_config = config.get("redis", {})
-        self.redis_host = redis_config.get("REDIS_HOST", "redis")
-        self.redis_port = redis_config.get("REDIS_PORT", 6379)
-
         self.redis_client = redis.StrictRedis(
-            host=self.redis_host, port=self.redis_port, decode_responses=True
+            host=config.REDIS_HOST,
+            port=int(config.REDIS_PORT),
+            decode_responses=True,
         )
 
     @raise_http_exception
