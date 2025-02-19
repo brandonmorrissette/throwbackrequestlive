@@ -120,7 +120,7 @@ class RuntimeEcsConstruct(Construct):
                         db_instance.secret, field="host"
                     ),
                     "JWT_SECRET": ecs.Secret.from_secrets_manager(
-                        jwt_secret, field="secretString"
+                        jwt_secret, field="SecretString"
                     ),
                 },
                 task_role=task_role,
