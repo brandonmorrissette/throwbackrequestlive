@@ -14,7 +14,7 @@ class AuthService:
         self._client_id = config.COGNITO_APP_CLIENT_ID
         self._user_pool_id = config.COGNITO_USER_POOL_ID
         self._jwt_secret = config.JWT_SECRET_KEY
-        logging.info(f"JWT Secret Key: {self._jwt_secret}")
+        print(f"JWT Secret Key: {self._jwt_secret}")
         self._jwt_algorithm = "HS256"
 
     @raise_http_exception
@@ -67,6 +67,6 @@ class AuthService:
             "exp": datetime.utcnow() + timedelta(hours=1),
         }
 
-        logging.info(f"JWT Secret Key: {self._jwt_secret}")
+        print(f"JWT Secret Key: {self._jwt_secret}")
         token = jwt.encode(payload, self._jwt_secret, algorithm=self._jwt_algorithm)
         return token
