@@ -13,7 +13,7 @@ class AuthService:
         self._client = boto3.client("cognito-idp", region_name=config.COGNITO_REGION)
         self._client_id = config.COGNITO_APP_CLIENT_ID
         self._user_pool_id = config.COGNITO_USER_POOL_ID
-        self._jwt_secret = config.JWT_SECRET_KEY
+        self._jwt_secret = config.JWT_SECRET
         print(f"JWT Secret Key: {self._jwt_secret}")
         self._jwt_algorithm = "HS256"
 
