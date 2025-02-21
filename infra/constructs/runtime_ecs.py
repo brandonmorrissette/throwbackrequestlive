@@ -19,6 +19,7 @@ class RuntimeEcsConstruct(Construct):
         vpc,
         db_instance,
         cache_cluster,
+        superuser_role: iam.Role,
         id: str | None = None,
         suffix: str | None = "runtime-ecs",
     ) -> None:
@@ -39,26 +40,17 @@ class RuntimeEcsConstruct(Construct):
 
         task_role = iam.Role(
             self,
-            "CustomTaskRole",
+            "RuntimeTaskRole",
             assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name(
                     "service-role/AmazonECSTaskExecutionRolePolicy"
                 ),
+                superuser_role,
             ],
             inline_policies={
-                "CustomPolicy": iam.PolicyDocument(
+                "RuntimePolicy": iam.PolicyDocument(
                     statements=[
-                        iam.PolicyStatement(
-                            actions=[
-                                "cognito-idp:AdminListGroupsForUser",
-                                "cognito-idp:AdminGetUser",
-                                "cognito-idp:ListUsers",
-                            ],
-                            resources=[
-                                f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_id}"
-                            ],
-                        ),
                         iam.PolicyStatement(
                             actions=["secretsmanager:GetSecretValue"],
                             resources=[jwt_secret.secret_arn],

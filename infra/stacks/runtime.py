@@ -1,3 +1,4 @@
+from aws_cdk import aws_iam as iam
 from config import Config
 from constructs.construct import Construct
 from constructs.route_53 import Route53Construct
@@ -15,6 +16,7 @@ class RuntimeStack(Stack):
         db_instance,
         vpc,
         cache_cluster,
+        superuser_role: iam.Role,
         id: str | None = None,
         suffix: str | None = "runtime",
     ):
@@ -27,6 +29,7 @@ class RuntimeStack(Stack):
             vpc=vpc,
             db_instance=db_instance,
             cache_cluster=cache_cluster,
+            superuser_role=superuser_role,
         ).runtime_service
 
         Route53Construct(

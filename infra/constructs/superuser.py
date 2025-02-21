@@ -1,7 +1,4 @@
-import logging
-
 from aws_cdk import RemovalPolicy
-from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs as logs
@@ -22,19 +19,20 @@ class SuperUserConstruct(Construct):
     ) -> None:
         super().__init__(scope, config, id, suffix)
 
-        superuser_role = iam.Role(
+        self.superuser_role = iam.Role(
             self,
             "superuser-role",
             assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
         )
 
-        superuser_role.add_managed_policy(
+        self.superuser_role.add_managed_policy(
             iam.ManagedPolicy(
                 self,
                 "cognito-policy",
                 statements=[
                     iam.PolicyStatement(
                         actions=[
+                            "cognito-idp:AdminGetUser",
                             "cognito-idp:AdminCreateUser",
                             "cognito-idp:AdminDeleteUser",
                             "cognito-idp:AdminUpdateUserAttributes",
@@ -43,6 +41,8 @@ class SuperUserConstruct(Construct):
                             "cognito-idp:AdminCreateGroup",
                             "cognito-idp:AdminDeleteGroup",
                             "cognito-idp:AdminUpdateGroup",
+                            "cognito-idp:AdminAddUserToGroup",
+                            "cognito-idp:ListUsers",
                         ],
                         resources=[
                             f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_construct.user_pool.user_pool_id}"
@@ -59,16 +59,6 @@ class SuperUserConstruct(Construct):
             inline_policies={
                 "SuperuserPolicy": iam.PolicyDocument(
                     statements=[
-                        iam.PolicyStatement(
-                            actions=[
-                                "cognito-idp:AdminGetUser",
-                                "cognito-idp:AdminCreateUser",
-                                "cognito-idp:AdminAddUserToGroup",
-                            ],
-                            resources=[
-                                f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_construct.user_pool.user_pool_id}"
-                            ],
-                        ),
                         iam.PolicyStatement(
                             actions=[
                                 "cognito-idp:ListUserPools",
@@ -93,7 +83,8 @@ class SuperUserConstruct(Construct):
                 managed_policies=[
                     iam.ManagedPolicy.from_aws_managed_policy_name(
                         "service-role/AmazonECSTaskExecutionRolePolicy"
-                    )
+                    ),
+                    self.superuser_role,
                 ],
             ),
             task_role=user_creation_task_role,
@@ -119,5 +110,5 @@ class SuperUserConstruct(Construct):
             group_name="superuser",
             user_pool_id=user_pool_construct.user_pool.user_pool_id,
             description="Superuser group with elevated permissions",
-            role_arn=superuser_role.role_arn,
+            role_arn=self.superuser_role.role_arn,
         )
