@@ -52,6 +52,7 @@ class RuntimeEcsConstruct(Construct):
                             actions=[
                                 "cognito-idp:AdminListGroupsForUser",
                                 "cognito-idp:AdminGetUser",
+                                "cognito-idp:ListUsers",
                             ],
                             resources=[
                                 f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_id}"
