@@ -18,6 +18,7 @@ class RuntimeEcsConstruct(Construct):
         certificate,
         vpc,
         db_instance,
+        cache_cluster,
         id: str | None = None,
         suffix: str | None = "runtime-ecs",
     ) -> None:
@@ -109,6 +110,8 @@ class RuntimeEcsConstruct(Construct):
                     ).string_value,
                     "COGNITO_USER_POOL_ID": user_pool_id,
                     "DB_NAME": config.project_name,
+                    "REDIS_HOST": cache_cluster.attr_redis_endpoint_address,
+                    "REDIS_PORT": cache_cluster.attr_redis_endpoint_port,
                 },
                 secrets={
                     "DB_USER": ecs.Secret.from_secrets_manager(

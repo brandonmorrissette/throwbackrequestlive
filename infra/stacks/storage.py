@@ -1,6 +1,7 @@
 from aws_cdk import CfnOutput
 from aws_cdk import aws_ec2 as ec2
 from config import Config
+from constructs.cache import CacheConstruct
 from constructs.construct import Construct
 from constructs.rds import RdsConstruct
 from stacks.stack import Stack
@@ -18,6 +19,7 @@ class StorageStack(Stack):
         super().__init__(scope, config, id, suffix)
 
         self.rds_construct = RdsConstruct(self, vpc, config)
+        self.cache_construct = CacheConstruct(self, vpc, config)
 
         CfnOutput(
             self,
