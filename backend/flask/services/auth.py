@@ -67,5 +67,6 @@ class AuthService:
             "exp": datetime.utcnow() + timedelta(hours=1),
         }
 
+        logging.info(f"JWT Secret Key: {self._jwt_secret}")
         token = jwt.encode(payload, self._jwt_secret, algorithm=self._jwt_algorithm)
         return token
