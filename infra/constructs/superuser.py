@@ -43,6 +43,7 @@ class SuperUserConstruct(Construct):
                             "cognito-idp:AdminUpdateGroup",
                             "cognito-idp:AdminAddUserToGroup",
                             "cognito-idp:ListUsers",
+                            "cognito-idp:AdminListGroupsForUser",
                         ],
                         resources=[
                             f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_construct.user_pool.user_pool_id}"
