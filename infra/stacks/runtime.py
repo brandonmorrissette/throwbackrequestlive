@@ -14,6 +14,7 @@ class RuntimeStack(Stack):
         hosted_zone: str,
         db_instance,
         vpc,
+        cache_cluster,
         id: str | None = None,
         suffix: str | None = "runtime",
     ):
@@ -25,6 +26,7 @@ class RuntimeStack(Stack):
             certificate=certificate,
             vpc=vpc,
             db_instance=db_instance,
+            cache_cluster=cache_cluster,
         ).runtime_service
 
         Route53Construct(

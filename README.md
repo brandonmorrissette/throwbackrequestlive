@@ -2,8 +2,6 @@ To Do
 
 # Security
 
--   Update cognito_service to validate JWT
--   Figure out how to make home unrestricted. Probably a user assumed by the app?
 -   Tie ProtectedRoute to JWT?
 
 # Code Quality

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 import boto3
@@ -12,7 +13,7 @@ class AuthService:
         self._client = boto3.client("cognito-idp", region_name=config.COGNITO_REGION)
         self._client_id = config.COGNITO_APP_CLIENT_ID
         self._user_pool_id = config.COGNITO_USER_POOL_ID
-        self._jwt_secret = config.JWT_SECRET_KEY
+        self._jwt_secret_key = config.JWT_SECRET_KEY
         self._jwt_algorithm = "HS256"
 
     @raise_http_exception
@@ -65,5 +66,5 @@ class AuthService:
             "exp": datetime.utcnow() + timedelta(hours=1),
         }
 
-        token = jwt.encode(payload, self._jwt_secret, algorithm=self._jwt_algorithm)
+        token = jwt.encode(payload, self._jwt_secret_key, algorithm=self._jwt_algorithm)
         return token

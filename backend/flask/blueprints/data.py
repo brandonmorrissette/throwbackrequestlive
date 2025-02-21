@@ -53,7 +53,7 @@ class DataBlueprint(BaseBlueprint):
         # Public route
         @self._blueprint.route("/tables/shows/rows", methods=["GET"])
         def read_shows():
-            return read_rows("shows")
+            return self._get_rows("shows", request)
 
         @self._blueprint.route("/tables/<table_name>/rows", methods=["GET"])
         @restrict_access(["superuser"])

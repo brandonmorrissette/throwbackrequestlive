@@ -18,6 +18,7 @@ class RuntimeEcsConstruct(Construct):
         certificate,
         vpc,
         db_instance,
+        cache_cluster,
         id: str | None = None,
         suffix: str | None = "runtime-ecs",
     ) -> None:
@@ -52,6 +53,7 @@ class RuntimeEcsConstruct(Construct):
                             actions=[
                                 "cognito-idp:AdminListGroupsForUser",
                                 "cognito-idp:AdminGetUser",
+                                "cognito-idp:ListUsers",
                             ],
                             resources=[
                                 f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_id}"
@@ -108,6 +110,8 @@ class RuntimeEcsConstruct(Construct):
                     ).string_value,
                     "COGNITO_USER_POOL_ID": user_pool_id,
                     "DB_NAME": config.project_name,
+                    "REDIS_HOST": cache_cluster.attr_redis_endpoint_address,
+                    "REDIS_PORT": cache_cluster.attr_redis_endpoint_port,
                 },
                 secrets={
                     "DB_USER": ecs.Secret.from_secrets_manager(
@@ -119,7 +123,7 @@ class RuntimeEcsConstruct(Construct):
                     "DB_HOST": ecs.Secret.from_secrets_manager(
                         db_instance.secret, field="host"
                     ),
-                    "JWT_SECRET": ecs.Secret.from_secrets_manager(jwt_secret),
+                    "JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret),
                 },
                 task_role=task_role,
             ),

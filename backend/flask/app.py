@@ -46,8 +46,11 @@ def _create_app(config: Config):
 
 
 if __name__ == "__main__":
+    environment = os.getenv("ENVIRONMENT", "").lower()
+    logging.info(f"Flask App Environment: {environment}")
+
     config = Config
-    if os.getenv("ENVIRONMENT", "").lower() == "development":
+    if environment == "development":
         config = DevelopmentConfig
 
     app = _create_app(config)

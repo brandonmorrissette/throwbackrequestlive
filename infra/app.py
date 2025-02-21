@@ -41,6 +41,7 @@ runtime_stack = RuntimeStack(
     hosted_zone=network_stack.cert_construct.hosted_zone,
     vpc=network_stack.vpc_constrcut.vpc,
     db_instance=storage_stack.rds_construct.db_instance,
+    cache_cluster=storage_stack.cache_construct.cache_cluster,
 )
 runtime_stack.add_dependency(network_stack)
 runtime_stack.add_dependency(compute_stack)
