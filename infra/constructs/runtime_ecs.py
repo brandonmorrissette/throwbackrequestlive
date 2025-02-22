@@ -46,7 +46,7 @@ class RuntimeEcsConstruct(Construct):
                 iam.ManagedPolicy.from_aws_managed_policy_name(
                     "service-role/AmazonECSTaskExecutionRolePolicy"
                 ),
-                superuser_role,
+                superuser_role.managed_policy,
             ],
             inline_policies={
                 "RuntimePolicy": iam.PolicyDocument(
