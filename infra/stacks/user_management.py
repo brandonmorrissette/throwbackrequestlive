@@ -19,11 +19,11 @@ class UserManagementStack(Stack):
 
         self.user_pool_construct = UserPoolConstruct(self, config)
         self.superuser_construct = SuperUserConstruct(
-            self, config, self.user_pool_construct
+            self, config, self.user_pool_construct.user_pool.user_pool_id
         )
 
         CfnOutput(
             self,
             "superuser-task-definition-arn",
-            value=self.superuser_construct.user_creation_task_definition.task_definition_arn,
+            value=self.superuser_construct.superuser_task_definition_arn,
         )

@@ -78,7 +78,7 @@ class UserPoolConstruct(Construct):
         user_pools = self._cognito_client.list_user_pools(MaxResults=60)
         for pool in user_pools.get("UserPools", []):
             if pool["Name"] == user_pool_name:
-                user_pool = cognito.UserPool.from_user_pool_id(
+                cognito.UserPool.from_user_pool_id(
                     self, user_pool_name, user_pool_id=pool["Id"]
                 )
 

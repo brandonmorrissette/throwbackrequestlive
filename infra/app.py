@@ -35,14 +35,7 @@ storage_stack = StorageStack(app, config, vpc=network_stack.vpc_constrcut.vpc)
 storage_stack.add_dependency(network_stack)
 
 runtime_stack = RuntimeStack(
-    app,
-    config,
-    certificate=network_stack.cert_construct.certificate,
-    hosted_zone=network_stack.cert_construct.hosted_zone,
-    vpc=network_stack.vpc_constrcut.vpc,
-    db_instance=storage_stack.rds_construct.db_instance,
-    cache_cluster=storage_stack.cache_construct.cache_cluster,
-    runtime_policy=user_management_stack.superuser_construct.superuser_policy,
+    app, config, user_management_stack, network_stack, compute_stack, storage_stack
 )
 
 runtime_stack.add_dependency(user_management_stack)
