@@ -13,13 +13,13 @@ class SuperUserConstruct(Construct):
         self,
         scope: Construct,
         config: Config,
-        user_pool_construct: UserPoolConstruct,
+        user_pool_id: str | None,
         id: str | None = None,
         suffix: str | None = "superuser",
     ) -> None:
         super().__init__(scope, config, id, suffix)
 
-        self.superuser_policy = iam.ManagedPolicy(
+        self.policy = iam.ManagedPolicy(
             self,
             "cognito-policy",
             statements=[
@@ -39,19 +39,28 @@ class SuperUserConstruct(Construct):
                         "cognito-idp:AdminListGroupsForUser",
                     ],
                     resources=[
-                        f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_construct.user_pool.user_pool_id}"
+                        f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_id}"
                     ],
                 )
             ],
         )
 
-        superuser_role = iam.Role(
+        role = iam.Role(
             self,
             "superuser-role",
             assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
         )
 
-        superuser_role.add_managed_policy(self.superuser_policy)
+        role.add_managed_policy(self.policy)
+
+        CfnUserPoolGroup(
+            self,
+            "superuser-group",
+            group_name="superuser",
+            user_pool_id=user_pool_id,
+            description="Superuser group with elevated permissions",
+            role_arn=role.role_arn,
+        )
 
         user_creation_task_role = iam.Role(
             self,
@@ -71,7 +80,7 @@ class SuperUserConstruct(Construct):
             },
         )
 
-        self.user_creation_task_definition = ecs.FargateTaskDefinition(
+        user_creation_task_definition = ecs.FargateTaskDefinition(
             self,
             "superuser-task-definition",
             memory_limit_mib=512,
@@ -85,13 +94,13 @@ class SuperUserConstruct(Construct):
                     iam.ManagedPolicy.from_aws_managed_policy_name(
                         "service-role/AmazonECSTaskExecutionRolePolicy"
                     ),
-                    superuser_role,
+                    role,
                 ],
             ),
             task_role=user_creation_task_role,
         )
 
-        self.user_creation_task_definition.add_container(
+        user_creation_task_definition.add_container(
             "superuser-container",
             image=ecs.ContainerImage.from_asset("infra/setup/create_superuser"),
             logging=ecs.LogDrivers.aws_logs(
@@ -105,11 +114,6 @@ class SuperUserConstruct(Construct):
             ),
         )
 
-        CfnUserPoolGroup(
-            self,
-            "superuser-group",
-            group_name="superuser",
-            user_pool_id=user_pool_construct.user_pool.user_pool_id,
-            description="Superuser group with elevated permissions",
-            role_arn=superuser_role.role_arn,
+        self.superuser_task_definition_arn = (
+            user_creation_task_definition.task_definition_arn
         )

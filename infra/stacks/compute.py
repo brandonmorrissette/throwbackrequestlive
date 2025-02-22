@@ -1,4 +1,5 @@
 from aws_cdk import CfnOutput
+from aws_cdk import aws_ec2 as ec2
 from config import Config
 from constructs.cluster import ClusterConstruct
 from constructs.construct import Construct
@@ -10,7 +11,7 @@ class ComputeStack(Stack):
         self,
         scope: Construct,
         config: Config,
-        vpc: str,
+        vpc: ec2.Vpc,
         id: str | None = None,
         suffix: str | None = "compute",
     ) -> None:

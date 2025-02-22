@@ -1,11 +1,11 @@
 from aws_cdk import Duration, RemovalPolicy
+from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs
 from aws_cdk import aws_secretsmanager as secretsmanager
-from aws_cdk import aws_ssm as ssm
 from config import Config
 from constructs.construct import Construct
 
@@ -15,11 +15,11 @@ class RuntimeEcsConstruct(Construct):
         self,
         scope: Construct,
         config: Config,
-        certificate,
-        vpc,
-        db_instance,
-        cache_cluster,
-        runtime_policy: iam.ManagedPolicy,
+        certificate: acm.Certificate,
+        runtime_variables: dict,
+        runtime_secrets: dict,
+        policy: iam.ManagedPolicy,
+        cluster: ecs.Cluster,
         id: str | None = None,
         suffix: str | None = "runtime-ecs",
     ) -> None:
@@ -34,10 +34,6 @@ class RuntimeEcsConstruct(Construct):
             ),
         )
 
-        user_pool_id = ssm.StringParameter.from_string_parameter_name(
-            self, "UserPoolId", f"{config.project_name}-user-pool-id"
-        ).string_value
-
         task_role = iam.Role(
             self,
             "RuntimeTaskRole",
@@ -46,7 +42,7 @@ class RuntimeEcsConstruct(Construct):
                 iam.ManagedPolicy.from_aws_managed_policy_name(
                     "service-role/AmazonECSTaskExecutionRolePolicy"
                 ),
-                runtime_policy,
+                policy,
             ],
             inline_policies={
                 "RuntimePolicy": iam.PolicyDocument(
@@ -60,19 +56,14 @@ class RuntimeEcsConstruct(Construct):
             },
         )
 
-        cluster = ecs.Cluster.from_cluster_attributes(
-            self,
-            "ImportedCluster",
-            cluster_name=ssm.StringParameter.from_string_parameter_name(
-                self,
-                "EcsClusterNameParam",
-                string_parameter_name=f"/{config.project_name}/ecs-cluster-name",
-            ).string_value,
-            vpc=vpc,
-        )
-
         docker_image = ecr_assets.DockerImageAsset(
             self, f"{config.project_name}-{config.project_name}-image", directory="."
+        )
+
+        runtime_secrets.update(
+            {
+                "JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret),
+            }
         )
 
         runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
@@ -94,29 +85,8 @@ class RuntimeEcsConstruct(Construct):
                         removal_policy=RemovalPolicy.DESTROY,
                     ),
                 ),
-                environment={
-                    "COGNITO_APP_CLIENT_ID": ssm.StringParameter.from_string_parameter_name(
-                        self,
-                        "AppClientId",
-                        f"{config.project_name}-user-pool-app-client-id",
-                    ).string_value,
-                    "COGNITO_USER_POOL_ID": user_pool_id,
-                    "DB_NAME": config.project_name,
-                    "REDIS_HOST": cache_cluster.attr_redis_endpoint_address,
-                    "REDIS_PORT": cache_cluster.attr_redis_endpoint_port,
-                },
-                secrets={
-                    "DB_USER": ecs.Secret.from_secrets_manager(
-                        db_instance.secret, field="username"
-                    ),
-                    "DB_PASSWORD": ecs.Secret.from_secrets_manager(
-                        db_instance.secret, field="password"
-                    ),
-                    "DB_HOST": ecs.Secret.from_secrets_manager(
-                        db_instance.secret, field="host"
-                    ),
-                    "JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret),
-                },
+                environment=runtime_variables,
+                secrets=runtime_secrets,
                 task_role=task_role,
             ),
             public_load_balancer=True,
