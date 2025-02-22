@@ -33,20 +33,18 @@ class RuntimeStack(Stack):
             runtime_variables={
                 "COGNITO_APP_CLIENT_ID": user_management_stack.user_pool_construct.app_client.ref,
                 "COGNITO_USER_POOL_ID": user_management_stack.user_pool_construct.user_pool.user_pool_id,
-                "DB_NAME": config.project_name,
+                "DB_NAME": storage_stack.rds_construct.db_instance.database_name,
                 "REDIS_HOST": storage_stack.cache_construct.cache_cluster.attr_redis_endpoint_address,
                 "REDIS_PORT": storage_stack.cache_construct.cache_cluster.attr_redis_endpoint_port,
             },
             runtime_secrets={
-                "DB_USER": ecs.Secret.from_secrets_manager(
-                    storage_stack.rds_construct.db_instance.secret, field="username"
+                "DB_USER": storage_stack.rds_construct.db_instance.secret.secret_value_from_json(
+                    "username"
                 ),
-                "DB_PASSWORD": ecs.Secret.from_secrets_manager(
-                    storage_stack.rds_construct.db_instance.secret, field="password"
+                "DB_PASSWORD": storage_stack.rds_construct.db_instance.secret.secret_value_from_json(
+                    "password"
                 ),
-                "DB_HOST": ecs.Secret.from_secrets_manager(
-                    storage_stack.rds_construct.db_instance.secret, field="host"
-                ),
+                "DB_HOST": storage_stack.rds_construct.db_instance.db_instance_endpoint_address,
             },
         )
 
