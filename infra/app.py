@@ -42,7 +42,10 @@ runtime_stack = RuntimeStack(
     vpc=network_stack.vpc_constrcut.vpc,
     db_instance=storage_stack.rds_construct.db_instance,
     cache_cluster=storage_stack.cache_construct.cache_cluster,
+    runtime_policy=user_management_stack.superuser_construct.superuser_policy,
 )
+
+runtime_stack.add_dependency(user_management_stack)
 runtime_stack.add_dependency(network_stack)
 runtime_stack.add_dependency(compute_stack)
 runtime_stack.add_dependency(storage_stack)
