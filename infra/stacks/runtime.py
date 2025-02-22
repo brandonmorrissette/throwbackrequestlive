@@ -33,7 +33,7 @@ class RuntimeStack(Stack):
             runtime_variables={
                 "COGNITO_APP_CLIENT_ID": user_management_stack.user_pool_construct.app_client.ref,
                 "COGNITO_USER_POOL_ID": user_management_stack.user_pool_construct.user_pool.user_pool_id,
-                "DB_NAME": storage_stack.rds_construct.db_instance.database_name,
+                "DB_NAME": storage_stack.rds_construct.db_instance.db_name,
                 "REDIS_HOST": storage_stack.cache_construct.cache_cluster.attr_redis_endpoint_address,
                 "REDIS_PORT": storage_stack.cache_construct.cache_cluster.attr_redis_endpoint_port,
             },
