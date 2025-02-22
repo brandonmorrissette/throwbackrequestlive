@@ -16,10 +16,10 @@ class RuntimeEcsConstruct(Construct):
         scope: Construct,
         config: Config,
         certificate: acm.Certificate,
-        runtime_variables: dict,
-        runtime_secrets: dict,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
+        runtime_variables: dict,
+        runtime_secrets: dict,
         id: str | None = None,
         suffix: str | None = "runtime-ecs",
     ) -> None:

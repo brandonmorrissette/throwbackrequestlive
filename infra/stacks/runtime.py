@@ -28,6 +28,8 @@ class RuntimeStack(Stack):
             self,
             config,
             certificate=network_stack.cert_construct.certificate,
+            policy=user_management_stack.superuser_construct.policy,
+            cluster=compute_stack.cluster_construct.cluster,
             runtime_variables={
                 "COGNITO_APP_CLIENT_ID": user_management_stack.user_pool_construct.app_client.ref,
                 "COGNITO_USER_POOL_ID": user_management_stack.user_pool_construct.user_pool.user_pool_id,
@@ -46,8 +48,6 @@ class RuntimeStack(Stack):
                     storage_stack.rds_construct.db_instance.secret, field="host"
                 ),
             },
-            policy=user_management_stack.superuser_construct.policy,
-            cluster=compute_stack.cluster,
         )
 
         Route53Construct(
