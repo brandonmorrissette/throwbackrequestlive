@@ -22,7 +22,7 @@ class RuntimeStack(Stack):
     ):
         super().__init__(scope, config, id, suffix)
 
-        fargate_service = RuntimeEcsConstruct(
+        runtime_construct = RuntimeEcsConstruct(
             self,
             config,
             certificate=certificate,
@@ -30,11 +30,11 @@ class RuntimeStack(Stack):
             db_instance=db_instance,
             cache_cluster=cache_cluster,
             runtime_policy=runtime_policy,
-        ).runtime_service
+        )
 
         Route53Construct(
             self,
             config,
             hosted_zone=hosted_zone,
-            load_balancer=fargate_service.load_balancer,
+            load_balancer=runtime_construct.load_balancer,
         )
