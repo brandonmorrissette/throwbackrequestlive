@@ -19,7 +19,7 @@ class RuntimeEcsConstruct(Construct):
         vpc,
         db_instance,
         cache_cluster,
-        superuser_role: iam.Role,
+        runtime_policy: iam.ManagedPolicy,
         id: str | None = None,
         suffix: str | None = "runtime-ecs",
     ) -> None:
@@ -46,7 +46,7 @@ class RuntimeEcsConstruct(Construct):
                 iam.ManagedPolicy.from_aws_managed_policy_name(
                     "service-role/AmazonECSTaskExecutionRolePolicy"
                 ),
-                superuser_role.managed_policy,
+                runtime_policy,
             ],
             inline_policies={
                 "RuntimePolicy": iam.PolicyDocument(

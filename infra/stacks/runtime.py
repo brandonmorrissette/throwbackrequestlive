@@ -16,7 +16,7 @@ class RuntimeStack(Stack):
         db_instance,
         vpc,
         cache_cluster,
-        superuser_role: iam.Role,
+        runtime_policy: iam.ManagedPolicy,
         id: str | None = None,
         suffix: str | None = "runtime",
     ):
@@ -29,7 +29,7 @@ class RuntimeStack(Stack):
             vpc=vpc,
             db_instance=db_instance,
             cache_cluster=cache_cluster,
-            superuser_role=superuser_role,
+            runtime_policy=runtime_policy,
         ).runtime_service
 
         Route53Construct(
