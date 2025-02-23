@@ -65,10 +65,7 @@ class RdsConstruct(Construct):
                         ),
                         iam.PolicyStatement(
                             actions=["rds-db:connect"],
-                            resources=[
-                                f"{self.db_instance.cluster_arn}/*",
-                                f"{self.db_instance.cluster_arn}",
-                            ],
+                            resources=[self.db_instance.instance_arn],
                         ),
                     ]
                 )
