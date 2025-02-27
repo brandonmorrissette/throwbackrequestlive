@@ -39,13 +39,15 @@ class RuntimeStack(Stack):
                 "REDIS_PORT": storage_stack.cache_construct.cache_cluster.attr_redis_endpoint_port,
             },
             runtime_secrets={
-                "DB_USER": storage_stack.rds_construct.db_instance.secret.secret_value_from_json(
-                    "username"
+                "DB_USER": ecs.Secret.from_secrets_manager(
+                    storage_stack.rds_construct.db_instance.secret, "username"
                 ),
-                "DB_PASSWORD": storage_stack.rds_construct.db_instance.secret.secret_value_from_json(
-                    "password"
+                "DB_PASSWORD": ecs.Secret.from_secrets_manager(
+                    storage_stack.rds_construct.db_instance.secret, "password"
                 ),
-                "DB_HOST": storage_stack.rds_construct.db_instance.db_instance_endpoint_address,
+                "DB_HOST": ecs.Secret.from_secrets_manager(
+                    storage_stack.rds_construct.db_instance.secret, "host"
+                ),
             },
         )
 
