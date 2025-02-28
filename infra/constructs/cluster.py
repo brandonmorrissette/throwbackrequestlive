@@ -17,10 +17,3 @@ class ClusterConstruct(Construct):
         super().__init__(scope, config, id, suffix)
 
         self.cluster = ecs.Cluster(self, self.id, vpc=vpc)
-
-        ssm.StringParameter(
-            self,
-            "EcsClus\terNameParam",
-            parameter_name=f"/{config.project_name}/ecs-cluster-name",
-            string_value=self.cluster.cluster_name,
-        )
