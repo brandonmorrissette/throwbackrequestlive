@@ -1,9 +1,5 @@
 To Do
 
-# Security
-
--   Tie ProtectedRoute to JWT?
-
 # Code Quality
 
 -   File by file analysis. I want to understand ever line of code and if it's needed AND best practice. Will review with AI.
