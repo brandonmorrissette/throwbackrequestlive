@@ -1,3 +1,14 @@
+"""
+This module contains the UserPoolConstruct class, which sets up a Cognito user pool
+and app client, and stores their IDs in SSM Parameter Store.
+
+Classes:
+    UserPoolConstruct: A construct that sets up a Cognito user pool and app client.
+
+Usage example:
+    user_pool_construct = UserPoolConstruct(scope, config)
+"""
+
 import boto3
 from aws_cdk import RemovalPolicy, Token
 from aws_cdk import aws_cognito as cognito
@@ -8,6 +19,17 @@ from stacks.stack import Stack
 
 
 class UserPoolConstruct(Construct):
+    """
+    A construct that sets up a Cognito user pool and app client.
+
+    Attributes:
+        user_pool: The Cognito user pool.
+        app_client: The Cognito app client.
+
+    Methods:
+        __init__: Initializes the UserPoolConstruct with the given parameters.
+    """
+
     def __init__(
         self,
         scope: Stack,
@@ -15,6 +37,15 @@ class UserPoolConstruct(Construct):
         id: str | None = None,
         suffix: str | None = "user-pool",
     ) -> None:
+        """
+        Initializes the UserPoolConstruct with the given parameters.
+
+        Args:
+            scope (Stack): The parent stack.
+            config (Config): Configuration object.
+            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
+            suffix (str, optional): Suffix for resource names. Defaults to "user-pool".
+        """
         super().__init__(scope, config, id, suffix)
 
         self._cognito_client = boto3.client("cognito-idp")

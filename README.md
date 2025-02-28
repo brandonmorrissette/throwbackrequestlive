@@ -3,9 +3,18 @@ To Do
 # Code Quality
 
 -   File by file analysis. I want to understand ever line of code and if it's needed AND best practice. Will review with AI.
+    -   rdsConstruct
+        -   adminRole being used? Is this how it should be handled?
+    -   runtime_ecs
+        -   explore if I must expose the load balancer. Feels weird.
 -   Code quality and testing
 
 ### Post MVP
+
+# Routing
+
+-   route_53
+    -   Remove hard coding. Find better way to pass or config.
 
 # Improve Front End Skills
 
@@ -30,10 +39,6 @@ To Do
 # Data Management
 
 -   Default datetime to something more user friendly. It defaults to the exact second of Now.
-
-# Login
-
--   Much better password reset
 
 # App UI
 
