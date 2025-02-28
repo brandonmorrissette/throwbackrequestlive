@@ -18,8 +18,7 @@ class CacheConstruct(Construct):
         redis_sg = ec2.SecurityGroup(self, "RedisSG", vpc=vpc)
 
         redis_sg.add_ingress_rule(
-            # MUST BE CHANGED TO ALLOW ONLY THE APPLICATION TO ACCESS
-            ec2.Peer.any_ipv4(),
+            ec2.Peer.ipv4(vpc.vpc_cidr_block),
             ec2.Port.tcp(6379),
             "Allow Redis access",
         )

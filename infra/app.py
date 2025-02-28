@@ -23,7 +23,7 @@ config = Config(
     ),
 )
 
-Aspects.of(app).add(TaggingAspect(config))
+Aspects.of(app).add(TaggingAspect(config), priority=100)
 
 user_management_stack = UserManagementStack(app, config)
 network_stack = NetworkStack(app, config)

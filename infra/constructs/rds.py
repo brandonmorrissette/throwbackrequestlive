@@ -65,9 +65,7 @@ class RdsConstruct(Construct):
                         ),
                         iam.PolicyStatement(
                             actions=["rds-db:connect"],
-                            resources=[
-                                "*"
-                            ],  # Adjust this to specific RDS resources if required
+                            resources=[self.db_instance.instance_arn],
                         ),
                     ]
                 )
@@ -132,8 +130,11 @@ class RdsConstruct(Construct):
             description="Allow ECS tasks to communicate with RDS",
             allow_all_outbound=True,
         )
+
         self.security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(), ec2.Port.tcp(5432), "Allow PostgreSQL access"
+            ec2.Peer.ipv4(vpc.vpc_cidr_block),
+            ec2.Port.tcp(5432),
+            "Allow PostgreSQL access",
         )
 
         admin_policy = iam.ManagedPolicy(

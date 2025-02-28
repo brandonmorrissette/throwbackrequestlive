@@ -66,6 +66,7 @@ class SuperUserConstruct(Construct):
             self,
             "SuperuserTaskRole",
             assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            managed_policies=[self.policy],
             inline_policies={
                 "SuperuserPolicy": iam.PolicyDocument(
                     statements=[
@@ -93,8 +94,7 @@ class SuperUserConstruct(Construct):
                 managed_policies=[
                     iam.ManagedPolicy.from_aws_managed_policy_name(
                         "service-role/AmazonECSTaskExecutionRolePolicy"
-                    ),
-                    role,
+                    )
                 ],
             ),
             task_role=user_creation_task_role,

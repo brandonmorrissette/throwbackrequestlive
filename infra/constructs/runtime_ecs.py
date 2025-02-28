@@ -34,6 +34,12 @@ class RuntimeEcsConstruct(Construct):
             ),
         )
 
+        runtime_secrets.update(
+            {
+                "JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret),
+            }
+        )
+
         task_role = iam.Role(
             self,
             "RuntimeTaskRole",
@@ -58,12 +64,6 @@ class RuntimeEcsConstruct(Construct):
 
         docker_image = ecr_assets.DockerImageAsset(
             self, f"{config.project_name}-{config.project_name}-image", directory="."
-        )
-
-        runtime_secrets.update(
-            {
-                "JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret),
-            }
         )
 
         runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
