@@ -5,15 +5,15 @@ from aws_cdk import aws_logs as logs
 from aws_cdk.aws_cognito import CfnUserPoolGroup
 from config import Config
 from constructs.construct import Construct
-from constructs.userpool import UserPoolConstruct
+from stacks.stack import Stack
 
 
 class SuperUserConstruct(Construct):
     def __init__(
         self,
-        scope: Construct,
+        scope: Stack,
         config: Config,
-        user_pool_id: str | None,
+        user_pool_id: str,
         id: str | None = None,
         suffix: str | None = "superuser",
     ) -> None:

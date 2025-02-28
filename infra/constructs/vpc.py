@@ -2,12 +2,13 @@ from aws_cdk import aws_ec2 as ec2
 from config import Config
 from constructs.construct import Construct
 from resources.resource import Resource
+from stacks.stack import Stack
 
 
 class VpcConstruct(Construct, Resource):
     def __init__(
         self,
-        scope: Construct,
+        scope: Stack,
         config: Config,
         id: str | None = None,
         suffix: str | None = "vpc",

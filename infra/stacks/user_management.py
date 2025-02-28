@@ -1,6 +1,6 @@
 from aws_cdk import CfnOutput
 from config import Config
-from constructs import IConstruct
+from constructs import Construct
 from constructs.superuser import SuperUserConstruct
 from constructs.userpool import UserPoolConstruct
 from stacks.stack import Stack
@@ -10,7 +10,7 @@ class UserManagementStack(Stack):
 
     def __init__(
         self,
-        scope: IConstruct,
+        scope: Construct,
         config: Config,
         id: str | None = None,
         suffix: str | None = "user-management",

@@ -8,12 +8,13 @@ from aws_cdk import aws_logs
 from aws_cdk import aws_secretsmanager as secretsmanager
 from config import Config
 from constructs.construct import Construct
+from stacks.stack import Stack
 
 
 class RuntimeEcsConstruct(Construct):
     def __init__(
         self,
-        scope: Construct,
+        scope: Stack,
         config: Config,
         certificate: acm.Certificate,
         policy: iam.ManagedPolicy,

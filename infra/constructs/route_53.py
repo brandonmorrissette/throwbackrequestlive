@@ -2,12 +2,13 @@ from aws_cdk import aws_route53 as route53
 from aws_cdk import aws_route53_targets as targets
 from config import Config
 from constructs.construct import Construct
+from stacks.stack import Stack
 
 
 class Route53Construct(Construct):
     def __init__(
         self,
-        scope: Construct,
+        scope: Stack,
         config: Config,
         hosted_zone,
         load_balancer,

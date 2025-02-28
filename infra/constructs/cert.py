@@ -2,12 +2,13 @@ from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_route53 as route53
 from config import Config
 from constructs.construct import Construct
+from stacks.stack import Stack
 
 
 class CertConstruct(Construct):
     def __init__(
         self,
-        scope: Construct,
+        scope: Stack,
         config: Config,
         id: str | None = None,
         suffix: str | None = "cert",

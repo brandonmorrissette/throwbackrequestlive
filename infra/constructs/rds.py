@@ -6,13 +6,14 @@ from aws_cdk import aws_logs as logs
 from aws_cdk import aws_rds as rds
 from config import Config
 from constructs.construct import Construct
+from stacks.stack import Stack
 
 
 class RdsConstruct(Construct):
     def __init__(
         self,
-        scope: Construct,
-        vpc,
+        scope: Stack,
+        vpc: ec2.Vpc,
         config: Config,
         id: str | None = None,
         suffix: str | None = "rds",

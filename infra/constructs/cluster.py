@@ -2,12 +2,13 @@ from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ssm as ssm
 from config import Config
 from constructs.construct import Construct
+from stacks.stack import Stack
 
 
 class ClusterConstruct(Construct):
     def __init__(
         self,
-        scope: Construct,
+        scope: Stack,
         config: Config,
         vpc,
         id: str | None = None,
@@ -19,7 +20,7 @@ class ClusterConstruct(Construct):
 
         ssm.StringParameter(
             self,
-            "EcsClusterNameParam",
+            "EcsClus\terNameParam",
             parameter_name=f"/{config.project_name}/ecs-cluster-name",
             string_value=self.cluster.cluster_name,
         )

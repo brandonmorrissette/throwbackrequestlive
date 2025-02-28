@@ -2,13 +2,14 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_elasticache as elasticache
 from config import Config
 from constructs.construct import Construct
+from stacks.stack import Stack
 
 
 class CacheConstruct(Construct):
     def __init__(
         self,
-        scope: Construct,
-        vpc,
+        scope: Stack,
+        vpc: ec2.Vpc,
         config: Config,
         id: str | None = None,
         suffix: str | None = "cert",
