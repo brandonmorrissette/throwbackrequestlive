@@ -94,7 +94,7 @@ class SuperUserConstruct(Construct):
                     iam.ManagedPolicy.from_aws_managed_policy_name(
                         "service-role/AmazonECSTaskExecutionRolePolicy"
                     ),
-                    role,
+                    self.policy,
                 ],
             ),
             task_role=user_creation_task_role,
