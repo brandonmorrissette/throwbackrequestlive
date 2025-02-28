@@ -1,8 +1,8 @@
 from aws_cdk import CfnOutput
 from aws_cdk import aws_ec2 as ec2
 from config import Config
+from constructs import Construct
 from constructs.cache import CacheConstruct
-from constructs.construct import Construct
 from constructs.rds import RdsConstruct
 from stacks.stack import Stack
 

@@ -1,6 +1,6 @@
 from aws_cdk import aws_ecs as ecs
 from config import Config
-from constructs.construct import Construct
+from constructs import Construct
 from constructs.route_53 import Route53Construct
 from constructs.runtime_ecs import RuntimeEcsConstruct
 from stacks.compute import ComputeStack
@@ -33,7 +33,7 @@ class RuntimeStack(Stack):
             runtime_variables={
                 "COGNITO_APP_CLIENT_ID": user_management_stack.user_pool_construct.app_client.ref,
                 "COGNITO_USER_POOL_ID": user_management_stack.user_pool_construct.user_pool.user_pool_id,
-                # I'd like to update this to not use config.project, but requires updating the runtime code
+                # I'd like to update this to not use config.project, but have yet to find the right solution.
                 "DB_NAME": config.project_name,
                 "REDIS_HOST": storage_stack.cache_construct.cache_cluster.attr_redis_endpoint_address,
                 "REDIS_PORT": storage_stack.cache_construct.cache_cluster.attr_redis_endpoint_port,

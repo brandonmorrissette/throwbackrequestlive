@@ -4,13 +4,13 @@ from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ssm as ssm
 from config import Config
 from constructs.construct import Construct
-from constructs.construct import Construct as AwsCdKConstruct
+from stacks.stack import Stack
 
 
 class UserPoolConstruct(Construct):
     def __init__(
         self,
-        scope: AwsCdKConstruct,
+        scope: Stack,
         config: Config,
         id: str | None = None,
         suffix: str | None = "user-pool",
