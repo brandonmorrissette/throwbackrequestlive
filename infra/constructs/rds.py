@@ -54,9 +54,9 @@ class RdsConstruct(Construct):
         """
         super().__init__(scope, config, id, suffix)
 
-        rds_security_group = ec2.SecurityGroup(self, "rds-security-group", vpc=vpc)
+        security_group = ec2.SecurityGroup(self, "rds-security-group", vpc=vpc)
 
-        rds_security_group.add_ingress_rule(
+        security_group.add_ingress_rule(
             ec2.Peer.ipv4(vpc.vpc_cidr_block),
             ec2.Port.tcp(5432),
             "Allow ECS to access RDS",
@@ -80,7 +80,7 @@ class RdsConstruct(Construct):
             multi_az=False,
             publicly_accessible=False,
             backup_retention=Duration.days(7),
-            security_groups=[rds_security_group],
+            security_groups=[security_group],
             instance_identifier=f"{config.project_name}-rds-instance",
         )
 

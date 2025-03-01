@@ -146,6 +146,6 @@ class SuperUserConstruct(Construct):
             ),
         )
 
-        self.superuser_task_definition_arn = (
+        self.user_creation_task_def_arn = (
             user_creation_task_definition.task_definition_arn
         )

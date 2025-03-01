@@ -48,9 +48,9 @@ class CacheConstruct(Construct):
         """
         super().__init__(scope, config, id, suffix)
 
-        redis_sg = ec2.SecurityGroup(self, "RedisSG", vpc=vpc)
+        security_group = ec2.SecurityGroup(self, "RedisSG", vpc=vpc)
 
-        redis_sg.add_ingress_rule(
+        security_group.add_ingress_rule(
             ec2.Peer.ipv4(vpc.vpc_cidr_block),
             ec2.Port.tcp(6379),
             "Allow Redis access",
@@ -69,6 +69,6 @@ class CacheConstruct(Construct):
             cache_node_type="cache.t2.micro",
             engine="redis",
             num_cache_nodes=1,
-            vpc_security_group_ids=[redis_sg.security_group_id],
+            vpc_security_group_ids=[security_group.security_group_id],
             cache_subnet_group_name=subnet_group.ref,
         )

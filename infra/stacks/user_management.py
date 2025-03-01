@@ -45,5 +45,5 @@ class UserManagementStack(Stack):
         CfnOutput(
             self,
             "superuser-task-definition-arn",
-            value=self.superuser_construct.superuser_task_definition_arn,
+            value=self.superuser_construct.user_creation_task_def_arn,
         )
