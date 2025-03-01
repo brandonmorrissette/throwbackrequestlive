@@ -1,3 +1,9 @@
+"""
+This module defines the RuntimeStack class, which sets up the runtime environment for the application.
+
+It creates ECS runtime constructs and Route 53 configurations using the provided stacks and configuration.
+"""
+
 from aws_cdk import aws_ecs as ecs
 from config import Config
 from constructs import Construct
@@ -11,6 +17,12 @@ from stacks.user_management import UserManagementStack
 
 
 class RuntimeStack(Stack):
+    """
+    This stack sets up the runtime environment for the application.
+
+    It creates ECS runtime constructs and Route 53 configurations using the provided stacks and configuration.
+    """
+
     def __init__(
         self,
         scope: Construct,
@@ -21,7 +33,20 @@ class RuntimeStack(Stack):
         storage_stack: StorageStack,
         id: str | None = None,
         suffix: str | None = "runtime",
-    ):
+    ) -> None:
+        """
+        Initialize the RuntimeStack.
+
+        Args:
+            scope (Construct): The scope in which this stack is defined.
+            config (Config): The configuration object containing stack settings.
+            user_management_stack (UserManagementStack): The user management stack.
+            network_stack (NetworkStack): The network stack.
+            compute_stack (ComputeStack): The compute stack.
+            storage_stack (StorageStack): The storage stack.
+            id (str, optional): The ID of the stack. Defaults to f"{config.project_name}-{config.environment_name}".
+            suffix (str, optional): The suffix to append to the stack name. Defaults to "runtime".
+        """
         super().__init__(scope, config, id, suffix)
 
         runtime_construct = RuntimeEcsConstruct(

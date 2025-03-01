@@ -1,4 +1,22 @@
 #!/usr/bin/env python3
+"""
+This module sets up the AWS CDK application and its stacks.
+
+Modules:
+    aws_cdk: AWS CDK library.
+    aspects.tagging: Custom tagging aspect.
+    aws_cdk.Aspects: AWS CDK Aspects.
+    config: Configuration module.
+    stacks.compute: Compute stack module.
+    stacks.network: Network stack module.
+    stacks.runtime: Runtime stack module.
+    stacks.storage: Storage stack module.
+    stacks.user_management: User management stack module.
+
+Usage example:
+    python app.py
+"""
+
 import os
 
 import aws_cdk as cdk

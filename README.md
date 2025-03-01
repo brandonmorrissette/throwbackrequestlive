@@ -27,6 +27,8 @@ To Do
 # Cognito/User concepts cleanup
 
 -   Dynamic table properties for user flow (Currently hard coded)
+-   Want a much better super user creation process
+    -   Current task has some assumptions in the code and is inflexible.
 -   Only Update Cognito users when there have been actual updates
 
 # Data
@@ -48,3 +50,7 @@ To Do
 
 -   Break up front end and back end containers
     -   Consider breaking out postgress instance for local storage
+
+# Resource
+
+-   I'd rather handle id and suffix better.

@@ -1,6 +1,5 @@
 """
-This module contains the base Construct class, which sets default Resource attributes
-to pass to the AWS CDK Construct.
+This module contains the Construct class which extends the AWS CDK Construct and Resource classes.
 
 Classes:
     Construct: A base construct that sets default Resource attributes.
