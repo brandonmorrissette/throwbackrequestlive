@@ -2,11 +2,8 @@ To Do
 
 # Code Quality
 
--   File by file analysis. I want to understand ever line of code and if it's needed AND best practice. Will review with AI.
-    -   rdsConstruct
-        -   adminRole being used? Is this how it should be handled?
-    -   runtime_ecs
-        -   explore if I must expose the load balancer. Feels weird.
+-   rdsConstruct
+    -   adminRole being used? Is this how it should be handled?
 -   Code quality and testing
 
 ### Post MVP

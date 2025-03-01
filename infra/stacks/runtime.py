@@ -80,5 +80,5 @@ class RuntimeStack(Stack):
             self,
             config,
             hosted_zone=network_stack.cert_construct.hosted_zone,
-            load_balancer=runtime_construct.load_balancer,
+            load_balancer=runtime_construct.runtime_service.load_balancer,
         )
