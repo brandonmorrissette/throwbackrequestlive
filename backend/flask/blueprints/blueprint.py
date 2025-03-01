@@ -1,10 +1,16 @@
+from typing import Any
+
 from flask import Blueprint as FlaskBlueprint
 
 
 class BaseBlueprint:
-    def __init__(self, app, service=None, url_prefix="/api"):
+    """
+    Base class for all blueprints.
+    """
+
+    def __init__(self, app: Any, service: Any = None, url_prefix: str = "/api") -> None:
         """
-        Base class for all blueprints.
+        Initialize the blueprint.
 
         :param app: Flask application instance
         :param service: Optional service for the blueprint
@@ -16,7 +22,7 @@ class BaseBlueprint:
         self._register_routes()
         self._app.register_blueprint(self._blueprint, url_prefix=url_prefix)
 
-    def _register_routes(self):
+    def _register_routes(self) -> None:
         """
         Register routes for the blueprint.
         This should be overridden by child classes.

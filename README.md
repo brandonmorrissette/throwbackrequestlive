@@ -3,9 +3,18 @@ To Do
 # Code Quality
 
 -   File by file analysis. I want to understand ever line of code and if it's needed AND best practice. Will review with AI.
+    -   rdsConstruct
+        -   adminRole being used? Is this how it should be handled?
+    -   runtime_ecs
+        -   explore if I must expose the load balancer. Feels weird.
 -   Code quality and testing
 
 ### Post MVP
+
+# Routing
+
+-   route_53
+    -   Remove hard coding. Find better way to pass or config.
 
 # Improve Front End Skills
 
@@ -18,6 +27,8 @@ To Do
 # Cognito/User concepts cleanup
 
 -   Dynamic table properties for user flow (Currently hard coded)
+-   Want a much better super user creation process
+    -   Current task has some assumptions in the code and is inflexible.
 -   Only Update Cognito users when there have been actual updates
 
 # Data
@@ -31,10 +42,6 @@ To Do
 
 -   Default datetime to something more user friendly. It defaults to the exact second of Now.
 
-# Login
-
--   Much better password reset
-
 # App UI
 
 -   Footer covers up bottom still
@@ -43,3 +50,11 @@ To Do
 
 -   Break up front end and back end containers
     -   Consider breaking out postgress instance for local storage
+
+# Resource Class
+
+-   I'd rather handle id and suffix better.
+
+# Login
+
+-   The login, login form and password reset could benefit from some better seperation of concerns.

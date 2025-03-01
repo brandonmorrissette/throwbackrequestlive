@@ -18,6 +18,10 @@ import Login from './pages/login/Login';
 import Request from './pages/request/Request';
 import ProtectedRoute from './routing/ProtectedRoute';
 
+/**
+ * The main application component that sets up the routing and context providers.
+ * @returns {React.FC} The App component.
+ */
 const App: React.FC = () => {
     return (
         <ErrorProvider>
@@ -58,6 +62,17 @@ interface ContentWrapperProps {
     children: ReactNode;
 }
 
+/**
+ * Props for the ContentWrapper component.
+ * @typedef {Object} ContentWrapperProps
+ * @property {ReactNode} children - The child components to be wrapped.
+ */
+
+/**
+ * A wrapper component that adjusts the content width based on the route.
+ * @param {ContentWrapperProps} props - The props for the ContentWrapper component.
+ * @returns {React.FC} The ContentWrapper component.
+ */
 const ContentWrapper: React.FC<ContentWrapperProps> = ({ children }) => {
     const location = useLocation();
     const isAdminRoute = location.pathname === '/admin';

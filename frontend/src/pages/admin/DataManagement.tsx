@@ -6,6 +6,10 @@ import { TableServiceProvider } from '../../contexts/TableServiceContext';
 import { default as DataService } from '../../services/data';
 import { AdminComponent } from './Admin';
 
+/**
+ * DataManagement component that allows managing data tables.
+ * @component
+ */
 const DataManagement: AdminComponent = () => {
     const [tables, setTables] = useState<string[]>([]);
     const [selectedTable, setSelectedTable] = useState<string | null>(null);

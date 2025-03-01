@@ -1,3 +1,14 @@
+"""
+This module contains the SuperUserConstruct class, which sets up a Cognito user pool group
+in a given user pool with elevated permissions and an ECS task definition for user creation.
+
+Classes:
+    SuperUserConstruct: A construct that sets up a Cognito user pool group and an ECS task definition.
+
+Usage example:
+    superuser_construct = SuperUserConstruct(scope, config, user_pool_id)
+"""
+
 from aws_cdk import RemovalPolicy
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
@@ -9,6 +20,17 @@ from stacks.stack import Stack
 
 
 class SuperUserConstruct(Construct):
+    """
+    A construct that sets up a Cognito user pool group in a given user pool and an ECS task definition for user creation.
+
+    Attributes:
+        policy: The IAM managed policy for the superuser role.
+        superuser_task_definition_arn: The ARN of the ECS task definition for user creation.
+
+    Methods:
+        __init__: Initializes the SuperUserConstruct with the given parameters.
+    """
+
     def __init__(
         self,
         scope: Stack,
@@ -17,6 +39,16 @@ class SuperUserConstruct(Construct):
         id: str | None = None,
         suffix: str | None = "superuser",
     ) -> None:
+        """
+        Initializes the SuperUserConstruct with the given parameters.
+
+        Args:
+            scope (Stack): The parent stack.
+            config (Config): Configuration object.
+            user_pool_id (str): The ID of the Cognito user pool.
+            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
+            suffix (str, optional): Suffix for resource names. Defaults to "superuser".
+        """
         super().__init__(scope, config, id, suffix)
 
         self.policy = iam.ManagedPolicy(
@@ -114,6 +146,6 @@ class SuperUserConstruct(Construct):
             ),
         )
 
-        self.superuser_task_definition_arn = (
+        self.user_creation_task_def_arn = (
             user_creation_task_definition.task_definition_arn
         )

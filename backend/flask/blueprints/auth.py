@@ -1,15 +1,28 @@
+from typing import Any, Tuple
+
 from blueprints.blueprint import BaseBlueprint
 from flask import jsonify, request
 from services.auth import AuthService
 
 
 class AuthBlueprint(BaseBlueprint):
+    """
+    Blueprint for handling authentication-related routes.
+    """
+
     _service: AuthService
 
-    def _register_routes(self):
+    def _register_routes(self) -> None:
+        """
+        Register routes for authentication operations.
+        """
 
         @self._blueprint.route("/login", methods=["POST"])
-        def login():
+        def login() -> Tuple[Any, int]:
+            """
+            Authenticate a user and return a token.
+            :return: JSON response with the authentication token.
+            """
             data = request.get_json()
             username = data.get("username")
             password = data.get("password")

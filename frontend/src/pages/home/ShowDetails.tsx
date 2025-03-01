@@ -7,6 +7,13 @@ interface ShowDetailProps {
     onClose: () => void;
 }
 
+/**
+ * ShowDetail component that displays detailed information about a show in a modal.
+ * @component
+ * @param {ShowDetailProps} props - The properties for the ShowDetail component.
+ * @param {Show} props.show - The show data.
+ * @param {() => void} props.onClose - Function to close the modal.
+ */
 const ShowDetail: React.FC<ShowDetailProps> = ({ show, onClose }) => {
     const addressParts = [show.street, show.city, show.state].filter(Boolean);
     const address = addressParts.join(', ');

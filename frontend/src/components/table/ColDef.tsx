@@ -2,6 +2,9 @@ import { ColDef as BaseColDef, ICellEditorComp } from 'ag-grid-community';
 import moment from 'moment';
 import { DateTimeCellEditor } from './Cell';
 
+/**
+ * Class representing a column definition for the table.
+ */
 export class ColDef implements BaseColDef {
     field: string = '';
     headerName: string = '';
@@ -18,6 +21,10 @@ export class ColDef implements BaseColDef {
     };
     comparator?: (valueA: any, valueB: any) => number;
 
+    /**
+     * Creates an instance of ColDef.
+     * @param {Partial<ColDef>} init - Initial properties for the column definition.
+     */
     constructor(init: Partial<ColDef>) {
         Object.assign(this, init);
 

@@ -1,3 +1,15 @@
+"""
+This module contains the RdsConstruct class, which sets up an RDS instance
+within a specified VPC. The construct includes security group configuration, database instance creation,
+and ECS task definition for database schema deployment.
+
+Classes:
+    RdsConstruct: A construct that sets up an RDS instance.
+
+Usage example:
+    rds_construct = RdsConstruct(scope, vpc, config)
+"""
+
 from aws_cdk import Duration, RemovalPolicy
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
@@ -10,6 +22,18 @@ from stacks.stack import Stack
 
 
 class RdsConstruct(Construct):
+    """
+    A construct that sets up an RDS instance.
+
+    Attributes:
+        db_instance: The RDS database instance.
+        task_definition: The ECS task definition for database schema deployment.
+        security_group: The security group for ECS tasks.
+
+    Methods:
+        __init__: Initializes the RdsConstruct with the given parameters.
+    """
+
     def __init__(
         self,
         scope: Stack,
@@ -18,11 +42,21 @@ class RdsConstruct(Construct):
         id: str | None = None,
         suffix: str | None = "rds",
     ) -> None:
+        """
+        Initializes the RdsConstruct with the given parameters.
+
+        Args:
+            scope (Stack): The parent stack.
+            vpc (ec2.Vpc): The VPC in which to create the RDS instance.
+            config (Config): Configuration object.
+            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
+            suffix (str, optional): Suffix for resource names. Defaults to "rds".
+        """
         super().__init__(scope, config, id, suffix)
 
-        rds_security_group = ec2.SecurityGroup(self, "rds-security-group", vpc=vpc)
+        security_group = ec2.SecurityGroup(self, "rds-security-group", vpc=vpc)
 
-        rds_security_group.add_ingress_rule(
+        security_group.add_ingress_rule(
             ec2.Peer.ipv4(vpc.vpc_cidr_block),
             ec2.Port.tcp(5432),
             "Allow ECS to access RDS",
@@ -46,7 +80,7 @@ class RdsConstruct(Construct):
             multi_az=False,
             publicly_accessible=False,
             backup_retention=Duration.days(7),
-            security_groups=[rds_security_group],
+            security_groups=[security_group],
             instance_identifier=f"{config.project_name}-rds-instance",
         )
 

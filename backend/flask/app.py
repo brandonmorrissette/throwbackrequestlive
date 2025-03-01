@@ -14,7 +14,16 @@ from services.cognito import CognitoService
 from services.data import DataService
 
 
-def _create_app(config: Config):
+def _create_app(config: Config) -> Flask:
+    """
+    Create and configure the Flask application.
+
+    Args:
+        config (Config): The configuration object.
+
+    Returns:
+        Flask: The configured Flask application.
+    """
     app = Flask(__name__)
     app.json = JSONProvider(app)
     app.config.from_object(config)

@@ -14,6 +14,13 @@ import { Row } from './Row';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+/**
+ * Table component to display and manage data in a grid.
+ * @param {Object} props - The props for the component.
+ * @param {Row[]} props.data - The data to be displayed in the table.
+ * @param {Options} props.options - The configuration options for the table.
+ * @returns {JSX.Element} The rendered component.
+ */
 const Table: React.FC<{
     data: Row[];
     options: Options;
@@ -45,17 +52,29 @@ const Table: React.FC<{
         };
     }, [gridApi]);
 
+    /**
+     * Handles the grid ready event.
+     * @param {GridReadyEvent} params - The grid ready event parameters.
+     */
     const onGridReady = (params: GridReadyEvent) => {
         setGridApi(params.api);
         params.api.addEventListener('rowSelected', onRowSelected);
     };
 
+    /**
+     * Handles the row selected event.
+     * @param {any} event - The row selected event.
+     */
     const onRowSelected = (event: any) => {
         const selectedNodes = event.api.getSelectedNodes();
         const selectedData = selectedNodes.map((node: any) => node.data);
         setSelectedRows(selectedData);
     };
 
+    /**
+     * Handles the cell value changed event.
+     * @param {any} event - The cell value changed event.
+     */
     const onCellValueChanged = (event: any) => {
         const updatedRowData = rowData.map((row) => {
             if (row.id === event.data.id) {
@@ -67,6 +86,9 @@ const Table: React.FC<{
         setUnsavedChanges(true);
     };
 
+    /**
+     * Adds a new row to the table.
+     */
     const addRow = () => {
         if (gridApi) {
             const updatedRowData = tableServiceInstance.addRow(
@@ -78,6 +100,9 @@ const Table: React.FC<{
         }
     };
 
+    /**
+     * Deletes the selected rows from the table.
+     */
     const deleteRow = () => {
         if (gridApi && selectedRows.length > 0) {
             const updatedRowData = tableServiceInstance.deleteRow(
@@ -91,6 +116,9 @@ const Table: React.FC<{
         }
     };
 
+    /**
+     * Saves the changes made to the table.
+     */
     const saveChanges = async () => {
         try {
             const updatedRows = await tableServiceInstance.saveChanges(
@@ -105,6 +133,10 @@ const Table: React.FC<{
         }
     };
 
+    /**
+     * Handles the file upload event.
+     * @param {React.ChangeEvent<HTMLInputElement>} event - The file upload event.
+     */
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {

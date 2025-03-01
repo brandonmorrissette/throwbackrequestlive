@@ -5,6 +5,16 @@ from exceptions.http import HTTPException
 
 
 def raise_http_exception(func):
+    """
+    Decorator that wraps a function that make use of boto to catch ClientError exceptions and raise HTTPException.
+
+    Args:
+        func (function): The function to wrap.
+
+    Returns:
+        function: The wrapped function.
+    """
+
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)

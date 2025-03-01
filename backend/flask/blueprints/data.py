@@ -1,5 +1,6 @@
 import json
 from functools import wraps
+from typing import Any, Callable, Tuple
 
 from blueprints.blueprint import BaseBlueprint
 from decorators.auth import restrict_access
@@ -9,10 +10,16 @@ from flask import jsonify, request
 from services.data import DataService, get_json_provider_class
 
 
-def override_json_provider(provider):
-    def decorator(func):
+def override_json_provider(provider: Callable) -> Callable:
+    """
+    Decorator to override the JSON provider for a route.
+    :param provider: The JSON provider class to use.
+    :return: The decorated function.
+    """
+
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             app.logger.debug(f"Overriding JSON provider with {provider}")
             original_provider = app.json
             app_instance = Flask(__name__)
@@ -28,12 +35,24 @@ def override_json_provider(provider):
 
 
 class DataBlueprint(BaseBlueprint):
+    """
+    Blueprint for handling data-related routes.
+    """
+
     _service: DataService
 
-    def _register_routes(self):
+    def _register_routes(self) -> None:
+        """
+        Register routes for data operations.
+        """
+
         @self._blueprint.route("/tables", methods=["GET"])
         @restrict_access(["superuser"])
-        def list_tables():
+        def list_tables() -> Tuple[Any, int]:
+            """
+            List all tables.
+            :return: JSON response with the list of tables.
+            """
             app.logger.debug("Listing tables")
             tables = self._service.list_tables()
             app.logger.debug(f"Tables: {tables}")
@@ -42,7 +61,12 @@ class DataBlueprint(BaseBlueprint):
         @self._blueprint.route("/tables/<table_name>", methods=["GET"])
         @restrict_access(["superuser"])
         @override_json_provider(get_json_provider_class())
-        def get_table(table_name):
+        def get_table(table_name: str) -> Tuple[Any, int]:
+            """
+            Get details of a specific table.
+            :param table_name: The name of the table.
+            :return: JSON response with the table details.
+            """
             app.logger.debug(f"Getting table {table_name}")
             self._service.validate_table_name(table_name)
             table = self._service.get_table(table_name)
@@ -52,17 +76,31 @@ class DataBlueprint(BaseBlueprint):
 
         # Public route
         @self._blueprint.route("/tables/shows/rows", methods=["GET"])
-        def read_shows():
+        def read_shows() -> Tuple[Any, int]:
+            """
+            Read rows from the 'shows' table.
+            :return: JSON response with the rows.
+            """
             return self._get_rows("shows", request)
 
         @self._blueprint.route("/tables/<table_name>/rows", methods=["GET"])
         @restrict_access(["superuser"])
-        def read_rows(table_name):
+        def read_rows(table_name: str) -> Tuple[Any, int]:
+            """
+            Read rows from a specific table.
+            :param table_name: The name of the table.
+            :return: JSON response with the rows.
+            """
             return self._get_rows(table_name, request)
 
         @self._blueprint.route("/tables/<table_name>/rows", methods=["PUT"])
         @restrict_access(["superuser"])
-        def write_rows(table_name):
+        def write_rows(table_name: str) -> Tuple[Any, int]:
+            """
+            Write rows to a specific table.
+            :param table_name: The name of the table.
+            :return: JSON response with the result of the operation.
+            """
             data = request.get_json()
             rows = data.get("rows", [])
             app.logger.debug(f"Writing rows to {table_name}")
@@ -70,7 +108,13 @@ class DataBlueprint(BaseBlueprint):
             result = self._service.write_rows(table_name, rows)
             return jsonify(result), 200
 
-    def _get_rows(self, table_name, request):
+    def _get_rows(self, table_name: str, request: Any) -> Tuple[Any, int]:
+        """
+        Helper method to get rows from a table with optional filters.
+        :param table_name: The name of the table.
+        :param request: The Flask request object.
+        :return: JSON response with the rows.
+        """
         filters = request.args.get("filters")
         if filters:
             filters = json.loads(filters)

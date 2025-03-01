@@ -4,6 +4,9 @@ import { default as DataService } from '../../services/data';
 import ShowDetail from './ShowDetails';
 import styles from './Shows.module.css';
 
+/**
+ * Class representing a Show.
+ */
 export class Show {
     name: string;
     datetime: string;
@@ -12,6 +15,10 @@ export class Show {
     city: string;
     state: string;
 
+    /**
+     * Create a Show.
+     * @param {Show} show - The show data.
+     */
     constructor(show: Show) {
         this.name = show.name;
         this.datetime = this.formatDateTime(show.datetime);
@@ -21,6 +28,11 @@ export class Show {
         this.state = show.state;
     }
 
+    /**
+     * Format the datetime string.
+     * @param {string} datetime - The datetime string to format.
+     * @returns {string} The formatted datetime string.
+     */
     private formatDateTime(datetime: string): string {
         const date = new Date(datetime);
         const formattedDate = date.toLocaleDateString('en-US', {
@@ -38,6 +50,10 @@ export class Show {
     }
 }
 
+/**
+ * Shows component that displays a list of shows and their details.
+ * @component
+ */
 const Shows: React.FC = () => {
     const [shows, setShows] = useState<Show[]>([]);
     const [selectedShow, setSelectedShow] = useState<Show | null>(null);

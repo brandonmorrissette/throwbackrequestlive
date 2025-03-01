@@ -1,3 +1,9 @@
+"""
+This module defines the StorageStack class, which sets up the storage resources for the application.
+
+It creates RDS and Cache constructs using the provided VPC and configuration.
+"""
+
 from aws_cdk import CfnOutput
 from aws_cdk import aws_ec2 as ec2
 from config import Config
@@ -8,6 +14,12 @@ from stacks.stack import Stack
 
 
 class StorageStack(Stack):
+    """
+    This stack sets up the storage resources for the application.
+
+    It creates RDS and Cache constructs using the provided VPC and configuration.
+    """
+
     def __init__(
         self,
         scope: Construct,
@@ -15,7 +27,17 @@ class StorageStack(Stack):
         vpc: ec2.Vpc,
         id: str | None = None,
         suffix: str | None = "storage",
-    ):
+    ) -> None:
+        """
+        Initialize the StorageStack.
+
+        Args:
+            scope (Construct): The scope in which this stack is defined.
+            config (Config): The configuration object containing stack settings.
+            vpc (ec2.Vpc): The VPC in which to create the storage resources.
+            id (str, optional): The ID of the stack. Defaults to f"{config.project_name}-{config.environment_name}".
+            suffix (str, optional): The suffix to append to the stack name. Defaults to "storage".
+        """
         super().__init__(scope, config, id, suffix)
 
         self.rds_construct = RdsConstruct(self, vpc, config)

@@ -6,6 +6,14 @@ interface ProtectedRouteProps {
     redirectTo: string;
 }
 
+/**
+ * ProtectedRoute component to protect routes based on JWT token.
+ *
+ * @param {Object} props - Component props.
+ * @param {React.ReactNode} props.children - The child components to render if authenticated.
+ * @param {string} props.redirectTo - The URL to redirect to if not authenticated.
+ * @returns {React.ReactNode|null} The child components or null if not authenticated.
+ */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     children,
     redirectTo,

@@ -7,6 +7,13 @@ interface PasswordResetProps {
     username: string;
 }
 
+/**
+ * PasswordReset component that allows users to reset their password.
+ * @component
+ * @param {PasswordResetProps} props - The properties for the PasswordReset component.
+ * @param {string} props.session - The session identifier.
+ * @param {string} props.username - The username of the user.
+ */
 const PasswordReset: React.FC<PasswordResetProps> = ({ session, username }) => {
     const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);

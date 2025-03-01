@@ -6,6 +6,14 @@ import React, {
     useState,
 } from 'react';
 
+/**
+ * @typedef {Object} AuthContextType
+ * @property {string | null} token - The authentication token.
+ * @property {string[]} userGroups - The user groups.
+ * @property {(token: string) => void} setToken - Function to set the authentication token.
+ * @property {(groups: string[]) => void} setUserGroups - Function to set the user groups.
+ * @property {() => void} logout - Function to log out the user.
+ */
 interface AuthContextType {
     token: string | null;
     userGroups: string[];
@@ -14,8 +22,17 @@ interface AuthContextType {
     logout: () => void;
 }
 
+/**
+ * Context to handle authentication state.
+ * @type {React.Context<AuthContextType | undefined>}
+ */
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Custom hook to use the AuthContext.
+ * @throws Will throw an error if used outside of AuthProvider.
+ * @returns {AuthContextType} The auth context value.
+ */
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -24,10 +41,19 @@ export const useAuth = () => {
     return context;
 };
 
+/**
+ * @typedef {Object} AuthProviderProps
+ * @property {ReactNode} children - Child components.
+ */
 interface AuthProviderProps {
     children: ReactNode;
 }
 
+/**
+ * AuthProvider component to wrap around components that need access to auth context.
+ * @param {AuthProviderProps} props - Component props.
+ * @returns {JSX.Element} The provider component.
+ */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [token, setToken] = useState<string | null>(
         sessionStorage.getItem('authToken')

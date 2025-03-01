@@ -6,6 +6,10 @@ import { default as DataService } from '../../services/data';
 import Shows from './Shows';
 import ThankYou from './ThankYou';
 
+/**
+ * Home component that displays the home page with shows and a thank you modal.
+ * @component
+ */
 const Home: React.FC = () => {
     const location = useLocation();
     const params = new URLSearchParams(location.search);

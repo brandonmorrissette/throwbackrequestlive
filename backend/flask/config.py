@@ -4,7 +4,27 @@ import os
 
 
 class Config:
-    """Base configuration class."""
+    """Base configuration class.
+
+    Attributes:
+        DEBUG (bool): Debug mode.
+        LOG_LEVEL (str): Logging level.
+        JWT_SECRET_KEY (str): JWT secret key.
+        JWT_TOKEN_LOCATION (list): JWT token location.
+        JWT_HEADER_NAME (str): JWT header name.
+        JWT_HEADER_TYPE (str): JWT header type.
+        COGNITO_APP_CLIENT_ID (str): Cognito app client ID.
+        COGNITO_USER_POOL_ID (str): Cognito user pool ID.
+        COGNITO_REGION (str): Cognito region.
+        DB_USER (str): Database user.
+        DB_PASSWORD (str): Database password.
+        DB_HOST (str): Database host.
+        DB_NAME (str): Database name.
+        DB_ENGINE (str): Database engine.
+        DB_PORT (int): Database port.
+        REDIS_HOST (str): Redis host.
+        REDIS_PORT (int): Redis port.
+    """
 
     # App
     DEBUG = False
@@ -35,7 +55,12 @@ class Config:
 
 
 class DevelopmentConfig(Config):
-    """Development environment configuration."""
+    """Development environment configuration.
+
+    Attributes:
+        DEBUG (bool): Debug mode.
+        LOG_LEVEL (str): Logging level.
+    """
 
     # App
     DEBUG = True

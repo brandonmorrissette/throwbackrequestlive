@@ -4,6 +4,12 @@ interface ThankYouProps {
     song: string;
 }
 
+/**
+ * ThankYou component that displays a thank you message with the requested song.
+ * @component
+ * @param {ThankYouProps} props - The properties for the ThankYou component.
+ * @param {string} props.song - The requested song.
+ */
 const ThankYou: React.FC<ThankYouProps> = ({ song }) => {
     return (
         <div>

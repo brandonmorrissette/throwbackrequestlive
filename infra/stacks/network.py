@@ -1,3 +1,9 @@
+"""
+This module defines the NetworkStack class, which sets up the network resources for the application.
+
+It creates VPC and Certificate constructs using the provided configuration.
+"""
+
 from aws_cdk import CfnOutput
 from aws_cdk import aws_ec2 as ec2
 from config import Config
@@ -8,6 +14,12 @@ from stacks.stack import Stack
 
 
 class NetworkStack(Stack):
+    """
+    This stack sets up the network resources for the application.
+
+    It creates VPC and Certificate constructs using the provided configuration.
+    """
+
     def __init__(
         self,
         scope: Construct,
@@ -15,6 +27,15 @@ class NetworkStack(Stack):
         id: str | None = None,
         suffix: str | None = "network",
     ) -> None:
+        """
+        Initialize the NetworkStack.
+
+        Args:
+            scope (Construct): The scope in which this stack is defined.
+            config (Config): The configuration object containing stack settings.
+            id (str, optional): The ID of the stack. Defaults to f"{config.project_name}-{config.environment_name}".
+            suffix (str, optional): The suffix to append to the stack name. Defaults to "network".
+        """
         super().__init__(scope, config, id, suffix)
 
         self.vpc_constrcut = VpcConstruct(self, config)
