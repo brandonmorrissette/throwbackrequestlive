@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime, timedelta
 
 import boto3
@@ -8,8 +7,18 @@ from exceptions.boto import raise_http_exception
 
 
 class AuthService:
+    """
+    Service for handling authentication with AWS Cognito.
+    """
+
     @raise_http_exception
-    def __init__(self, config: Config):
+    def __init__(self, config: Config) -> None:
+        """
+        Initialize the AuthService.
+
+        Args:
+            config (Config): The configuration object.
+        """
         self._client = boto3.client("cognito-idp", region_name=config.COGNITO_REGION)
         self._client_id = config.COGNITO_APP_CLIENT_ID
         self._user_pool_id = config.COGNITO_USER_POOL_ID
@@ -17,7 +26,17 @@ class AuthService:
         self._jwt_algorithm = "HS256"
 
     @raise_http_exception
-    def authenticate_user(self, username, password) -> dict:
+    def authenticate_user(self, username: str, password: str) -> dict:
+        """
+        Authenticate a user.
+
+        Args:
+            username (str): The username of the user.
+            password (str): The password of the user.
+
+        Returns:
+            dict: A dictionary containing the JWT token and any errors.
+        """
         response = self._client.initiate_auth(
             ClientId=self._client_id,
             AuthFlow="USER_PASSWORD_AUTH",
@@ -37,7 +56,18 @@ class AuthService:
         }
 
     @raise_http_exception
-    def reset_password(self, username, password, session) -> dict:
+    def reset_password(self, username: str, password: str, session: str) -> dict:
+        """
+        Reset a user's password.
+
+        Args:
+            username (str): The username of the user.
+            password (str): The new password of the user.
+            session (str): The session token.
+
+        Returns:
+            dict: A dictionary containing the JWT token.
+        """
         self._client.respond_to_auth_challenge(
             ClientId=self._client_id,
             ChallengeName="NEW_PASSWORD_REQUIRED",
@@ -50,14 +80,33 @@ class AuthService:
         }
 
     @raise_http_exception
-    def get_groups_by_username(self, username) -> list:
+    def get_groups_by_username(self, username: str) -> list:
+        """
+        Get the groups a user belongs to.
+
+        Args:
+            username (str): The username of the user.
+
+        Returns:
+            list: A list of group names.
+        """
         response = self._client.admin_list_groups_for_user(
             UserPoolId=self._user_pool_id, Username=username
         )
         groups = [group["GroupName"] for group in response.get("Groups", [])]
         return groups
 
-    def generate_jwt(self, username, groups) -> str:
+    def generate_jwt(self, username: str, groups: list) -> str:
+        """
+        Generate a JWT token.
+
+        Args:
+            username (str): The username of the user.
+            groups (list): A list of group names.
+
+        Returns:
+            str: The JWT token.
+        """
         payload = {
             "sub": username,
             "username": username,

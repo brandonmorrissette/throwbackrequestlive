@@ -8,25 +8,38 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 
-def get_json_provider_class():
+def get_json_provider_class() -> type:
     return SQLALchemyJSONProvider
 
 
 class DataService:
-    def __init__(self, config: Config):
+    """
+    Service for interacting with the database.
+    """
+
+    def __init__(self, config: Config) -> None:
+        """
+        Initialize the DataService.
+
+        Args:
+            config (Config): The configuration object.
+        """
         DATABASE_URL = f"{config.DB_ENGINE}://{config.DB_USER}:{config.DB_PASSWORD}@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
 
         logging.debug(f"Connecting to database: {DATABASE_URL}")
-        self.engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-        self.metadata = MetaData(bind=self.engine)
-        self.Session = sessionmaker(bind=self.engine)
+        self._engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+        self._metadata = MetaData(bind=self._engine)
+        self._session = sessionmaker(bind=self._engine)
         logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
         self._refresh_metadata()
 
     @contextmanager
     def _session_scope(self):
+        """
+        Provide a transactional scope around a series of operations.
+        """
         logging.debug("Creating session")
-        session = self.Session()
+        session = self._session()
         try:
             yield session
             logging.debug("Committing session")
@@ -39,26 +52,68 @@ class DataService:
             logging.debug("Closing session")
             session.close()
 
-    def _refresh_metadata(self):
-        self.metadata.reflect()
+    def _refresh_metadata(self) -> None:
+        """
+        Refresh the metadata to reflect the current database schema.
+        """
+        self._metadata.reflect()
 
-    def list_tables(self):
+    def list_tables(self) -> list:
+        """
+        List all tables in the database.
+
+        Returns:
+            list: A list of table names.
+        """
         self._refresh_metadata()
-        return self.metadata.tables.keys()
+        return list(self._metadata.tables.keys())
 
-    def get_table(self, table_name):
+    def get_table(self, table_name: str) -> dict:
+        """
+        Get a table by name.
+
+        Args:
+            table_name (str): The name of the table.
+
+        Returns:
+            dict: A dictionary representing the table schema.
+        """
         self._refresh_metadata()
         self.validate_table_name(table_name)
-        return self.metadata.tables.get(table_name)
+        table = self._metadata.tables.get(table_name)
+        return {
+            "name": table.name,
+            "columns": [col.name for col in table.columns],
+            "primary_key": [col.name for col in table.primary_key.columns],
+        }
 
-    def validate_table_name(self, table_name):
-        if table_name not in self.metadata.tables:
+    def validate_table_name(self, table_name: str) -> None:
+        """
+        Validate that a table name exists in the database.
+
+        Args:
+            table_name (str): The name of the table.
+
+        Raises:
+            ValueError: If the table does not exist.
+        """
+        if table_name not in self._metadata.tables:
             raise ValueError(f"Table {table_name} does not exist.")
 
-    def read_rows(self, table_name, filters=None):
+    def read_rows(self, table_name: str, filters: list = None) -> list:
+        """
+        Read rows from a table with optional filters.
+
+        Args:
+            table_name (str): The name of the table.
+            filters (list, optional): A list of filter strings.
+
+        Returns:
+            list: A list of row dictionaries.
+        """
         logging.debug(f"Reading rows from {table_name} with filters: {filters}")
         self._refresh_metadata()
-        table = self.metadata.tables.get(table_name)
+        table = self._metadata.tables.get(table_name)
 
         if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
@@ -74,9 +129,16 @@ class DataService:
             logging.debug(f"Query: {query}")
             return [row._asdict() for row in query.all()]
 
-    def write_rows(self, table_name, rows):
+    def write_rows(self, table_name: str, rows: list) -> None:
+        """
+        Write rows to a table.
+
+        Args:
+            table_name (str): The name of the table.
+            rows (list): A list of row dictionaries.
+        """
         self._refresh_metadata()
-        table = self.metadata.tables.get(table_name)
+        table = self._metadata.tables.get(table_name)
         if table is None:
             raise ValueError(f"Table {table_name} does not exist.")
 
@@ -107,13 +169,19 @@ class DataService:
                     .values(**row)
                 )
 
-    def get_database_version(self):
+    def get_database_version(self) -> str:
+        """
+        Get the database version.
+
+        Returns:
+            str: The database version.
+        """
         with self._session_scope() as session:
             version = session.execute("SELECT version()").scalar()
             return version
 
 
-def _map_filters(filters, table):
+def _map_filters(filters: list, table) -> list:
     """
     Maps filter strings into SQLAlchemy filter expressions.
 

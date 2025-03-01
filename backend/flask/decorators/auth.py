@@ -6,9 +6,32 @@ from werkzeug.exceptions import HTTPException
 
 
 def restrict_access(groups):
+    """
+    Decorator to restrict access to endpoints based on user groups.
+
+    Args:
+        groups (list): List of groups that are allowed to access the endpoint.
+
+    Returns:
+        function: The decorated function which checks for group membership.
+    """
+
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
+            """
+            Wrapper function to verify JWT and check group membership.
+
+            Args:
+                *args: Variable length argument list.
+                **kwargs: Arbitrary keyword arguments.
+
+            Raises:
+                HTTPException: If JWT verification fails or user is not in the required groups.
+
+            Returns:
+                function: The original function if access is granted.
+            """
             try:
                 verify_jwt_in_request()
                 claims = get_jwt()
@@ -23,7 +46,6 @@ def restrict_access(groups):
                 app.logger.warning(
                     f"User is not in any of the required groups: {groups}."
                 )
-
                 http_exception = HTTPException("Forbidden")
                 http_exception.code = 403
                 raise http_exception

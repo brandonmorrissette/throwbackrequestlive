@@ -9,28 +9,44 @@ from config import Config
 from exceptions.boto import raise_http_exception
 
 
-def cognito_json_encoder(obj):
+def cognito_json_encoder(obj) -> str:
     if isinstance(obj, datetime):
         return obj.isoformat()
     raise TypeError(f"Type {type(obj)} not serializable")
 
 
 class CognitoService:
+    """
+    Service for interacting with AWS Cognito.
+    """
+
     @raise_http_exception
-    def __init__(self, config: Config):
+    def __init__(self, config: Config) -> None:
+        """
+        Initialize the CognitoService.
+
+        Args:
+            config (Config): The configuration object.
+        """
         self._user_pool_id = config.COGNITO_USER_POOL_ID
         self._cognito_client = boto3.client(
             "cognito-idp", region_name=config.COGNITO_REGION
         )
 
-        self.redis_client = redis.StrictRedis(
+        self._redis_client = redis.StrictRedis(
             host=config.REDIS_HOST,
             port=int(config.REDIS_PORT),
             decode_responses=True,
         )
 
     @raise_http_exception
-    def read_rows(self):
+    def read_rows(self) -> list:
+        """
+        Read users from Cognito.
+
+        Returns:
+            list: A list of users.
+        """
         users = []
         response = self._cognito_client.list_users(UserPoolId=self._user_pool_id)
         for user in response["Users"]:
@@ -43,7 +59,7 @@ class CognitoService:
             groups = [group["GroupName"] for group in groups_response["Groups"]]
             user["Groups"] = groups
 
-            self.redis_client.set(
+            self._redis_client.set(
                 username, json.dumps(user, default=cognito_json_encoder)
             )
 
@@ -52,8 +68,14 @@ class CognitoService:
         return users
 
     @raise_http_exception
-    def write_rows(self, rows):
-        existing_usernames = {key for key in self.redis_client.keys()}
+    def write_rows(self, rows: list) -> None:
+        """
+        Write users to Cognito.
+
+        Args:
+            rows (list): A list of user dictionaries.
+        """
+        existing_usernames = {key for key in self._redis_client.keys()}
         row_usernames = {row["Username"] for row in rows if "Username" in row}
 
         users_to_delete = existing_usernames - row_usernames
@@ -73,12 +95,24 @@ class CognitoService:
         for username in users_to_update:
             self._update_user(username, row_dict[username])
 
-    def _generate_temp_password(self):
+    def _generate_temp_password(self) -> str:
+        """
+        Generate a temporary password.
+
+        Returns:
+            str: A temporary password.
+        """
         characters = string.ascii_letters + string.digits + "!@#$%^&*()-_=+"
         return "".join(secrets.choice(characters) for _ in range(12))
 
     @raise_http_exception
-    def _add_user(self, user):
+    def _add_user(self, user: dict) -> None:
+        """
+        Add a user to Cognito.
+
+        Args:
+            user (dict): A user dictionary.
+        """
         response = self._cognito_client.admin_create_user(
             Username=user["Email"],
             UserPoolId=self._user_pool_id,
@@ -91,7 +125,14 @@ class CognitoService:
         self._persist_user(user["Username"], user)
 
     @raise_http_exception
-    def _update_user(self, username, user):
+    def _update_user(self, username: str, user: dict) -> None:
+        """
+        Update a user in Cognito.
+
+        Args:
+            username (str): The username of the user.
+            user (dict): A user dictionary.
+        """
         self._cognito_client.admin_update_user_attributes(
             UserPoolId=self._user_pool_id,
             Username=username,
@@ -103,15 +144,34 @@ class CognitoService:
         self._persist_user(username, user)
 
     @raise_http_exception
-    def _delete_user(self, username):
+    def _delete_user(self, username: str) -> None:
+        """
+        Delete a user from Cognito.
+
+        Args:
+            username (str): The username of the user.
+        """
         self._cognito_client.admin_delete_user(
             UserPoolId=self._user_pool_id,
             Username=username,
         )
         self._remove_user(username)
 
-    def _persist_user(self, username, user):
-        self.redis_client.set(username, json.dumps(user, default=cognito_json_encoder))
+    def _persist_user(self, username: str, user: dict) -> None:
+        """
+        Persist a user in Redis.
 
-    def _remove_user(self, username):
-        self.redis_client.delete(username)
+        Args:
+            username (str): The username of the user.
+            user (dict): A user dictionary.
+        """
+        self._redis_client.set(username, json.dumps(user, default=cognito_json_encoder))
+
+    def _remove_user(self, username: str) -> None:
+        """
+        Remove a user from Redis.
+
+        Args:
+            username (str): The username of the user.
+        """
+        self._redis_client.delete(username)

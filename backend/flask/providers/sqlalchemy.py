@@ -1,3 +1,8 @@
+"""
+This module provides a custom JSON provider for Flask that handles
+serialization of SQLAlchemy objects.
+"""
+
 import logging
 import types
 from collections.abc import Iterable, Mapping
@@ -20,7 +25,22 @@ from sqlalchemy.schema import Constraint
 
 
 class SQLALchemyJSONProvider(JSONProvider):
+    """
+    Custom JSON provider for Flask that extends the default JSON provider.
+
+    This provider adds support for serializing SQLAlchemy objects.
+    """
+
     def default(self, obj):
+        """
+        Override the default method to add custom serialization for SQLAlchemy objects.
+
+        Args:
+            obj: The object to serialize.
+
+        Returns:
+            The serialized object.
+        """
         try:
             if obj is None:
                 return None
@@ -61,7 +81,16 @@ class SQLALchemyJSONProvider(JSONProvider):
             logging.error(f"Error serializing object {obj}: {e}")
             raise
 
-    def _get_attributes(self, obj):
+    def _get_attributes(self, obj) -> list:
+        """
+        Get the attributes of an object that are not callable or methods.
+
+        Args:
+            obj: The object to get attributes from.
+
+        Returns:
+            A list of attribute names.
+        """
         attributes = []
         for attr in dir(obj):
             try:
@@ -74,11 +103,12 @@ class SQLALchemyJSONProvider(JSONProvider):
                 logging.error(f"Error getting attribute {attr}: {e}")
         return attributes
 
-    def _serialize_sqlalchemy_type(self, primitive):
+    def _serialize_sqlalchemy_type(self, primitive) -> str:
         """
         Maps SQLAlchemy types to Python types for serialization.
+
         Args:
-            sa_type (SQLAlchemy Type): SQLAlchemy column type.
+            primitive (SQLAlchemy Type): SQLAlchemy column type.
 
         Returns:
             Python equivalent of the SQLAlchemy type.
@@ -96,28 +126,36 @@ class SQLALchemyJSONProvider(JSONProvider):
         else:
             return str.__name__
 
-    def _serialize_table(
-        self,
-        table,
-        excluded_attributes=[
-            "c",
-            "create_drop_stringify_dialect",
-            "dialect_kwargs",
-            "entity_namespace",
-            "dialect_options",
-            "dispatch",
-            "exported_columns",
-            "implicit_returning",
-            "inherit_cache",
-            "is_clause_element",
-            "is_selectable",
-            "kwargs",
-            "selectable",
-            "stringify_dialect",
-            "supports_execution",
-            "uses_inspection",
-        ],
-    ):
+    def _serialize_table(self, table, excluded_attributes=None) -> dict:
+        """
+        Serialize a SQLAlchemy Table object.
+
+        Args:
+            table: The Table object to serialize.
+            excluded_attributes: List of attributes to exclude from serialization.
+
+        Returns:
+            A dictionary of serialized attributes.
+        """
+        if excluded_attributes is None:
+            excluded_attributes = [
+                "c",
+                "create_drop_stringify_dialect",
+                "dialect_kwargs",
+                "entity_namespace",
+                "dialect_options",
+                "dispatch",
+                "exported_columns",
+                "implicit_returning",
+                "inherit_cache",
+                "is_clause_element",
+                "is_selectable",
+                "kwargs",
+                "selectable",
+                "stringify_dialect",
+                "supports_execution",
+                "uses_inspection",
+            ]
         attribute_keys = self._get_attributes(table)
         logging.debug(f"Table attributes: {attribute_keys}")
         attributes = {}
@@ -131,36 +169,44 @@ class SQLALchemyJSONProvider(JSONProvider):
         logging.debug(f"Table {table}: {attributes}")
         return attributes
 
-    def _serialize_column(
-        self,
-        column,
-        excluded_attributes=[
-            "allows_lambda",
-            "anon_key_label",
-            "anon_label",
-            "base_columns",
-            "bind",
-            "comparator",
-            "create_drop_stringify_dialect",
-            "dialect_kwargs",
-            "dialect_options",
-            "dispatch",
-            "entity_namespace",
-            "expression",
-            "inherit_cache",
-            "is_clause_element",
-            "is_selectable",
-            "kwargs",
-            "proxy_set",
-            "server_default",
-            "server_onupdate",
-            "stringify_dialect",
-            "supports_execution",
-            "system",
-            "table",
-            "uses_inspection",
-        ],
-    ):
+    def _serialize_column(self, column, excluded_attributes=None) -> dict:
+        """
+        Serialize a SQLAlchemy Column object.
+
+        Args:
+            column: The Column object to serialize.
+            excluded_attributes: List of attributes to exclude from serialization.
+
+        Returns:
+            A dictionary of serialized attributes.
+        """
+        if excluded_attributes is None:
+            excluded_attributes = [
+                "allows_lambda",
+                "anon_key_label",
+                "anon_label",
+                "base_columns",
+                "bind",
+                "comparator",
+                "create_drop_stringify_dialect",
+                "dialect_kwargs",
+                "dialect_options",
+                "dispatch",
+                "entity_namespace",
+                "expression",
+                "inherit_cache",
+                "is_clause_element",
+                "is_selectable",
+                "kwargs",
+                "proxy_set",
+                "server_default",
+                "server_onupdate",
+                "stringify_dialect",
+                "supports_execution",
+                "system",
+                "table",
+                "uses_inspection",
+            ]
         attribute_keys = self._get_attributes(column)
         logging.debug(f"Column attributes: {attribute_keys}")
         attributes = {}
@@ -174,6 +220,15 @@ class SQLALchemyJSONProvider(JSONProvider):
         return attributes
 
     def _serialize_constraint(self, constraint):
+        """
+        Serialize a SQLAlchemy Constraint object.
+
+        Args:
+            constraint: The Constraint object to serialize.
+
+        Returns:
+            A serialized representation of the constraint.
+        """
         if isinstance(constraint, PrimaryKeyConstraint):
             logging.debug(f"PrimaryKey: {constraint}")
             return self.default(constraint.columns)
