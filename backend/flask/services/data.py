@@ -81,11 +81,9 @@ class DataService:
         self._refresh_metadata()
         self.validate_table_name(table_name)
         table = self._metadata.tables.get(table_name)
-        return {
-            "name": table.name,
-            "columns": [col.name for col in table.columns],
-            "primary_key": [col.name for col in table.primary_key.columns],
-        }
+        if table is None:
+            raise ValueError(f"Table {table_name} does not exist.")
+        return table
 
     def validate_table_name(self, table_name: str) -> None:
         """
