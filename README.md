@@ -2,8 +2,6 @@ To Do
 
 # Code Quality
 
--   rdsConstruct
-    -   adminRole being used? Is this how it should be handled?
 -   Code quality and testing
 
 ### Post MVP

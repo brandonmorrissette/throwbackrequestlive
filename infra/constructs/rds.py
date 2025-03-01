@@ -171,26 +171,3 @@ class RdsConstruct(Construct):
             ec2.Port.tcp(5432),
             "Allow PostgreSQL access",
         )
-
-        admin_policy = iam.ManagedPolicy(
-            self,
-            "admin-rds-policy",
-            statements=[
-                iam.PolicyStatement(
-                    actions=[
-                        "rds-db:connect",
-                        "rds-db:executeStatement",
-                        "rds-db:batchExecuteStatement",
-                    ],
-                    resources=[self.db_instance.instance_arn],
-                )
-            ],
-        )
-
-        admin_role = iam.Role(
-            self,
-            "admin-role",
-            assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
-        )
-
-        admin_role.add_managed_policy(admin_policy)
