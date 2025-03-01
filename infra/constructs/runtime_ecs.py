@@ -70,11 +70,7 @@ class RuntimeEcsConstruct(Construct):
             ),
         )
 
-        runtime_secrets.update(
-            {
-                "JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret),
-            }
-        )
+        runtime_secrets["JWT_SECRET_KEY"] = ecs.Secret.from_secrets_manager(jwt_secret)
 
         task_role = iam.Role(
             self,
@@ -102,7 +98,7 @@ class RuntimeEcsConstruct(Construct):
             self, f"{config.project_name}-{config.project_name}-image", directory="."
         )
 
-        runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
+        self.runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
             "runtime-service",
             cluster=cluster,
@@ -131,11 +127,9 @@ class RuntimeEcsConstruct(Construct):
             health_check_grace_period=Duration.minutes(5),
         )
 
-        runtime_service.target_group.configure_health_check(
+        self.runtime_service.target_group.configure_health_check(
             path="/",
             interval=Duration.seconds(30),
             timeout=Duration.seconds(10),
             healthy_http_codes="200",
         )
-
-        self.load_balancer = runtime_service.load_balancer
