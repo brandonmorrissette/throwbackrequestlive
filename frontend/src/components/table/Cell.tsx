@@ -8,6 +8,9 @@ import ReactDOM from 'react-dom';
 const dateFormat = 'YYYY-MM-DD';
 const timeFormat = 'HH:mm:ss';
 
+/**
+ * Custom cell editor for datetime.
+ */
 export class DateTimeCellEditor implements ICellEditorComp {
     value: string;
     pickerRef: any;
@@ -18,6 +21,10 @@ export class DateTimeCellEditor implements ICellEditorComp {
         this.pickerRef = React.createRef();
     }
 
+    /**
+     * Initializes the cell editor.
+     * @param {ICellEditorParams} params - The cell editor parameters.
+     */
     init(params: ICellEditorParams) {
         this.value = params.value
             ? moment.utc(params.value).format(`${dateFormat} ${timeFormat}`)
@@ -26,10 +33,18 @@ export class DateTimeCellEditor implements ICellEditorComp {
         this.eGui.className = 'ag-custom-component-popup';
     }
 
+    /**
+     * Handles the change event for the date picker.
+     * @param {any} date - The selected date.
+     */
     onChange = (date: any) => {
         this.value = date.utc().format(`${dateFormat} ${timeFormat}`);
     };
 
+    /**
+     * Returns the GUI for the cell editor.
+     * @returns {HTMLElement} The GUI element.
+     */
     getGui(): HTMLElement {
         ReactDOM.render(
             <Datetime
@@ -45,6 +60,9 @@ export class DateTimeCellEditor implements ICellEditorComp {
         return this.eGui;
     }
 
+    /**
+     * Called after the GUI is attached to the DOM.
+     */
     afterGuiAttached() {
         const input = this.eGui.querySelector('input');
         if (input) {
@@ -53,14 +71,25 @@ export class DateTimeCellEditor implements ICellEditorComp {
         }
     }
 
+    /**
+     * Returns the value from the cell editor.
+     * @returns {string} The value.
+     */
     getValue() {
         return this.value;
     }
 
+    /**
+     * Destroys the cell editor.
+     */
     destroy() {
         ReactDOM.unmountComponentAtNode(this.eGui);
     }
 
+    /**
+     * Indicates if the cell editor is a popup.
+     * @returns {boolean} True if the cell editor is a popup.
+     */
     isPopup() {
         return true;
     }

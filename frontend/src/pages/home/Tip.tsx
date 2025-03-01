@@ -5,6 +5,12 @@ interface TipProps {
     onClose: () => void;
 }
 
+/**
+ * Tip component that displays a modal with an embedded tip page.
+ * @component
+ * @param {TipProps} props - The properties for the Tip component.
+ * @param {() => void} props.onClose - Function to close the modal.
+ */
 const Tip: React.FC<TipProps> = ({ onClose }) => {
     return (
         <Modal onClose={onClose}>

@@ -7,16 +7,31 @@ interface Song {
     band: string;
 }
 
+/**
+ * Request component allows users to select and request a song.
+ *
+ * @component
+ * @example
+ * return (
+ *   <Request />
+ * )
+ */
 const Request: React.FC = () => {
     const [songs, setSongs] = useState<Song[]>([]);
     const [selectedSong, setSelectedSong] = useState<string | null>(null);
 
+    /**
+     * Fetches the list of songs from the API when the component mounts.
+     */
     useEffect(() => {
         fetch('/api/songs')
             .then((response) => response.json())
             .then((data) => setSongs(data));
     }, []);
 
+    /**
+     * Handles the song request by sending the selected song to the API.
+     */
     const handleRequest = () => {
         if (selectedSong) {
             fetch('/api/request', {
@@ -54,7 +69,6 @@ const Request: React.FC = () => {
 
             {selectedSong && (
                 <Modal onClose={() => setSelectedSong(null)}>
-                    {' '}
                     <h3>Confirm Your Selection</h3>
                     <p>Are you sure you want to select:</p>
                     <p>

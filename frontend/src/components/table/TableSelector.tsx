@@ -1,10 +1,20 @@
 import React from 'react';
 
+/**
+ * Props for the TableSelector component.
+ * @property {string[]} tables - The list of table names to select from.
+ * @property {(tableName: string) => void} onSelectTable - Function to call when a table is selected.
+ */
 type TableSelectorProps = {
     tables: string[];
     onSelectTable: (tableName: string) => void;
 };
 
+/**
+ * A functional component that renders a dropdown to select a table.
+ * @param {TableSelectorProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered component.
+ */
 const TableSelector: React.FC<TableSelectorProps> = ({
     tables,
     onSelectTable,

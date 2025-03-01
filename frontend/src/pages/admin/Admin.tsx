@@ -7,6 +7,10 @@ export interface AdminComponent extends React.FC {
     allowed_groups?: string[];
 }
 
+/**
+ * Admin component that renders user and data management components based on user groups.
+ * @component
+ */
 const Admin: React.FC = () => {
     const [userGroups, setUserGroups] = useState<string[]>([]);
 

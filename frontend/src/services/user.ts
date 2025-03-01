@@ -4,6 +4,11 @@ import apiRequest from '../routing/Request';
 import { IDataService } from './data';
 
 class UserService implements IDataService {
+    /**
+     * Fetches the user table schema.
+     * @param {string} tableName - The name of the table.
+     * @returns {Promise<any>} The table schema.
+     */
     async getTable(tableName: string): Promise<any> {
         const columns = [
             new ColDef({
@@ -55,6 +60,11 @@ class UserService implements IDataService {
         return new Options(tableName, columns, primaryKeys);
     }
 
+    /**
+     * Reads user rows from the table.
+     * @param {string} tableName - The name of the table.
+     * @returns {Promise<any>} The user rows.
+     */
     async readRows(tableName: string): Promise<any> {
         const data = await apiRequest(`/api/${tableName}`);
 
@@ -77,6 +87,13 @@ class UserService implements IDataService {
         return transformed;
     }
 
+    /**
+     * Writes user rows to the table.
+     * @param {string} tableName - The name of the table.
+     * @param {any[]} rows - The rows to be written.
+     * @returns {Promise<void>}
+     * @throws {Error} If the request fails.
+     */
     async writeRows(tableName: string, rows: any[]): Promise<void> {
         const response = await apiRequest(`/api/${tableName}`, {
             method: 'PUT',

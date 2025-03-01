@@ -14,6 +14,10 @@ type User = {
     groups: string[];
 };
 
+/**
+ * UserManagement component that displays a table of users and their details.
+ * @component
+ */
 const UserManagement: AdminComponent = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [table, setTable] = useState<any>({});

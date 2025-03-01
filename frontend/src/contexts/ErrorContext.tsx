@@ -7,12 +7,26 @@ import React, {
 } from 'react';
 import { toast } from 'react-toastify';
 
+/**
+ * @typedef {Object} ErrorContextType
+ * @property {(error: Error) => void} setError - Function to set the error state.
+ */
 interface ErrorContextType {
     setError: (error: Error) => void;
 }
 
+/**
+ * Context to handle global error state.
+ * @type {React.Context<ErrorContextType | undefined>}
+ */
 const ErrorContext = createContext<ErrorContextType | undefined>(undefined);
 
+/**
+ * ErrorProvider component to wrap around components that need access to error context.
+ * @param {Object} props - Component props.
+ * @param {ReactNode} props.children - Child components.
+ * @returns {JSX.Element} The provider component.
+ */
 export const ErrorProvider: React.FC<{ children: ReactNode }> = ({
     children,
 }) => {
@@ -35,6 +49,11 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({
     );
 };
 
+/**
+ * Custom hook to use the ErrorContext.
+ * @throws Will throw an error if used outside of ErrorProvider.
+ * @returns {ErrorContextType} The error context value.
+ */
 export const useError = (): ErrorContextType => {
     const context = useContext(ErrorContext);
     if (!context)

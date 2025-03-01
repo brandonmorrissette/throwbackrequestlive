@@ -51,6 +51,10 @@ To Do
 -   Break up front end and back end containers
     -   Consider breaking out postgress instance for local storage
 
-# Resource
+# Resource Class
 
 -   I'd rather handle id and suffix better.
+
+# Login
+
+-   The login, login form and password reset could benefit from some better seperation of concerns.

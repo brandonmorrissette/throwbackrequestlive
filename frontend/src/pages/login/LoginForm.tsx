@@ -5,6 +5,10 @@ import { useError } from '../../contexts/ErrorContext';
 import apiRequest from '../../routing/Request';
 import PasswordReset from './PasswordReset';
 
+/**
+ * LoginForm component that handles user login and password reset.
+ * @component
+ */
 const LoginForm: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');

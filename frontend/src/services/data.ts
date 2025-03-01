@@ -11,10 +11,19 @@ export interface IDataService {
 }
 
 class DataService implements IDataService {
+    /**
+     * Fetches the list of table names.
+     * @returns {Promise<string[]>} The list of table names.
+     */
     async getTableNames(): Promise<string[]> {
         return await apiRequest(`${API_BASE_URL}`);
     }
 
+    /**
+     * Fetches the table schema and data.
+     * @param {string} tableName - The name of the table.
+     * @returns {Promise<any>} The table schema and data.
+     */
     async getTable(tableName: string): Promise<any> {
         const table = await apiRequest(`${API_BASE_URL}/${tableName}`);
 
@@ -43,6 +52,12 @@ class DataService implements IDataService {
         return new Options(table.name, columns, primaryKeys, table);
     }
 
+    /**
+     * Reads rows from the table with optional filters, limit, offset, and sorting.
+     * @param {string} tableName - The name of the table.
+     * @param {Object} [options] - Optional parameters for filtering, limiting, offsetting, and sorting.
+     * @returns {Promise<any>} The table rows.
+     */
     async readRows(
         tableName: string,
         options?: {
@@ -70,6 +85,12 @@ class DataService implements IDataService {
         );
     }
 
+    /**
+     * Writes rows to the table.
+     * @param {string} tableName - The name of the table.
+     * @param {any[]} rows - The rows to be written.
+     * @returns {Promise<void>}
+     */
     async writeRows(tableName: string, rows: any[]): Promise<void> {
         await apiRequest(`${API_BASE_URL}/${tableName}/rows`, {
             method: 'PUT',
