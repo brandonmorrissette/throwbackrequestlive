@@ -126,36 +126,39 @@ class SQLALchemyJSONProvider(JSONProvider):
         else:
             return str.__name__
 
-    def _serialize_table(self, table, excluded_attributes=None) -> dict:
+    def _serialize_table(
+        self,
+        table,
+        excluded_attributes=[
+            "c",
+            "create_drop_stringify_dialect",
+            "dialect_kwargs",
+            "entity_namespace",
+            "dialect_options",
+            "dispatch",
+            "exported_columns",
+            "implicit_returning",
+            "inherit_cache",
+            "is_clause_element",
+            "is_selectable",
+            "kwargs",
+            "selectable",
+            "stringify_dialect",
+            "supports_execution",
+            "uses_inspection",
+        ],
+    ) -> dict:
         """
         Serialize a SQLAlchemy Table object.
 
         Args:
             table: The Table object to serialize.
             excluded_attributes: List of attributes to exclude from serialization.
+                Default attributes are : c, create_drop_stringify_dialect, dialect_kwargs, entity_namespace, dialect_options, dispatch, exported_columns, implicit_returning, inherit_cache, is_clause_element, is_selectable, kwargs, selectable, stringify_dialect, supports_execution, uses_inspection
 
         Returns:
             A dictionary of serialized attributes.
         """
-        if excluded_attributes is None:
-            excluded_attributes = [
-                "c",
-                "create_drop_stringify_dialect",
-                "dialect_kwargs",
-                "entity_namespace",
-                "dialect_options",
-                "dispatch",
-                "exported_columns",
-                "implicit_returning",
-                "inherit_cache",
-                "is_clause_element",
-                "is_selectable",
-                "kwargs",
-                "selectable",
-                "stringify_dialect",
-                "supports_execution",
-                "uses_inspection",
-            ]
         attribute_keys = self._get_attributes(table)
         logging.debug(f"Table attributes: {attribute_keys}")
         attributes = {}
@@ -169,44 +172,47 @@ class SQLALchemyJSONProvider(JSONProvider):
         logging.debug(f"Table {table}: {attributes}")
         return attributes
 
-    def _serialize_column(self, column, excluded_attributes=None) -> dict:
+    def _serialize_column(
+        self,
+        column,
+        excluded_attributes=[
+            "allows_lambda",
+            "anon_key_label",
+            "anon_label",
+            "base_columns",
+            "bind",
+            "comparator",
+            "create_drop_stringify_dialect",
+            "dialect_kwargs",
+            "dialect_options",
+            "dispatch",
+            "entity_namespace",
+            "expression",
+            "inherit_cache",
+            "is_clause_element",
+            "is_selectable",
+            "kwargs",
+            "proxy_set",
+            "server_default",
+            "server_onupdate",
+            "stringify_dialect",
+            "supports_execution",
+            "system",
+            "table",
+            "uses_inspection",
+        ],
+    ) -> dict:
         """
         Serialize a SQLAlchemy Column object.
 
         Args:
             column: The Column object to serialize.
             excluded_attributes: List of attributes to exclude from serialization.
+                Default attributes are : allows_lambda, anon_key_label, anon_label, base_columns, bind, comparator, create_drop_stringify_dialect, dialect_kwargs, dialect_options, dispatch, entity_namespace, expression, inherit_cache, is_clause_element, is_selectable, kwargs, proxy_set, server_default, server_onupdate, stringify_dialect, supports_execution, system, table, uses_inspection
 
         Returns:
             A dictionary of serialized attributes.
         """
-        if excluded_attributes is None:
-            excluded_attributes = [
-                "allows_lambda",
-                "anon_key_label",
-                "anon_label",
-                "base_columns",
-                "bind",
-                "comparator",
-                "create_drop_stringify_dialect",
-                "dialect_kwargs",
-                "dialect_options",
-                "dispatch",
-                "entity_namespace",
-                "expression",
-                "inherit_cache",
-                "is_clause_element",
-                "is_selectable",
-                "kwargs",
-                "proxy_set",
-                "server_default",
-                "server_onupdate",
-                "stringify_dialect",
-                "supports_execution",
-                "system",
-                "table",
-                "uses_inspection",
-            ]
         attribute_keys = self._get_attributes(column)
         logging.debug(f"Column attributes: {attribute_keys}")
         attributes = {}
