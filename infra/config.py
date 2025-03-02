@@ -1,5 +1,7 @@
+# pylint: disable=too-few-public-methods
 """
-This module contains the Config class, which holds configuration details for the AWS CDK application.
+This module contains the Config class holding 
+the configuration details for the AWS CDK application.
 
 Classes:
     Config: A class that holds configuration details.
@@ -37,7 +39,8 @@ class Config:
         Args:
             project_name (str, optional): The name of the project. Defaults to None.
             environment_name (str, optional): The name of the environment. Defaults to None.
-            cdk_environment (cdk.Environment, optional): The AWS CDK environment configuration. Defaults to None.
+            cdk_environment (cdk.Environment, optional): The AWS CDK environment configuration.
+                Defaults to None.
         """
         self.project_name = project_name
         self.environment_name = environment_name
@@ -50,4 +53,7 @@ class Config:
         Returns:
             str: A string representation of the Config object.
         """
-        return f"Config(project_name={self.project_name}, environment_name={self.environment_name}, cdk_environment={self.cdk_environment})"
+        return (
+            f"Config(project_name={self.project_name}, environment_name={self.environment_name}, "
+            "cdk_environment={self.cdk_environment})"
+        )

@@ -1,5 +1,6 @@
 """
-This module defines the UserManagementStack class, which sets up the user management resources for the application.
+This module defines the UserManagementStack class, 
+which sets up the user management resources for the application.
 
 It creates User Pool and Superuser constructs using the provided configuration.
 """
@@ -23,8 +24,7 @@ class UserManagementStack(Stack):
         self,
         scope: Construct,
         config: Config,
-        id: str | None = None,
-        suffix: str | None = "user-management",
+        stack_id: str | None = None,
     ) -> None:
         """
         Initialize the UserManagementStack.
@@ -32,10 +32,10 @@ class UserManagementStack(Stack):
         Args:
             scope (Construct): The scope in which this stack is defined.
             config (Config): The configuration object containing stack settings.
-            id (str, optional): The ID of the stack. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): The suffix to append to the stack name. Defaults to "user-management".
+            stack_id (str, optional): The ID of the stack.
+                Defaults to f"{config.project_name}-{config.environment_name}-user-management".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, stack_id, "user-management")
 
         self.user_pool_construct = UserPoolConstruct(self, config)
         self.superuser_construct = SuperUserConstruct(

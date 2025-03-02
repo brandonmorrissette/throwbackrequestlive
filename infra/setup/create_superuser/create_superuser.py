@@ -1,3 +1,10 @@
+"""
+This script creates a superuser in the Cognito user pool for the specified project.
+It retrieves the project name and superuser email from environment variables,
+checks if the user already exists, and if not, 
+creates the user and adds them to the superuser group.
+"""
+
 import os
 
 import boto3
@@ -10,14 +17,14 @@ superuser_email = os.environ["SUPERUSER_EMAIL"]
 print(f" Project Name: {project_name}\n Superuser Email: {superuser_email}")
 
 response = client.list_user_pools(MaxResults=60)
-user_pool_id = None
+user_pool_id = None  # pylint: disable=invalid-name
 for pool in response["UserPools"]:
     if pool["Name"] == f"{project_name}-user-pool":
         user_pool_id = pool["Id"]
         break
 
 if not user_pool_id:
-    raise Exception(f"User pool for project {project_name} not found.")
+    raise ValueError(f"User pool for project {project_name} not found.")
 
 try:
     client.admin_get_user(UserPoolId=user_pool_id, Username=superuser_email)

@@ -1,7 +1,7 @@
 """
 This module contains the RdsConstruct class, which sets up an RDS instance
-within a specified VPC. The construct includes security group configuration, database instance creation,
-and ECS task definition for database schema deployment.
+within a specified VPC. The construct includes security group configuration, 
+database instance creation, and ECS task definition for database schema deployment.
 
 Classes:
     RdsConstruct: A construct that sets up an RDS instance.
@@ -39,8 +39,7 @@ class RdsConstruct(Construct):
         scope: Stack,
         vpc: ec2.Vpc,
         config: Config,
-        id: str | None = None,
-        suffix: str | None = "rds",
+        construct_id: str | None = None,
     ) -> None:
         """
         Initializes the RdsConstruct with the given parameters.
@@ -49,10 +48,10 @@ class RdsConstruct(Construct):
             scope (Stack): The parent stack.
             vpc (ec2.Vpc): The VPC in which to create the RDS instance.
             config (Config): Configuration object.
-            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): Suffix for resource names. Defaults to "rds".
+            construct_id (str, optional): The ID of the construct.
+                Defaults to f"{config.project_name}-{config.environment_name}-rds".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, construct_id, "rds")
 
         security_group = ec2.SecurityGroup(self, "rds-security-group", vpc=vpc)
 
@@ -134,7 +133,9 @@ class RdsConstruct(Construct):
             command=[
                 "sh",
                 "-c",
-                'for file in /schema/*.sql; do echo "Running $file"; psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive -f $file; done',
+                'for file in /schema/*.sql; do echo "Running $file"; '
+                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/"
+                "throwbackrequestlive -f $file; done",
             ],
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="sql-deployment",

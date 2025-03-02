@@ -6,8 +6,11 @@ Classes:
     RuntimeEcsConstruct: A construct that sets up an ECS Fargate service.
 
 Usage example:
-    runtime_ecs_construct = RuntimeEcsConstruct(scope, config, certificate, policy, cluster, runtime_variables, runtime_secrets)
+    runtime_ecs_construct = RuntimeEcsConstruct(scope, config, certificate, 
+        policy, cluster, runtime_variables, runtime_secrets)
 """
+
+from dataclasses import dataclass
 
 from aws_cdk import Duration, RemovalPolicy
 from aws_cdk import aws_certificatemanager as acm
@@ -20,6 +23,26 @@ from aws_cdk import aws_secretsmanager as secretsmanager
 from config import Config
 from constructs.construct import Construct
 from stacks.stack import Stack
+
+
+@dataclass
+class RuntimeEcsConstructArgs:
+    """
+    A class that defines properties for the RuntimeEcsConstruct class.
+
+    Attributes:
+        certificate (acm.Certificate): The ACM certificate for the load balancer.
+        policy (iam.ManagedPolicy): The IAM managed policy for the task role.
+        cluster (ecs.Cluster): The ECS cluster.
+        runtime_variables (dict): The environment variables for the ECS task.
+        runtime_secrets (dict): The secrets for the ECS task.
+    """
+
+    certificate: acm.Certificate
+    policy: iam.ManagedPolicy
+    cluster: ecs.Cluster
+    runtime_variables: dict
+    runtime_secrets: dict
 
 
 class RuntimeEcsConstruct(Construct):
@@ -37,13 +60,8 @@ class RuntimeEcsConstruct(Construct):
         self,
         scope: Stack,
         config: Config,
-        certificate: acm.Certificate,
-        policy: iam.ManagedPolicy,
-        cluster: ecs.Cluster,
-        runtime_variables: dict,
-        runtime_secrets: dict,
-        id: str | None = None,
-        suffix: str | None = "runtime-ecs",
+        args: RuntimeEcsConstructArgs,
+        construct_id: str | None = None,
     ) -> None:
         """
         Initializes the RuntimeEcsConstruct with the given parameters.
@@ -56,10 +74,10 @@ class RuntimeEcsConstruct(Construct):
             cluster (ecs.Cluster): The ECS cluster.
             runtime_variables (dict): The environment variables for the ECS task.
             runtime_secrets (dict): The secrets for the ECS task.
-            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): Suffix for resource names. Defaults to "runtime-ecs".
+            construct_id (str, optional): The ID of the construct.
+                Defaults to f"{config.project_name}-{config.environment_name}-runtime-ecs".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, construct_id, "runtime-ecs")
 
         jwt_secret = secretsmanager.Secret(
             self,
@@ -70,7 +88,9 @@ class RuntimeEcsConstruct(Construct):
             ),
         )
 
-        runtime_secrets["JWT_SECRET_KEY"] = ecs.Secret.from_secrets_manager(jwt_secret)
+        args.runtime_secrets["JWT_SECRET_KEY"] = ecs.Secret.from_secrets_manager(
+            jwt_secret
+        )
 
         task_role = iam.Role(
             self,
@@ -80,7 +100,7 @@ class RuntimeEcsConstruct(Construct):
                 iam.ManagedPolicy.from_aws_managed_policy_name(
                     "service-role/AmazonECSTaskExecutionRolePolicy"
                 ),
-                policy,
+                args.policy,
             ],
             inline_policies={
                 "RuntimePolicy": iam.PolicyDocument(
@@ -101,7 +121,7 @@ class RuntimeEcsConstruct(Construct):
         self.runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
             "runtime-service",
-            cluster=cluster,
+            cluster=args.cluster,
             cpu=256,
             memory_limit_mib=512,
             desired_count=1,
@@ -117,12 +137,12 @@ class RuntimeEcsConstruct(Construct):
                         removal_policy=RemovalPolicy.DESTROY,
                     ),
                 ),
-                environment=runtime_variables,
-                secrets=runtime_secrets,
+                environment=args.runtime_variables,
+                secrets=args.runtime_secrets,
                 task_role=task_role,
             ),
             public_load_balancer=True,
-            certificate=certificate,
+            certificate=args.certificate,
             redirect_http=True,
             health_check_grace_period=Duration.minutes(5),
         )

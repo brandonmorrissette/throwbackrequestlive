@@ -25,7 +25,7 @@ from aws_cdk import Aspects
 from config import Config
 from stacks.compute import ComputeStack
 from stacks.network import NetworkStack
-from stacks.runtime import RuntimeStack
+from stacks.runtime import RuntimeStack, RuntimeStackArgs
 from stacks.storage import StorageStack
 from stacks.user_management import UserManagementStack
 
@@ -53,7 +53,11 @@ storage_stack = StorageStack(app, config, vpc=network_stack.vpc_constrcut.vpc)
 storage_stack.add_dependency(network_stack)
 
 runtime_stack = RuntimeStack(
-    app, config, user_management_stack, network_stack, compute_stack, storage_stack
+    app,
+    config,
+    RuntimeStackArgs(
+        user_management_stack, network_stack, compute_stack, storage_stack
+    ),
 )
 
 runtime_stack.add_dependency(user_management_stack)

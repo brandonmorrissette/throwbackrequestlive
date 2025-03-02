@@ -18,7 +18,7 @@ class Construct(AwsCdkConstruct, Resource):
     A base construct that sets default Resource attributes to pass to the AWS CDK Construct.
 
     Attributes:
-        id: The ID of the construct.
+        construct_id: The ID of the construct.
         suffix: The suffix for resource names.
 
     Methods:
@@ -29,7 +29,7 @@ class Construct(AwsCdkConstruct, Resource):
         self,
         scope: AwsCdkConstruct,
         config: Config,
-        id: str | None = None,
+        construct_id: str | None = None,
         suffix: str | None = None,
     ) -> None:
         """
@@ -38,8 +38,9 @@ class Construct(AwsCdkConstruct, Resource):
         Args:
             scope (AwsCdkConstruct): The parent construct.
             config (Config): Configuration object.
-            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
+            construct_id (str, optional): The ID of the construct.
+                Defaults to f"{config.project_name}-{config.environment_name}-".
             suffix (str, optional): Suffix for resource names. Defaults to None.
         """
-        Resource.__init__(self, config, id, suffix)
+        Resource.__init__(self, config, construct_id, suffix)
         super().__init__(scope, self.id)

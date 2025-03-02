@@ -24,8 +24,7 @@ class NetworkStack(Stack):
         self,
         scope: Construct,
         config: Config,
-        id: str | None = None,
-        suffix: str | None = "network",
+        stack_id: str | None = None,
     ) -> None:
         """
         Initialize the NetworkStack.
@@ -33,10 +32,10 @@ class NetworkStack(Stack):
         Args:
             scope (Construct): The scope in which this stack is defined.
             config (Config): The configuration object containing stack settings.
-            id (str, optional): The ID of the stack. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): The suffix to append to the stack name. Defaults to "network".
+            stack_id (str, optional): The ID of the stack.
+                Defaults to f"{config.project_name}-{config.environment_name}-network".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, stack_id, "network")
 
         self.vpc_constrcut = VpcConstruct(self, config)
         self.cert_construct = CertConstruct(self, config)

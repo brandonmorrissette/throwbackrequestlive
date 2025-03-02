@@ -34,8 +34,7 @@ class UserPoolConstruct(Construct):
         self,
         scope: Stack,
         config: Config,
-        id: str | None = None,
-        suffix: str | None = "user-pool",
+        construct_id: str | None = None,
     ) -> None:
         """
         Initializes the UserPoolConstruct with the given parameters.
@@ -43,10 +42,10 @@ class UserPoolConstruct(Construct):
         Args:
             scope (Stack): The parent stack.
             config (Config): Configuration object.
-            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): Suffix for resource names. Defaults to "user-pool".
+            construct_id (str, optional): The ID of the construct.
+                Defaults to f"{config.project_name}-{config.environment_name}-user-pool".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, construct_id, "user-pool")
 
         self._cognito_client = boto3.client("cognito-idp")
         user_pool_name = f"{config.project_name}-user-pool"
@@ -109,7 +108,7 @@ class UserPoolConstruct(Construct):
         user_pools = self._cognito_client.list_user_pools(MaxResults=60)
         for pool in user_pools.get("UserPools", []):
             if pool["Name"] == user_pool_name:
-                cognito.UserPool.from_user_pool_id(
+                return cognito.UserPool.from_user_pool_id(
                     self, user_pool_name, user_pool_id=pool["Id"]
                 )
 
