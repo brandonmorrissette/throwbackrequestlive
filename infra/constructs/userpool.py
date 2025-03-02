@@ -53,7 +53,9 @@ class UserPoolConstruct(Construct):
         self.user_pool = self._user_pool(user_pool_name)
         self._post_user_pool_id(user_pool_name, self.user_pool.user_pool_id)
         self.app_client = self._app_client(user_pool_name)
-        self._post_app_client_id(f"{user_pool_name}-app-client", self.app_client.ref)
+        self._post_app_client_id(
+            f"{user_pool_name}-app-client", self.app_client.user_pool_client_id
+        )
 
     def _user_pool(self, user_pool_name):
         user_pool = self._get_user_pool_by_name(user_pool_name)
