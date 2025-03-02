@@ -21,6 +21,7 @@ To Do
 
 # Cognito/User concepts cleanup
 
+-   There is a bug in user_pool and client creation.
 -   Dynamic table properties for user flow (Currently hard coded)
 -   Want a much better super user creation process
     -   Current task has some assumptions in the code and is inflexible.

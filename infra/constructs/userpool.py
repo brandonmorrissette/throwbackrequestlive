@@ -53,7 +53,7 @@ class UserPoolConstruct(Construct):
         self.user_pool = self._user_pool(user_pool_name)
         self._post_user_pool_id(user_pool_name, self.user_pool.user_pool_id)
         self.app_client = self._app_client(user_pool_name)
-        self._post_app_client_id(f"{user_pool_name}-app-client", self.app_client)
+        self._post_app_client_id(f"{user_pool_name}-app-client", self.app_client.ref)
 
     def _user_pool(self, user_pool_name):
         user_pool = self._get_user_pool_by_name(user_pool_name)
@@ -106,13 +106,14 @@ class UserPoolConstruct(Construct):
 
     def _get_user_pool_by_name(self, user_pool_name):
         user_pools = self._cognito_client.list_user_pools(MaxResults=60)
+        user_pool = None
         for pool in user_pools.get("UserPools", []):
             if pool["Name"] == user_pool_name:
-                return cognito.UserPool.from_user_pool_id(
+                user_pool = cognito.UserPool.from_user_pool_id(
                     self, user_pool_name, user_pool_id=pool["Id"]
                 )
 
-        return None
+        return user_pool
 
     def _app_client(self, project_name):
         if not Token.is_unresolved(self.user_pool.user_pool_id):
