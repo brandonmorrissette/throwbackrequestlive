@@ -7,7 +7,7 @@ import json
 from functools import wraps
 from typing import Any, Callable, Tuple
 
-from blueprints.blueprint import BaseBlueprint
+from blueprints.blueprint import Blueprint
 from decorators.auth import restrict_access
 from flask import Flask
 from flask import current_app as app
@@ -39,19 +39,19 @@ def override_json_provider(provider: Callable) -> Callable:
     return decorator
 
 
-class DataBlueprint(BaseBlueprint):
+class DataBlueprint(Blueprint):
     """
     Blueprint for handling data-related routes.
     """
 
     _service: DataService
 
-    def _register_routes(self) -> None:
+    def register_routes(self) -> None:
         """
         Register routes for data operations.
         """
 
-        @self._blueprint.route("/tables", methods=["GET"])
+        @self.route("/tables", methods=["GET"])
         @restrict_access(["superuser"])
         def list_tables() -> Tuple[Any, int]:
             """
@@ -63,7 +63,7 @@ class DataBlueprint(BaseBlueprint):
             app.logger.debug(f"Tables: {tables}")
             return jsonify(list(tables)), 200
 
-        @self._blueprint.route("/tables/<table_name>", methods=["GET"])
+        @self.route("/tables/<table_name>", methods=["GET"])
         @restrict_access(["superuser"])
         @override_json_provider(get_json_provider_class())
         def get_table(table_name: str) -> Tuple[Any, int]:
@@ -80,7 +80,7 @@ class DataBlueprint(BaseBlueprint):
             return jsonify(table), 200
 
         # Public route
-        @self._blueprint.route("/tables/shows/rows", methods=["GET"])
+        @self.route("/tables/shows/rows", methods=["GET"])
         def read_shows() -> Tuple[Any, int]:
             """
             Read rows from the 'shows' table.
@@ -88,7 +88,7 @@ class DataBlueprint(BaseBlueprint):
             """
             return self._get_rows("shows", request)
 
-        @self._blueprint.route("/tables/<table_name>/rows", methods=["GET"])
+        @self.route("/tables/<table_name>/rows", methods=["GET"])
         @restrict_access(["superuser"])
         def read_rows(table_name: str) -> Tuple[Any, int]:
             """
@@ -98,7 +98,7 @@ class DataBlueprint(BaseBlueprint):
             """
             return self._get_rows(table_name, request)
 
-        @self._blueprint.route("/tables/<table_name>/rows", methods=["PUT"])
+        @self.route("/tables/<table_name>/rows", methods=["PUT"])
         @restrict_access(["superuser"])
         def write_rows(table_name: str) -> Tuple[Any, int]:
             """

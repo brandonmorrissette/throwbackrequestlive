@@ -2,22 +2,22 @@
 Blueprint module for rendering static HTML files for different routes.
 """
 
-from blueprints.blueprint import BaseBlueprint
+from blueprints.blueprint import Blueprint
 from flask import Response
 from flask import current_app as app
 
 
-class RenderBlueprint(BaseBlueprint):
+class RenderBlueprint(Blueprint):
     """
     Blueprint for rendering static HTML files for different routes.
     """
 
-    def _register_routes(self) -> None:
+    def register_routes(self) -> None:
         """
         Register routes for rendering static HTML files.
         """
 
-        @self._blueprint.route("/request")
+        @self.route("/request")
         def render_request() -> Response:
             """
             Render the request page.
@@ -25,7 +25,7 @@ class RenderBlueprint(BaseBlueprint):
             """
             return app.send_static_file("index.html")
 
-        @self._blueprint.route("/admin")
+        @self.route("/admin")
         def render_admin() -> Response:
             """
             Render the admin page.
@@ -33,7 +33,7 @@ class RenderBlueprint(BaseBlueprint):
             """
             return app.send_static_file("index.html")
 
-        @self._blueprint.route("/login")
+        @self.route("/login")
         def render_login() -> Response:
             """
             Render the login page.
@@ -41,8 +41,8 @@ class RenderBlueprint(BaseBlueprint):
             """
             return app.send_static_file("index.html")
 
-        @self._blueprint.route("/", defaults={"path": ""})
-        @self._blueprint.route("/<path:path>")
+        @self.route("/", defaults={"path": ""})
+        @self.route("/<path:path>")
         def render_main(path: str) -> Response:  # pylint: disable=unused-argument
             """
             Render the main page for any other routes.

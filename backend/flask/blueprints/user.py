@@ -4,26 +4,26 @@ Blueprint module for handling user-related routes.
 
 from typing import Any, Tuple
 
-from blueprints.blueprint import BaseBlueprint
+from blueprints.blueprint import Blueprint
 from decorators.auth import restrict_access
 from flask import current_app as app
 from flask import jsonify, request
 from services.cognito import CognitoService
 
 
-class UserBlueprint(BaseBlueprint):
+class UserBlueprint(Blueprint):
     """
     Blueprint for handling user-related routes.
     """
 
     _service: CognitoService
 
-    def _register_routes(self) -> None:
+    def register_routes(self) -> None:
         """
         Register routes for user operations.
         """
 
-        @self._blueprint.route("/users", methods=["GET"])
+        @self.route("/users", methods=["GET"])
         @restrict_access(["superuser"])
         def read_rows() -> Tuple[Any, int]:
             """
@@ -34,7 +34,7 @@ class UserBlueprint(BaseBlueprint):
             app.logger.debug(f"Listing users: {users}")
             return jsonify(users), 200
 
-        @self._blueprint.route("/users", methods=["PUT"])
+        @self.route("/users", methods=["PUT"])
         @restrict_access(["superuser"])
         def write_rows() -> Tuple[Any, int]:
             """

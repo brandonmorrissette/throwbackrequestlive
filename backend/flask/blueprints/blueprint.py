@@ -2,31 +2,40 @@
 Base blueprint module for defining common blueprint functionality.
 """
 
-from typing import Any
-
 from flask import Blueprint as FlaskBlueprint
+from flask import Flask
 
 
-class BaseBlueprint:
+class Blueprint(FlaskBlueprint):
     """
     Base class for all blueprints.
     """
 
-    def __init__(self, app: Any, service: Any = None, url_prefix: str = "/api") -> None:
+    def __init__(
+        self,
+        app: Flask,
+        import_name: str | None = None,
+        service=None,
+        url_prefix="/api",
+    ) -> None:
         """
         Initialize the blueprint.
 
-        :param app: Flask application instance
+        :param app: Flask application
+        :param import_name: Import name of the module
         :param service: Optional service for the blueprint
         :param url_prefix: URL prefix for the blueprint routes
         """
-        self._app = app
-        self._service = service
-        self._blueprint = FlaskBlueprint(self.__class__.__name__.lower(), __name__)
-        self._register_routes()
-        self._app.register_blueprint(self._blueprint, url_prefix=url_prefix)
+        name = self.__class__.__name__.lower()
+        if not import_name:
+            import_name = name
 
-    def _register_routes(self) -> None:
+        super().__init__(name, import_name, url_prefix=url_prefix)
+        self._service = service
+        self.register_routes()
+        app.register_blueprint(self, url_prefix=url_prefix)
+
+    def register_routes(self) -> None:
         """
         Register routes for the blueprint.
         This should be overridden by child classes.

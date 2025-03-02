@@ -4,24 +4,24 @@ This module contains the AuthBlueprint class which handles authentication-relate
 
 from typing import Any, Tuple
 
-from blueprints.blueprint import BaseBlueprint
+from blueprints.blueprint import Blueprint
 from flask import jsonify, request
 from services.auth import AuthService
 
 
-class AuthBlueprint(BaseBlueprint):
+class AuthBlueprint(Blueprint):
     """
     Blueprint for handling authentication-related routes.
     """
 
     _service: AuthService
 
-    def _register_routes(self) -> None:
+    def register_routes(self) -> None:
         """
         Register routes for authentication operations.
         """
 
-        @self._blueprint.route("/login", methods=["POST"])
+        @self.route("/login", methods=["POST"])
         def login() -> Tuple[Any, int]:
             """
             Authenticate a user and return a token.
