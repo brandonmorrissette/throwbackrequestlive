@@ -42,44 +42,50 @@ class SQLALchemyJSONProvider(JSONProvider):
             The serialized object.
         """
         try:
-            if obj is None:
-                return None
+            serialized = None
+            match obj:
+                case None:
+                    return serialized
 
-            elif isinstance(obj, (Integer, String, Boolean, Float, DateTime)):
-                logging.debug(f"SQL Alchemy Primitive encountered: {obj}")
-                return self._serialize_sqlalchemy_type(obj)
+                case Integer() | String() | Boolean() | Float() | DateTime():
+                    logging.debug("SQL Alchemy Primitive encountered: %s", obj)
+                    serialized = self._serialize_sqlalchemy_type(obj)
 
-            elif isinstance(obj, Mapping):
-                logging.debug(f"Dictionary encountered: {obj}")
-                return {key: self.default(value) for key, value in obj.items()}
+                case Mapping():
+                    logging.debug("Dictionary encountered: %s", obj)
+                    serialized = {
+                        key: self.default(value) for key, value in obj.items()
+                    }
 
-            elif isinstance(obj, Constraint):
-                logging.debug(f"SQLAlchemy Constraint encountered: {obj}")
-                return self._serialize_constraint(obj)
+                case Constraint():
+                    logging.debug("SQLAlchemy Constraint encountered: %s", obj)
+                    serialized = self._serialize_constraint(obj)
 
-            elif isinstance(obj, Table):
-                logging.debug(f"SQLAlchemy Table encountered: {obj}")
-                return self._serialize_table(obj)
+                case Table():
+                    logging.debug("SQLAlchemy Table encountered: %s", obj)
+                    serialized = self._serialize_table(obj)
 
-            elif isinstance(obj, Column):
-                logging.debug(f"SQLAlchemy Column encountered: {obj}")
-                return self._serialize_column(obj)
+                case Column():
+                    logging.debug("SQLAlchemy Column encountered: %s", obj)
+                    serialized = self._serialize_column(obj)
 
-            elif isinstance(obj, (str, int, float, bool, bytes)):
-                logging.debug(f"Primitive encountered: {obj}")
-                return obj
+                case str() | int() | float() | bool() | bytes():
+                    logging.debug("Primitive encountered: %s", obj)
+                    serialized = obj
 
-            elif isinstance(obj, Iterable):
-                logging.debug(f"Iterable encountered: {obj}")
-                return [self.default(item) for item in obj]
+                case Iterable():
+                    logging.debug("Iterable encountered: %s", obj)
+                    serialized = [self.default(item) for item in obj]
 
-            else:
-                logging.debug(
-                    f"Object of type {type(obj).__name__} is not serializable"
-                )
+                case _:
+                    logging.debug(
+                        "Object of type %s is not serializable", type(obj).__name__
+                    )
+
+            return serialized
         except Exception as e:
-            logging.error(f"Error serializing object {obj}: {e}")
-            raise
+            logging.error("Error serializing object %s: %s", obj, e)
+            raise e
 
     def _get_attributes(self, obj) -> list:
         """
@@ -99,8 +105,8 @@ class SQLALchemyJSONProvider(JSONProvider):
                     or isinstance(getattr(obj, attr), types.MethodType)
                 ):
                     attributes.append(attr)
-            except Exception as e:
-                logging.error(f"Error getting attribute {attr}: {e}")
+            except (AttributeError, TypeError) as e:
+                logging.error("Error getting attribute %s: %s", attr, e)
         return attributes
 
     def _serialize_sqlalchemy_type(self, primitive) -> str:
@@ -113,40 +119,27 @@ class SQLALchemyJSONProvider(JSONProvider):
         Returns:
             Python equivalent of the SQLAlchemy type.
         """
-        if isinstance(primitive, Integer):
-            return int.__name__
-        elif isinstance(primitive, String):
-            return str.__name__
-        elif isinstance(primitive, Boolean):
-            return "bool"  # bool does not a __name__ attribute, according to the error I ran into
-        elif isinstance(primitive, Float):
-            return float.__name__
-        elif isinstance(primitive, DateTime):
-            return datetime.__name__
-        else:
-            return str.__name__
+        serialized = None
+        match primitive:
+            case Integer():
+                serialized = int.__name__
+            case String():
+                serialized = str.__name__
+            case Boolean():
+                serialized = "bool"  # bool does not have a __name__ attribute
+            case Float():
+                serialized = float.__name__
+            case DateTime():
+                serialized = datetime.__name__
+            case _:
+                serialized = str.__name__
+
+        return serialized
 
     def _serialize_table(
         self,
         table,
-        excluded_attributes=[
-            "c",
-            "create_drop_stringify_dialect",
-            "dialect_kwargs",
-            "entity_namespace",
-            "dialect_options",
-            "dispatch",
-            "exported_columns",
-            "implicit_returning",
-            "inherit_cache",
-            "is_clause_element",
-            "is_selectable",
-            "kwargs",
-            "selectable",
-            "stringify_dialect",
-            "supports_execution",
-            "uses_inspection",
-        ],
+        excluded_attributes=None,
     ) -> dict:
         """
         Serialize a SQLAlchemy Table object.
@@ -154,53 +147,53 @@ class SQLALchemyJSONProvider(JSONProvider):
         Args:
             table: The Table object to serialize.
             excluded_attributes: List of attributes to exclude from serialization.
-                Default attributes are : c, create_drop_stringify_dialect, dialect_kwargs, entity_namespace, dialect_options, dispatch, exported_columns, implicit_returning, inherit_cache, is_clause_element, is_selectable, kwargs, selectable, stringify_dialect, supports_execution, uses_inspection
+                Default attributes are : c, create_drop_stringify_dialect, dialect_kwargs,
+                entity_namespace, dialect_options, dispatch, exported_columns,
+                implicit_returning, inherit_cache, is_clause_element, is_selectable,
+                kwargs, selectable, stringify_dialect, supports_execution, uses_inspection
 
         Returns:
             A dictionary of serialized attributes.
         """
+        if excluded_attributes is None:
+            excluded_attributes = [
+                "c",
+                "create_drop_stringify_dialect",
+                "dialect_kwargs",
+                "entity_namespace",
+                "dialect_options",
+                "dispatch",
+                "exported_columns",
+                "implicit_returning",
+                "inherit_cache",
+                "is_clause_element",
+                "is_selectable",
+                "kwargs",
+                "selectable",
+                "stringify_dialect",
+                "supports_execution",
+                "uses_inspection",
+            ]
+
         attribute_keys = self._get_attributes(table)
-        logging.debug(f"Table attributes: {attribute_keys}")
+        logging.debug("Table attributes: %s", attribute_keys)
         attributes = {}
         for attribute_key in attribute_keys:
             if attribute_key in excluded_attributes:
                 continue
 
             attribute = getattr(table, attribute_key)
-            logging.debug(f"Serializing Attribute: {attribute_key}, Value: {attribute}")
+            logging.debug(
+                "Serializing Attribute: %s, Value: %s", attribute_key, attribute
+            )
             attributes[attribute_key] = self.default(attribute)
-        logging.debug(f"Table {table}: {attributes}")
+        logging.debug("Table %s: %s", table, attributes)
         return attributes
 
     def _serialize_column(
         self,
         column,
-        excluded_attributes=[
-            "allows_lambda",
-            "anon_key_label",
-            "anon_label",
-            "base_columns",
-            "bind",
-            "comparator",
-            "create_drop_stringify_dialect",
-            "dialect_kwargs",
-            "dialect_options",
-            "dispatch",
-            "entity_namespace",
-            "expression",
-            "inherit_cache",
-            "is_clause_element",
-            "is_selectable",
-            "kwargs",
-            "proxy_set",
-            "server_default",
-            "server_onupdate",
-            "stringify_dialect",
-            "supports_execution",
-            "system",
-            "table",
-            "uses_inspection",
-        ],
+        excluded_attributes=None,
     ) -> dict:
         """
         Serialize a SQLAlchemy Column object.
@@ -208,21 +201,53 @@ class SQLALchemyJSONProvider(JSONProvider):
         Args:
             column: The Column object to serialize.
             excluded_attributes: List of attributes to exclude from serialization.
-                Default attributes are : allows_lambda, anon_key_label, anon_label, base_columns, bind, comparator, create_drop_stringify_dialect, dialect_kwargs, dialect_options, dispatch, entity_namespace, expression, inherit_cache, is_clause_element, is_selectable, kwargs, proxy_set, server_default, server_onupdate, stringify_dialect, supports_execution, system, table, uses_inspection
+                Default attributes are : allows_lambda, anon_key_label, anon_label, base_columns,
+                bind, comparator, create_drop_stringify_dialect, dialect_kwargs, dialect_options,
+                dispatch, entity_namespace, expression, inherit_cache, is_clause_element,
+                is_selectable, kwargs, proxy_set, server_default, server_onupdate,
+                stringify_dialect, supports_execution, system, table, uses_inspection
 
         Returns:
             A dictionary of serialized attributes.
         """
+        if excluded_attributes is None:
+            excluded_attributes = [
+                "allows_lambda",
+                "anon_key_label",
+                "anon_label",
+                "base_columns",
+                "bind",
+                "comparator",
+                "create_drop_stringify_dialect",
+                "dialect_kwargs",
+                "dialect_options",
+                "dispatch",
+                "entity_namespace",
+                "expression",
+                "inherit_cache",
+                "is_clause_element",
+                "is_selectable",
+                "kwargs",
+                "proxy_set",
+                "server_default",
+                "server_onupdate",
+                "stringify_dialect",
+                "supports_execution",
+                "system",
+                "table",
+                "uses_inspection",
+            ]
+
         attribute_keys = self._get_attributes(column)
-        logging.debug(f"Column attributes: {attribute_keys}")
+        logging.debug("Column attributes: %s", attribute_keys)
         attributes = {}
         for attr in attribute_keys:
             if attr in excluded_attributes:
                 continue
             attribute = getattr(column, attr)
-            logging.debug(f"Serializing Attribute: {attr}, Value: {attribute}")
+            logging.debug("Serializing Attribute: %s, Value: %s", attr, attribute)
             attributes[attr] = self.default(attribute)
-        logging.debug(f"Column {column}: {attributes}")
+        logging.debug("Column %s: %s", column, attributes)
         return attributes
 
     def _serialize_constraint(self, constraint):
@@ -236,23 +261,27 @@ class SQLALchemyJSONProvider(JSONProvider):
             A serialized representation of the constraint.
         """
         if isinstance(constraint, PrimaryKeyConstraint):
-            logging.debug(f"PrimaryKey: {constraint}")
+            logging.debug("PrimaryKey: %s", constraint)
             return self.default(constraint.columns)
-        elif isinstance(constraint, ForeignKeyConstraint):
+
+        if isinstance(constraint, ForeignKeyConstraint):
             references = [
                 f"{fk.parent.name} -> {fk.column.table.name}.{fk.column.name}"
                 for fk in constraint.elements
             ]
             foreign_key = f"ForeignKey({', '.join(references)})"
-            logging.debug(f"ForeignKey: {foreign_key}")
+            logging.debug("ForeignKey: %s", foreign_key)
             return foreign_key
-        elif isinstance(constraint, UniqueConstraint):
+
+        if isinstance(constraint, UniqueConstraint):
             unique_constraint = (
                 f"Unique({', '.join(col.name for col in constraint.columns)})"
             )
-            logging.debug(f"UniqueConstraint: {unique_constraint}")
+            logging.debug("UniqueConstraint: %s", unique_constraint)
             return constraint
-        else:
-            constraint = f"Constraint({', '.join(col.name for col in getattr(constraint, 'columns', []))})"
-            logging.debug(f"Constraint: {constraint}")
-            return constraint
+
+        columns = getattr(constraint, "columns", [])
+        column_names = ", ".join(col.name for col in columns)
+        constraint = f"Constraint({column_names})"
+        logging.debug("Constraint: %s", constraint)
+        return constraint

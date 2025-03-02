@@ -1,3 +1,7 @@
+"""
+Base blueprint module for defining common blueprint functionality.
+"""
+
 from typing import Any
 
 from flask import Blueprint as FlaskBlueprint

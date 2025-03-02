@@ -1,3 +1,7 @@
+"""
+Data service module for interacting with the database.
+"""
+
 import logging
 from contextlib import contextmanager
 
@@ -9,6 +13,12 @@ from sqlalchemy.orm import sessionmaker
 
 
 def get_json_provider_class() -> type:
+    """
+    Get the JSON provider class.
+
+    Returns:
+        type: The JSON provider class.
+    """
     return SQLALchemyJSONProvider
 
 
@@ -24,10 +34,13 @@ class DataService:
         Args:
             config (Config): The configuration object.
         """
-        DATABASE_URL = f"{config.DB_ENGINE}://{config.DB_USER}:{config.DB_PASSWORD}@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
+        database_url = (
+            f"{config.DB_ENGINE}://{config.DB_USER}:{config.DB_PASSWORD}@"
+            f"{config.DB_HOST}:{int(config.DB_PORT)}/{config.DB_NAME}"
+        )
 
-        logging.debug(f"Connecting to database: {DATABASE_URL}")
-        self._engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+        logging.debug("Connecting to database: %s", database_url)
+        self._engine = create_engine(database_url, pool_pre_ping=True)
         self._metadata = MetaData(bind=self._engine)
         self._session = sessionmaker(bind=self._engine)
         logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
@@ -45,7 +58,7 @@ class DataService:
             logging.debug("Committing session")
             session.commit()
         except SQLAlchemyError as e:
-            logging.error(f"Error in session: {e}. Rolling back.")
+            logging.error("Error in session: %s. Rolling back.", e)
             session.rollback()
             raise e
         finally:
@@ -109,7 +122,7 @@ class DataService:
         Returns:
             list: A list of row dictionaries.
         """
-        logging.debug(f"Reading rows from {table_name} with filters: {filters}")
+        logging.debug("Reading rows from %s with filters: %s", table_name, filters)
         self._refresh_metadata()
         table = self._metadata.tables.get(table_name)
 
@@ -121,10 +134,10 @@ class DataService:
 
             if filters:
                 filters_mapped = _map_filters(filters, table)
-                logging.debug(f"Filters mapped: {filters_mapped}")
+                logging.debug("Filters mapped: %s", filters_mapped)
                 query = query.filter(*filters_mapped)
 
-            logging.debug(f"Query: {query}")
+            logging.debug("Query: %s", query)
             return [row._asdict() for row in query.all()]
 
     def write_rows(self, table_name: str, rows: list) -> None:
@@ -196,7 +209,7 @@ def _map_filters(filters: list, table) -> list:
         try:
             column_name, operator, value = filter_str.split(maxsplit=2)
             logging.debug(
-                f"Column: {column_name}, Operator: {operator}, Value: {value}"
+                "Column: %s, Operator: %s, Value: %s", column_name, operator, value
             )
 
             column = getattr(table.c, column_name)
@@ -218,7 +231,7 @@ def _map_filters(filters: list, table) -> list:
 
             filter_expressions.append(filter_expression)
 
-        except ValueError:
-            raise ValueError(f"Invalid filter format: {filter_str}")
+        except ValueError as e:
+            raise ValueError(f"Invalid filter format: {filter_str}") from e
 
     return filter_expressions

@@ -1,3 +1,7 @@
+"""
+This module contains the AuthBlueprint class which handles authentication-related routes.
+"""
+
 from typing import Any, Tuple
 
 from blueprints.blueprint import BaseBlueprint

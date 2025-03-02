@@ -1,3 +1,8 @@
+"""
+This module provides a service for interacting with AWS Cognito.
+It includes functionalities to read, write, add, update, and delete users in Cognito.
+"""
+
 import json
 import secrets
 import string
@@ -10,6 +15,18 @@ from exceptions.boto import raise_http_exception
 
 
 def cognito_json_encoder(obj) -> str:
+    """
+    JSON encoder function for Cognito objects.
+
+    Args:
+        obj: The object to encode.
+
+    Returns:
+        str: The JSON-encoded string.
+
+    Raises:
+        TypeError: If the object type is not serializable.
+    """
     if isinstance(obj, datetime):
         return obj.isoformat()
     raise TypeError(f"Type {type(obj)} not serializable")
@@ -75,7 +92,7 @@ class CognitoService:
         Args:
             rows (list): A list of user dictionaries.
         """
-        existing_usernames = {key for key in self._redis_client.keys()}
+        existing_usernames = set(self._redis_client.keys())
         row_usernames = {row["Username"] for row in rows if "Username" in row}
 
         users_to_delete = existing_usernames - row_usernames

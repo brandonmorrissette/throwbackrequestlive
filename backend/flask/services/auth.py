@@ -1,3 +1,7 @@
+"""
+This module provides the AuthService class for handling authentication.
+"""
+
 from datetime import datetime, timedelta
 
 import boto3
@@ -8,7 +12,7 @@ from exceptions.boto import raise_http_exception
 
 class AuthService:
     """
-    Service for handling authentication with AWS Cognito.
+    Service for handling authentication.
     """
 
     @raise_http_exception

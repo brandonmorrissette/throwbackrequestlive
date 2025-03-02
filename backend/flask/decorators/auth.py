@@ -1,3 +1,7 @@
+"""
+This module contains decorators for restricting access to Flask endpoints based on user groups.
+"""
+
 from functools import wraps
 
 from flask import current_app as app
@@ -40,7 +44,7 @@ def restrict_access(groups):
                 app.logger.error(f"JWT verification failed: {e}")
                 http_exception = HTTPException("Unauthorized")
                 http_exception.code = 401
-                raise http_exception
+                raise http_exception from e
 
             if not any(group in claims.get("groups", []) for group in groups):
                 app.logger.warning(

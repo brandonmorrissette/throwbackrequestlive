@@ -1,3 +1,7 @@
+"""
+This module provides a decorator to handle boto ClientError exceptions and raise HTTPException.
+"""
+
 import logging
 
 from botocore.exceptions import ClientError
@@ -6,7 +10,8 @@ from exceptions.http import HTTPException
 
 def raise_http_exception(func):
     """
-    Decorator that wraps a function that make use of boto to catch ClientError exceptions and raise HTTPException.
+    Decorator that wraps a function that make use of boto
+    to catch ClientError exceptions and raise HTTPException.
 
     Args:
         func (function): The function to wrap.
@@ -22,8 +27,11 @@ def raise_http_exception(func):
             exception = HTTPException(e.response["Error"]["Message"])
             exception.code = e.response["ResponseMetadata"]["HTTPStatusCode"]
             logging.error(
-                f"ClientError in {func.__qualname__}: {exception.code} - {exception.description}"
+                "ClientError in %s: %s - %s",
+                func.__qualname__,
+                exception.code,
+                exception.description,
             )
-            raise exception
+            raise exception from e
 
     return wrapper

@@ -1,3 +1,7 @@
+"""
+Blueprint module for handling user-related routes.
+"""
+
 from typing import Any, Tuple
 
 from blueprints.blueprint import BaseBlueprint

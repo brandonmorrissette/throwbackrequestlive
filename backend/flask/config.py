@@ -1,4 +1,10 @@
-# config.py
+# pylint: disable=too-few-public-methods
+"""
+Configuration module for the Flask application.
+
+This module contains the base configuration class and environment-specific
+configuration classes for the Flask application.
+"""
 
 import os
 
@@ -47,11 +53,11 @@ class Config:
     DB_HOST = os.getenv("DB_HOST")
     DB_NAME = os.getenv("DB_NAME")
     DB_ENGINE = os.getenv("DB_ENGINE", "postgresql")
-    DB_PORT = os.getenv("DB_PORT", 5432)
+    DB_PORT = os.getenv("DB_PORT", "5432")
 
     # Redis
     REDIS_HOST = os.getenv("REDIS_HOST", "redis")
-    REDIS_PORT = os.getenv("REDIS_PORT", 6379)
+    REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 
 
 class DevelopmentConfig(Config):

@@ -1,3 +1,8 @@
+"""
+This module defines the DataBlueprint class and related functions 
+for handling data-related routes in a Flask application.
+"""
+
 import json
 from functools import wraps
 from typing import Any, Callable, Tuple
@@ -108,14 +113,14 @@ class DataBlueprint(BaseBlueprint):
             result = self._service.write_rows(table_name, rows)
             return jsonify(result), 200
 
-    def _get_rows(self, table_name: str, request: Any) -> Tuple[Any, int]:
+    def _get_rows(self, table_name: str, _request: Any) -> Tuple[Any, int]:
         """
         Helper method to get rows from a table with optional filters.
         :param table_name: The name of the table.
         :param request: The Flask request object.
         :return: JSON response with the rows.
         """
-        filters = request.args.get("filters")
+        filters = _request.args.get("filters")
         if filters:
             filters = json.loads(filters)
             app.logger.debug(f"Filters: {filters}")
