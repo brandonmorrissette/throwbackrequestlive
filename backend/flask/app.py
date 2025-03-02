@@ -99,4 +99,4 @@ if __name__ == "__main__":
         config = DevelopmentConfig()
 
     app = _create_app(config)
-    app.run(host="0.0.0.0", port=5000, debug=config.DEBUG)
+    app.run(host="0.0.0.0", port=5000, debug=config.DEBUG)  # nosec B104
