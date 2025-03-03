@@ -77,7 +77,7 @@ class RuntimeStack(Stack):
                 cluster=args.compute_stack.cluster_construct.cluster,
                 runtime_variables={
                     # pylint:disable=line-too-long
-                    "COGNITO_APP_CLIENT_ID": args.user_management_stack.user_pool_construct.app_client.user_pool_client_id,
+                    "COGNITO_APP_CLIENT_ID": args.user_management_stack.user_pool_construct.app_client.ref,
                     "COGNITO_USER_POOL_ID": args.user_management_stack.user_pool_construct.user_pool.user_pool_id,
                     # I'd like to update this to not use config.project_name, but have yet to find the right solution.
                     # The address requires a database name, which is not available in a db_instance
