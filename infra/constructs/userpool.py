@@ -50,12 +50,7 @@ class UserPoolConstruct(Construct):
         user_pool_name = f"{config.project_name}-user-pool"
 
         self.user_pool = self._get_user_pool(user_pool_name)
-        user_pool_client = self._get_user_pool_client(user_pool_name)
-        self.user_pool_client_id = (
-            user_pool_client.ref
-            if isinstance(user_pool_client, cognito.CfnUserPoolClient)
-            else user_pool_client.user_pool_client_id
-        )
+        self.user_pool_client = self._get_user_pool_client(user_pool_name)
 
     def _get_user_pool(self, user_pool_name):
         """
@@ -118,7 +113,7 @@ class UserPoolConstruct(Construct):
                         user_pool_client_id=client["ClientId"],
                     )
 
-        return cognito.CfnUserPoolClient(
+        cfn_client = cognito.CfnUserPoolClient(
             self,
             f"{user_pool_name}-user-pool-app-client",
             user_pool_id=self.user_pool.user_pool_id,
@@ -128,4 +123,8 @@ class UserPoolConstruct(Construct):
                 "ALLOW_USER_PASSWORD_AUTH",
                 "ALLOW_REFRESH_TOKEN_AUTH",
             ],
+        )
+
+        return cognito.UserPoolClient.from_user_pool_client_id(
+            self, f"{user_pool_name}-app-client", user_pool_client_id=cfn_client.ref
         )
