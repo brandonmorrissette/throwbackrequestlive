@@ -49,8 +49,11 @@ class UserPoolConstruct(Construct):
         self._cognito_client = boto3.client("cognito-idp")
         user_pool_name = f"{config.project_name}-user-pool"
 
-        self.user_pool = self._get_user_pool(user_pool_name)
-        self.user_pool_client = self._get_user_pool_client(user_pool_name)
+        user_pool = self._get_user_pool(user_pool_name)
+        user_pool_client = self._get_user_pool_client(user_pool_name)
+
+        self.user_pool_id = user_pool.user_pool_id
+        self.user_pool_client_id = user_pool_client.user_pool_client_id
 
     def _get_user_pool(self, user_pool_name):
         """
@@ -60,6 +63,10 @@ class UserPoolConstruct(Construct):
 
         Args:
             user_pool_name (str): The name of the user pool.
+            sleep_time (int, optional): The time to sleep between checks.
+                Defaults to 5.
+            max_checks (int, optional): The maximum number of checks.
+                Defaults to 10.
 
         Returns:
             cognito.UserPool: The Cognito user pool.
@@ -101,9 +108,9 @@ class UserPoolConstruct(Construct):
         Returns:
             cognito.UserPoolClient: The Cognito client.
         """
-        if not Token.is_unresolved(self.user_pool.user_pool_id):
+        if not Token.is_unresolved(self.user_pool_id):
             app_clients = self._cognito_client.list_user_pool_clients(
-                UserPoolId=self.user_pool.user_pool_id, MaxResults=60
+                UserPoolId=self.user_pool_id, MaxResults=60
             )
             for client in app_clients.get("UserPoolClients", []):
                 if client["ClientName"] == user_pool_name + "-app-client":
@@ -116,7 +123,7 @@ class UserPoolConstruct(Construct):
         cfn_client = cognito.CfnUserPoolClient(
             self,
             f"{user_pool_name}-user-pool-app-client",
-            user_pool_id=self.user_pool.user_pool_id,
+            user_pool_id=self.user_pool_id,
             client_name=f"{user_pool_name}-user-pool-app-client",
             explicit_auth_flows=[
                 "ALLOW_ADMIN_USER_PASSWORD_AUTH",
