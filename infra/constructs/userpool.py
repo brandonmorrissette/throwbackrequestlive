@@ -12,7 +12,6 @@ Usage example:
 import boto3
 from aws_cdk import RemovalPolicy, Token
 from aws_cdk import aws_cognito as cognito
-from aws_cdk import aws_ssm as ssm
 from config import Config
 from constructs.construct import Construct
 from stacks.stack import Stack
@@ -51,11 +50,7 @@ class UserPoolConstruct(Construct):
         user_pool_name = f"{config.project_name}-user-pool"
 
         self.user_pool = self._user_pool(user_pool_name)
-        self._post_user_pool_id(user_pool_name, self.user_pool.user_pool_id)
         self.app_client = self._app_client(user_pool_name)
-        self._post_app_client_id(
-            f"{user_pool_name}-app-client", self.app_client.user_pool_client_id
-        )
 
     def _user_pool(self, user_pool_name):
         user_pool = self._get_user_pool_by_name(user_pool_name)
@@ -78,33 +73,6 @@ class UserPoolConstruct(Construct):
             )
 
         return user_pool
-
-    def _post_user_pool_id(self, user_pool_name, user_pool_id):
-        user_pool_id_param_id = f"{user_pool_name}-{self.node.addr}-id"
-        param_name = f"/{user_pool_name}-id"
-        self._post_string_param(
-            user_pool_id_param_id, param_name, user_pool_id, "Cognito User Pool ID"
-        )
-
-    def _post_app_client_id(self, app_client_name, app_client_id):
-        app_client_id_param_id = f"{app_client_name}-{self.node.addr}-id"
-        param_name = f"/{app_client_name}-id"
-        self._post_string_param(
-            app_client_id_param_id, param_name, app_client_id, "Cognito App Client ID"
-        )
-
-    def _post_string_param(self, param_id, param_name, param_value, description=None):
-        if self.node.try_find_child(param_id):
-            self.node.try_remove_child(param_id)
-
-        ssm_param = ssm.StringParameter(
-            self,
-            param_id,
-            parameter_name=param_name,
-            string_value=param_value,
-            description=description,
-        )
-        ssm_param.apply_removal_policy(RemovalPolicy.DESTROY)
 
     def _get_user_pool_by_name(self, user_pool_name):
         user_pools = self._cognito_client.list_user_pools(MaxResults=60)
