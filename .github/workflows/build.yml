@@ -38,10 +38,10 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v3
               with:
-                  node-version: '16'
+                  node-version: '20'
 
-            - name: Install Node dependencies
-              run: npm install
-
-            - name: Run ESLint
-              run: npx eslint 'frontend/src/*.{ts,tsx}' --config frontend/eslint.config.js
+            - name: Run ESLint on frontend
+              run: |
+                  cd frontend
+                  npm install
+                  npx eslint 'src/*.{ts,tsx}'
