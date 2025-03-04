@@ -39,7 +39,7 @@ class UserManagementStack(Stack):
 
         self.user_pool_construct = UserPoolConstruct(self, config)
         self.superuser_construct = SuperUserConstruct(
-            self, config, self.user_pool_construct.user_pool.user_pool_id
+            self, config, self.user_pool_construct.user_pool_id
         )
 
         CfnOutput(
