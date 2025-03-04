@@ -12,6 +12,7 @@ Usage example:
 import boto3
 from aws_cdk import RemovalPolicy, Token
 from aws_cdk import aws_cognito as cognito
+from aws_cdk import aws_ssm as ssm
 from config import Config
 from constructs.construct import Construct
 from stacks.stack import Stack
@@ -53,7 +54,22 @@ class UserPoolConstruct(Construct):
         user_pool_client = self._get_user_pool_client(user_pool_name)
 
         self.user_pool_id = user_pool.user_pool_id
+
+        ssm.StringParameter(
+            self,
+            "UserPoolIdParameter",
+            parameter_name=f"/{config.project_name}/user-pool-id",
+            string_value=user_pool.user_pool_id,
+        )
+
         self.user_pool_client_id = user_pool_client.user_pool_client_id
+
+        ssm.StringParameter(
+            self,
+            "UserPoolClientIdParameter",
+            parameter_name=f"/{config.project_name}/user-pool-client-id",
+            string_value=user_pool_client.user_pool_client_id,
+        )
 
     def _get_user_pool(self, user_pool_name):
         """
