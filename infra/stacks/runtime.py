@@ -9,6 +9,7 @@ using the provided stacks and configuration.
 from dataclasses import dataclass
 
 from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_ssm as ssm
 from config import Config
 from constructs import Construct
 from constructs.route_53 import Route53Construct, Route53ConstructArgs
@@ -77,8 +78,12 @@ class RuntimeStack(Stack):
                 cluster=args.compute_stack.cluster_construct.cluster,
                 runtime_variables={
                     # pylint:disable=line-too-long
-                    "COGNITO_APP_CLIENT_ID": args.user_management_stack.user_pool_construct.app_client.user_pool_client_id,
-                    "COGNITO_USER_POOL_ID": args.user_management_stack.user_pool_construct.user_pool.user_pool_id,
+                    "COGNITO_APP_CLIENT_ID": ssm.StringParameter.value_for_string_parameter(
+                        self, f"/{config.project_name}/user-pool-client-id"
+                    ),
+                    "COGNITO_USER_POOL_ID": ssm.StringParameter.value_for_string_parameter(
+                        self, f"/{config.project_name}/user-pool-id"
+                    ),
                     # I'd like to update this to not use config.project_name, but have yet to find the right solution.
                     # The address requires a database name, which is not available in a db_instance
                     "DB_NAME": config.project_name,
