@@ -10,7 +10,7 @@ Usage example:
 """
 
 import boto3
-from aws_cdk import RemovalPolicy, Token
+from aws_cdk import Token
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ssm as ssm
 from config import Config
@@ -106,7 +106,6 @@ class UserPoolConstruct(Construct):
                 require_symbols=False,
             ),
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
-            removal_policy=RemovalPolicy.DESTROY,
         )
 
     def _get_user_pool_client(self, user_pool_name):
