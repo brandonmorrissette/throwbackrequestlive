@@ -32,8 +32,7 @@ class ClusterConstruct(Construct):
         scope: Stack,
         config: Config,
         vpc: ec2.Vpc,
-        id: str | None = None,
-        suffix: str | None = "cluster",
+        construct_id: str | None = None,
     ) -> None:
         """
         Initializes the ClusterConstruct with the given parameters.
@@ -42,9 +41,9 @@ class ClusterConstruct(Construct):
             scope (Stack): The parent stack.
             config (Config): Configuration object.
             vpc (ec2.Vpc): The VPC in which to create the ECS cluster.
-            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): Suffix for resource names. Defaults to "cluster".
+            construct_id (str, optional): The ID of the construct.
+                Defaults to f"{config.project_name}-{config.environment_name}-cluster".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, construct_id, "cluster")
 
         self.cluster = ecs.Cluster(self, self.id, vpc=vpc)

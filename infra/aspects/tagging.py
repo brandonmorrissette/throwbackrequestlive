@@ -1,3 +1,9 @@
+# pylint: disable=too-few-public-methods
+"""
+This module defines the TaggingAspect class which is used to add default tags
+to all nodes in the AWS CDK construct tree based on the provided configuration.
+"""
+
 import jsii
 from aws_cdk import IAspect, Tags
 from config import Config

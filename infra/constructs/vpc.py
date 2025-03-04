@@ -1,5 +1,6 @@
 """
-This module contains the VpcConstruct class, which sets up a VPC with a specified number of availability zones.
+This module contains the VpcConstruct class, 
+which sets up a VPC with a specified number of availability zones.
 
 Classes:
     VpcConstruct: A construct that sets up a VPC.
@@ -30,8 +31,7 @@ class VpcConstruct(Construct, Resource):
         self,
         scope: Stack,
         config: Config,
-        id: str | None = None,
-        suffix: str | None = "vpc",
+        construct_id: str | None = None,
     ) -> None:
         """
         Initializes the VpcConstruct with the given parameters.
@@ -39,9 +39,9 @@ class VpcConstruct(Construct, Resource):
         Args:
             scope (Stack): The parent stack.
             config (Config): Configuration object.
-            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): Suffix for resource names. Defaults to "vpc".
+            construct_id (str, optional): The ID of the construct.
+                Defaults to f"{config.project_name}-{config.environment_name}-vpc".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, construct_id, "vpc")
 
         self.vpc = ec2.Vpc(self, self.id, max_azs=2)

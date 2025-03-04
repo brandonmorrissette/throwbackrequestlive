@@ -29,11 +29,7 @@ class CertConstruct(Construct):
     """
 
     def __init__(
-        self,
-        scope: Stack,
-        config: Config,
-        id: str | None = None,
-        suffix: str | None = "cert",
+        self, scope: Stack, config: Config, construct_id: str | None = None
     ) -> None:
         """
         Initializes the CertConstruct with the given parameters.
@@ -41,10 +37,10 @@ class CertConstruct(Construct):
         Args:
             scope (Stack): The parent stack.
             config (Config): Configuration object.
-            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): Suffix for resource names. Defaults to "cert".
+            construct_id (str, optional): The ID of the construct.
+                Defaults to f"{config.project_name}-{config.environment_name}-cert".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, construct_id, "cert")
 
         self.hosted_zone = route53.HostedZone.from_lookup(
             self, "hosed-zone", domain_name="throwbackrequestlive.com"

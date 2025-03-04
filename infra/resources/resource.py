@@ -1,3 +1,8 @@
+# pylint: disable=too-few-public-methods
+"""
+This module provides the Resource class for standardizing default IDs for cloud resources.
+"""
+
 from config import Config
 
 
@@ -12,7 +17,7 @@ class Resource:
     def __init__(
         self,
         config: Config,
-        id: str | None = None,
+        resource_id: str | None = None,
         suffix: str | None = None,
     ) -> None:
         """
@@ -20,11 +25,15 @@ class Resource:
 
         Args:
             config (Config): The configuration object containing project and environment names.
-            id (str, optional): The initial ID for the resource. Defaults to f"{config.project_name}-{config.environment_name}".
+            id (str, optional): The initial ID for the resource.
+                Defaults to f"{config.project_name}-{config.environment_name}".
             suffix (str, optional): An optional suffix to append to the ID. Defaults to None.
         """
-        self.id = id if id else f"{config.project_name}-{config.environment_name}"
+        self.id = (
+            resource_id
+            if resource_id
+            else f"{config.project_name}-{config.environment_name}"
+        )
 
-        suffix = suffix
         if suffix:
             self.id = f"{self.id}-{suffix}"

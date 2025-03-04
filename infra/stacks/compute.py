@@ -24,8 +24,7 @@ class ComputeStack(Stack):
         scope: Construct,
         config: Config,
         vpc: ec2.Vpc,
-        id: str | None = None,
-        suffix: str | None = "compute",
+        stack_id: str | None = None,
     ) -> None:
         """
         Initialize the ComputeStack.
@@ -34,10 +33,10 @@ class ComputeStack(Stack):
             scope (Construct): The scope in which this stack is defined.
             config (Config): The configuration object containing stack settings.
             vpc (ec2.Vpc): The VPC in which to create the ECS cluster.
-            id (str, optional): The ID of the stack. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): The suffix to append to the stack name. Defaults to "compute".
+            stack_id (str, optional): The ID of the stack.
+                Defaults to f"{config.project_name}-{config.environment_name}".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, stack_id, "compute")
 
         self.cluster_construct = ClusterConstruct(self, config, vpc=vpc)
 

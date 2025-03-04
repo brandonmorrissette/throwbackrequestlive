@@ -25,8 +25,7 @@ class StorageStack(Stack):
         scope: Construct,
         config: Config,
         vpc: ec2.Vpc,
-        id: str | None = None,
-        suffix: str | None = "storage",
+        stack_id: str | None = None,
     ) -> None:
         """
         Initialize the StorageStack.
@@ -35,10 +34,10 @@ class StorageStack(Stack):
             scope (Construct): The scope in which this stack is defined.
             config (Config): The configuration object containing stack settings.
             vpc (ec2.Vpc): The VPC in which to create the storage resources.
-            id (str, optional): The ID of the stack. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): The suffix to append to the stack name. Defaults to "storage".
+            stack_id (str, optional): The ID of the stack.
+                Defaults to f"{config.project_name}-{config.environment_name}-storage".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, stack_id, "storage")
 
         self.rds_construct = RdsConstruct(self, vpc, config)
         self.cache_construct = CacheConstruct(self, vpc, config)

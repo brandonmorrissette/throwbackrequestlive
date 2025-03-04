@@ -1,0 +1,47 @@
+name: Build App
+
+on:
+    workflow_dispatch:
+
+jobs:
+    code-quality:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Set up Python
+              uses: actions/setup-python@v3
+              with:
+                  python-version: '3.x'
+
+            - name: Install dependencies
+              run: |
+                  pip install pylint bandit -r infra/requirements.txt -r backend/requirements.txt
+
+            - name: Running pylint on backend
+              run: |
+                  pylint backend/
+
+            - name: Running bandit on backend
+              run: |
+                  bandit -r backend/
+
+            - name: Running pylint on infra
+              run: |
+                  pylint infra/
+
+            - name: Running bandit on infra
+              run: |
+                  bandit -r infra/
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '16'
+
+            - name: Install Node dependencies
+              run: npm install
+
+            - name: Run ESLint
+              run: npx eslint 'frontend/src/*.{ts,tsx}' --config frontend/eslint.config.js

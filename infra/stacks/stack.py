@@ -19,7 +19,7 @@ class Stack(AwsCdkStack, Resource):
     A stack that extends AWS CDK Stack and Resource classes.
 
     Attributes:
-        id: The ID of the stack.
+        stack_id: The ID of the stack.
         suffix: The suffix for resource names.
 
     Methods:
@@ -30,7 +30,7 @@ class Stack(AwsCdkStack, Resource):
         self,
         scope: AwsCdkConstruct,
         config: Config,
-        id: str | None = None,
+        stack_id: str | None = None,
         suffix: str | None = None,
         **kwargs
     ):
@@ -40,8 +40,9 @@ class Stack(AwsCdkStack, Resource):
         Args:
             scope (AwsCdkConstruct): The parent construct.
             config (Config): Configuration object.
-            id (str, optional): The ID of the stack. Defaults to f"{config.project_name}-{config.environment_name}".
+            stack_id (str, optional): The ID of the stack.
+                Defaults to f"{config.project_name}-{config.environment_name}".
             suffix (str, optional): Suffix for resource names. Defaults to None.
         """
-        Resource.__init__(self, config, id, suffix)
+        Resource.__init__(self, config, stack_id, suffix)
         super().__init__(scope, self.id, env=config.cdk_environment, **kwargs)

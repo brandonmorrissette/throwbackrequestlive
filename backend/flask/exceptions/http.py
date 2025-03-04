@@ -1,3 +1,8 @@
+"""
+This module defines a custom HTTPException class that returns a JSON response
+instead of the default HTML response provided by Flask.
+"""
+
 from flask import jsonify
 from werkzeug.exceptions import HTTPException as FlaskHTTPException
 
@@ -11,7 +16,9 @@ class HTTPException(FlaskHTTPException):
         code (int): The HTTP status code.
     """
 
-    def get_response(self, environ=None):
+    def get_response(
+        self, environ=None, scope=None, receive=None
+    ):  # pylint: disable=unused-argument
         """
         Override to return JSON response instead of HTML.
 

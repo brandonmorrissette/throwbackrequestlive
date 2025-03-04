@@ -33,8 +33,7 @@ class CacheConstruct(Construct):
         scope: Stack,
         vpc: ec2.Vpc,
         config: Config,
-        id: str | None = None,
-        suffix: str | None = "cert",
+        construct_id: str | None = None,
     ):
         """
         Initializes the CacheConstruct with the given parameters.
@@ -43,10 +42,10 @@ class CacheConstruct(Construct):
             scope (Stack): The parent stack.
             vpc (ec2.Vpc): The VPC in which to create the cache cluster.
             config (Config): Configuration object.
-            id (str, optional): The ID of the construct. Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): Suffix for resource names. Defaults to "cert".
+            construct_id (str, optional): The ID of the construct.
+                Defaults to f"{config.project_name}-{config.environment_name}-cache".
         """
-        super().__init__(scope, config, id, suffix)
+        super().__init__(scope, config, construct_id, "cache")
 
         security_group = ec2.SecurityGroup(self, "RedisSG", vpc=vpc)
 
