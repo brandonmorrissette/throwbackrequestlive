@@ -40,10 +40,8 @@ jobs:
               with:
                   node-version: '16'
 
-            - name: Install Node dependencies
-              run: |
-
             - name: Run ESLint on frontend
-              run: cd frontend
+              run: |
+                  cd frontend
                   npm install
                   npx eslint 'src/*.{ts,tsx}'
