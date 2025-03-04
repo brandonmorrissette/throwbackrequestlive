@@ -51,10 +51,7 @@ class UserPoolConstruct(Construct):
         user_pool_name = f"{config.project_name}-user-pool"
 
         user_pool = self._get_user_pool(user_pool_name)
-        user_pool_client = self._get_user_pool_client(user_pool_name)
-
         self.user_pool_id = user_pool.user_pool_id
-
         ssm.StringParameter(
             self,
             "UserPoolIdParameter",
@@ -62,8 +59,8 @@ class UserPoolConstruct(Construct):
             string_value=user_pool.user_pool_id,
         )
 
+        user_pool_client = self._get_user_pool_client(user_pool_name)
         self.user_pool_client_id = user_pool_client.user_pool_client_id
-
         ssm.StringParameter(
             self,
             "UserPoolClientIdParameter",
