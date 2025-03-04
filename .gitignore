@@ -5,6 +5,8 @@
 !.gitignore
 !.dockerignore
 !.github/
+!.pylintrc
+!.pre-commit-config.yaml
 
 # Python bytecode and cache files
 *.pyc
