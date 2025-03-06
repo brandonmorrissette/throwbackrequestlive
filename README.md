@@ -53,3 +53,8 @@ To Do
 # Login
 
 -   The login, login form and password reset could benefit from some better seperation of concerns.
+
+# Pylint
+
+-   There is conflict between infra/config and backend/config or more accurately, the use of relative imports in the codebase.
+    I'm thinking I may want to rethink the relative imports, but if my memory is correct Flask had a problem with more absolute imports (?)

@@ -2,7 +2,7 @@
 This module provides the AuthService class for handling authentication.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import boto3
 import jwt
@@ -115,8 +115,8 @@ class AuthService:
             "sub": username,
             "username": username,
             "groups": groups,
-            "iat": datetime.utcnow(),
-            "exp": datetime.utcnow() + timedelta(hours=1),
+            "iat": datetime.now(timezone.utc),
+            "exp": datetime.now(timezone.utc) + timedelta(hours=1),
         }
 
         token = jwt.encode(payload, self._jwt_secret_key, algorithm=self._jwt_algorithm)

@@ -16,7 +16,7 @@ class Blueprint(FlaskBlueprint):
         app: Flask,
         import_name: str | None = None,
         service=None,
-        url_prefix="/api",
+        url_prefix=None,
     ) -> None:
         """
         Initialize the blueprint.

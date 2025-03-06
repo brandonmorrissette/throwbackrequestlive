@@ -1,0 +1,9 @@
+[tool.pylint]
+init-hook='import sys, os; sys.path.extend(["backend/flask", "infra"]);'
+
+[tool.bandit]
+targets = ["infra/", "backend/"]
+exclude_dirs = ["*/tests/*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["backend/flask", "infra"]

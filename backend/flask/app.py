@@ -80,12 +80,12 @@ def _create_app(app_config: Config) -> Flask:
     data_service = DataService(app_config)
 
     # API Blueprints
-    AuthBlueprint(flask_app, service=auth_service)
-    UserBlueprint(flask_app, service=cognito_service)
-    DataBlueprint(flask_app, service=data_service)
+    AuthBlueprint(flask_app, service=auth_service, url_prefix="/api")
+    UserBlueprint(flask_app, service=cognito_service, url_prefix="/api")
+    DataBlueprint(flask_app, service=data_service, url_prefix="/api")
 
     # Render Blueprints
-    RenderBlueprint(flask_app, url_prefix="")
+    RenderBlueprint(flask_app)
 
     return flask_app
 
