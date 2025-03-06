@@ -3,7 +3,6 @@ repos:
       hooks:
           - id: pylint
             name: pylint
-            #entry: bash -c 'git diff --name-only --cached -- "*.py" | xargs pylint --rcfile=$(pwd)/pyproject.toml'
             entry: bash -c 'pylint infra/ backend/'
             language: system
             types: [python]
