@@ -9,8 +9,8 @@ from unittest.mock import MagicMock
 import pytest
 from flask import Flask
 
-from services.auth import AuthService
-from blueprints.auth import AuthBlueprint
+from backend.flask.blueprints.auth import AuthBlueprint
+from backend.flask.services.auth import AuthService
 
 
 @pytest.fixture(scope="module")

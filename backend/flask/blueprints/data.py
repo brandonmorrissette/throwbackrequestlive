@@ -7,14 +7,13 @@ import json
 from functools import wraps
 from typing import Any, Callable, Tuple
 
-from blueprints.blueprint import Blueprint
-from decorators.auth import (  # pylint: disable=import-error,no-name-in-module
-    restrict_access,
-)
 from flask import Flask, Request
 from flask import current_app as app
 from flask import jsonify, request
-from services.data import DataService, get_json_provider_class
+
+from backend.flask.blueprints.blueprint import Blueprint
+from backend.flask.decorators.auth import restrict_access
+from backend.flask.services.data import DataService, get_json_provider_class
 
 
 def override_json_provider(provider: Callable) -> Callable:

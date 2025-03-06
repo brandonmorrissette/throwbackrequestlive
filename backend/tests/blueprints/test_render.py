@@ -3,8 +3,9 @@
 Tests for the RenderBlueprint in the Flask application.
 """
 import pytest
-from blueprints.render import RenderBlueprint
 from flask import Flask
+
+from backend.flask.blueprints.render import RenderBlueprint
 
 FILE = "<!DOCTYPE html><html><head><title>Test</title></head><body>Test</body></html>"
 

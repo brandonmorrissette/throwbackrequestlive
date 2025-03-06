@@ -10,8 +10,9 @@ from datetime import datetime
 
 import boto3
 import redis
-from config import Config
-from exceptions.boto import raise_http_exception
+
+from backend.flask.config import Config
+from backend.flask.exceptions.boto import raise_http_exception
 
 
 def cognito_json_encoder(obj) -> str:

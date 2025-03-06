@@ -37,17 +37,18 @@ Entry Point:
 import logging
 import os
 
-from blueprints.auth import AuthBlueprint
-from blueprints.data import DataBlueprint
-from blueprints.render import RenderBlueprint
-from blueprints.user import UserBlueprint
-from config import Config, DevelopmentConfig
 from flask import Flask
 from flask_jwt_extended import JWTManager
-from providers.json import JSONProvider
-from services.auth import AuthService
-from services.cognito import CognitoService
-from services.data import DataService
+
+from backend.flask.blueprints.auth import AuthBlueprint
+from backend.flask.blueprints.data import DataBlueprint
+from backend.flask.blueprints.render import RenderBlueprint
+from backend.flask.blueprints.user import UserBlueprint
+from backend.flask.config import Config, DevelopmentConfig
+from backend.flask.providers.json import JSONProvider
+from backend.flask.services.auth import AuthService
+from backend.flask.services.cognito import CognitoService
+from backend.flask.services.data import DataService
 
 
 def _create_app(app_config: Config) -> Flask:

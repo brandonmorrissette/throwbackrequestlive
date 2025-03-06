@@ -8,7 +8,6 @@ import types
 from collections.abc import Iterable, Mapping
 from datetime import datetime
 
-from providers.json import JSONProvider
 from sqlalchemy import (
     Boolean,
     Column,
@@ -22,6 +21,8 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.schema import Constraint
+
+from backend.flask.providers.json import JSONProvider
 
 
 class SQLALchemyJSONProvider(JSONProvider):

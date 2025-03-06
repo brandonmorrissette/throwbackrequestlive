@@ -4,11 +4,12 @@ Blueprint module for handling user-related routes.
 
 from typing import Any, Tuple
 
-from blueprints.blueprint import Blueprint
-from decorators.auth import restrict_access
 from flask import current_app as app
 from flask import jsonify, request
-from services.cognito import CognitoService
+
+from backend.flask.blueprints.blueprint import Blueprint
+from backend.flask.decorators.auth import restrict_access
+from backend.flask.services.cognito import CognitoService
 
 
 class UserBlueprint(Blueprint):

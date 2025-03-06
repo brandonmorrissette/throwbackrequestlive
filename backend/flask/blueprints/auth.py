@@ -4,9 +4,10 @@ This module contains the AuthBlueprint class which handles authentication-relate
 
 from typing import Any, Tuple
 
-from blueprints.blueprint import Blueprint
 from flask import jsonify, request
-from services.auth import AuthService
+
+from backend.flask.blueprints.blueprint import Blueprint
+from backend.flask.services.auth import AuthService
 
 
 class AuthBlueprint(Blueprint):

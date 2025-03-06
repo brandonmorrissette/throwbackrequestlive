@@ -6,8 +6,9 @@ Tests for the Blueprint class in the Flask application.
 from unittest.mock import MagicMock
 
 import pytest
-from blueprints.blueprint import Blueprint
 from flask import Flask
+
+from backend.flask.blueprints.blueprint import Blueprint
 
 
 class TestBlueprint(Blueprint):  # pylint: disable=too-few-public-methods

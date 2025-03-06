@@ -7,10 +7,11 @@ import json
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
-from blueprints.data import DataBlueprint, override_json_provider
 from flask import Flask
-from mock.decorators import trace_decorator
-from services.data import DataService
+
+from backend.flask.blueprints.data import DataBlueprint, override_json_provider
+from backend.flask.services.data import DataService
+from backend.tests.mock.decorators import trace_decorator
 
 
 # Decorator

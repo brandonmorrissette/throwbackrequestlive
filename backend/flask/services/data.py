@@ -5,11 +5,12 @@ Data service module for interacting with the database.
 import logging
 from contextlib import contextmanager
 
-from config import Config
-from providers.sqlalchemy import SQLALchemyJSONProvider
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
+
+from backend.flask.config import Config
+from backend.flask.providers.sqlalchemy import SQLALchemyJSONProvider
 
 
 def get_json_provider_class() -> type:

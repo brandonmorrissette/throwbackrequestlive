@@ -7,10 +7,11 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-from blueprints.user import UserBlueprint
 from flask import Flask
-from mock.decorators import trace_decorator
-from services.cognito import CognitoService
+
+from backend.flask.blueprints.user import UserBlueprint
+from backend.flask.services.cognito import CognitoService
+from backend.tests.mock.decorators import trace_decorator
 
 
 @pytest.fixture(scope="module", autouse=True)

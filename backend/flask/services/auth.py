@@ -6,8 +6,9 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 import jwt
-from config import Config
-from exceptions.boto import raise_http_exception
+
+from backend.flask.config import Config
+from backend.flask.exceptions.boto import raise_http_exception
 
 
 class AuthService:
