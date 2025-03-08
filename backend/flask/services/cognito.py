@@ -46,14 +46,14 @@ class CognitoService:
         Args:
             config (Config): The configuration object.
         """
-        self._user_pool_id = config.COGNITO_USER_POOL_ID
+        self._user_pool_id = config.cognito_user_pool_id
         self._cognito_client = boto3.client(
-            "cognito-idp", region_name=config.COGNITO_REGION
+            "cognito-idp", region_name=config.cognito_region
         )
 
         self._redis_client = redis.StrictRedis(
-            host=config.REDIS_HOST,
-            port=int(config.REDIS_PORT),
+            host=config.redis_host,
+            port=int(config.redis_port),
             decode_responses=True,
         )
 
@@ -77,9 +77,7 @@ class CognitoService:
             groups = [group["GroupName"] for group in groups_response["Groups"]]
             user["Groups"] = groups
 
-            self._redis_client.set(
-                username, json.dumps(user, default=cognito_json_encoder)
-            )
+            self._persist_user(username, user)
 
             users.append(user)
 

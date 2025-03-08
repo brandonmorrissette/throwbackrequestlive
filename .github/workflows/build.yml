@@ -45,3 +45,8 @@ jobs:
                   cd frontend
                   npm install
                   npx eslint 'src/*.{ts,tsx}'
+
+            - name: Install pytest and run unit tests
+              run: |
+                  pip install pytest
+                  pytest backend/tests --disable-warnings -q

@@ -1,8 +1,4 @@
-# pylint: disable=redefined-outer-name, protected-access
-"""
-Tests for the Blueprint class in the Flask application.
-"""
-
+# pylint: disable=redefined-outer-name, missing-function-docstring, missing-module-docstring
 from unittest.mock import MagicMock
 
 import pytest
@@ -11,53 +7,37 @@ from flask import Flask
 from backend.flask.blueprints.blueprint import Blueprint
 
 
-class TestBlueprint(Blueprint):  # pylint: disable=too-few-public-methods
-    """A test class for the Blueprint."""
-
+class TestBlueprint(
+    Blueprint
+):  # pylint: disable=too-few-public-methods, missing-class-docstring
     def register_routes(self):
-        """Register routes for the blueprint."""
+        pass
 
 
 @pytest.fixture()
-def app():
-    """Set up the Flask application for testing."""
-
+def app(blueprint):
     app = Flask(__name__)
+    app.register_blueprint(blueprint)
     yield app
 
 
 @pytest.fixture()
 def service():
-    """Set up a mock service."""
-
     return MagicMock()
 
 
 @pytest.fixture()
-def blueprint(app, service):
-    """Set up the Blueprint."""
-
-    return TestBlueprint(app, service=service)
+def blueprint(service):
+    return TestBlueprint(service=service)
 
 
 def test_when_initialized_args_are_set(blueprint, service):
-    """Test that the arguments are set correctly during initialization."""
-
-    assert blueprint.name == "testblueprint"
-    assert blueprint._service == service
+    assert blueprint.name == blueprint.__class__.__name__.lower()
+    assert blueprint._service == service  # pylint: disable=protected-access
     assert blueprint.url_prefix is None
 
 
-def test_given_import_name_when_initialized_then_import_name_set(app, service):
-    """Test that the import name is set correctly during initialization."""
-
+def test_given_import_name_when_initialized_then_import_name_set(service):
     import_name = "testimportname"
-    blueprint = TestBlueprint(app, import_name=import_name, service=service)
+    blueprint = TestBlueprint(import_name=import_name, service=service)
     assert blueprint.import_name == import_name
-
-
-def test_when_init_then_blueprint_registered(app, service):
-    """Test that the blueprint is registered with the Flask application."""
-
-    blueprint = TestBlueprint(app, service=service)
-    assert blueprint in app.blueprints.values()

@@ -24,10 +24,10 @@ class AuthService:
         Args:
             config (Config): The configuration object.
         """
-        self._client = boto3.client("cognito-idp", region_name=config.COGNITO_REGION)
-        self._client_id = config.COGNITO_APP_CLIENT_ID
-        self._user_pool_id = config.COGNITO_USER_POOL_ID
-        self._jwt_secret_key = config.JWT_SECRET_KEY
+        self._client = boto3.client("cognito-idp", region_name=config.cognito_region)
+        self._client_id = config.cognito_app_client_id
+        self._user_pool_id = config.cognito_user_pool_id
+        self._jwt_secret_key = config.jwt_secret_key
         self._jwt_algorithm = "HS256"
 
     @raise_http_exception

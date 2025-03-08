@@ -36,8 +36,8 @@ class DataService:
             config (Config): The configuration object.
         """
         database_url = (
-            f"{config.DB_ENGINE}://{config.DB_USER}:{config.DB_PASSWORD}@"
-            f"{config.DB_HOST}:{int(config.DB_PORT)}/{config.DB_NAME}"
+            f"{config.db_engine}://{config.db_user}:{config.db_password}@"
+            f"{config.db_host}:{int(config.db_port)}/{config.db_name}"
         )
 
         logging.debug("Connecting to database: %s", database_url)
@@ -180,17 +180,6 @@ class DataService:
                     .where(table.c[primary_key] == row[primary_key])
                     .values(**row)
                 )
-
-    def get_database_version(self) -> str:
-        """
-        Get the database version.
-
-        Returns:
-            str: The database version.
-        """
-        with self._session_scope() as session:
-            version = session.execute("SELECT version()").scalar()
-            return version
 
 
 def _map_filters(filters: list, table) -> list:

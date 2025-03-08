@@ -1,8 +1,4 @@
-# pylint: disable=redefined-outer-name, protected-access
-"""
-Tests for the AuthBlueprint in the Flask application.
-"""
-
+# pylint: disable=redefined-outer-name, missing-function-docstring, missing-module-docstring, protected-access
 import json
 from unittest.mock import MagicMock
 
@@ -12,75 +8,77 @@ from flask import Flask
 from backend.flask.blueprints.auth import AuthBlueprint
 from backend.flask.services.auth import AuthService
 
+USERNAME = "username"
+PASSWORD = "password"
+SESSION = "session"
+TOKEN = "token"
 
-@pytest.fixture(scope="module")
-def app():
-    """Set up the Flask application for testing."""
 
+@pytest.fixture()
+def app(
+    service,
+):
     app = Flask(__name__)
+    app.register_blueprint(AuthBlueprint(service=service))
     yield app
-
-
-@pytest.fixture(scope="module")
-def blueprint(app):
-    """Set up the AuthBlueprint."""
-
-    return AuthBlueprint(app)
 
 
 @pytest.fixture()
 def service():
-    """Set up a mock of the AuthService."""
-
     return MagicMock(spec=AuthService)
 
 
 @pytest.fixture()
-def client(app, blueprint, service):
-    """Set up a test client for making HTTP requests."""
-
-    blueprint._service = service
+def client(app):
     return app.test_client()
 
 
-def test_given_success_when_login_then_response_returned(client, service):
-    """Test the login endpoint with valid credentials."""
-
-    token = "mock_token"
-    session = "mock_session"
-
+def test_given_authenticate_user_returns_no_error_when_login_then_success_response_returned(
+    client, service
+):
     service.authenticate_user.return_value = {
-        "token": token,
-        "session": session,
+        "token": TOKEN,
+        "session": SESSION,
         "error": None,
     }
 
     response = client.post(
         "/login",
-        data=json.dumps(
-            {
-                "username": "testuser",
-                "password": "testpassword",
-            }
-        ),
-        content_type="application/json",
+        json={
+            "username": USERNAME,
+            "password": PASSWORD,
+        },
     )
 
-    service.authenticate_user.assert_called_with("testuser", "testpassword")
+    service.authenticate_user.assert_called_with(USERNAME, PASSWORD)
 
     response_data = json.loads(response.data)
 
     assert response.status_code == 200
-    assert response_data["token"] == token
-    assert response_data["session"] == session
+    assert response_data["token"] == TOKEN
+    assert response_data["session"] == SESSION
     assert response_data["success"] is True
     assert response_data["error"] is None
 
 
 def test_given_missing_creds_when_login_then_error_returned(client):
-    """Test the login endpoint with missing credentials."""
+    response = client.post("/login", json={})
 
-    response = client.post("/login", json={"username": "test"})
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "success": False,
+        "error": "Username and password are required",
+    }
+
+    response = client.post("/login", json={"username": USERNAME})
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "success": False,
+        "error": "Username and password are required",
+    }
+
+    response = client.post("/login", json={"password": PASSWORD})
 
     assert response.status_code == 400
     assert response.get_json() == {
@@ -92,37 +90,29 @@ def test_given_missing_creds_when_login_then_error_returned(client):
 def test_given_password_reset_when_login_then_reset_password_called_and_returned(
     client, service
 ):
-    """Test the login endpoint with a password reset request."""
-
-    username = "testuser"
-    password = "testpassword"
-    session = "mock_session"
-    token = "mock_token"
-
-    return_value = {
+    service.reset_password.return_value = {
         "success": True,
-        "token": token,
-        "session": session,
+        "token": TOKEN,
+        "session": SESSION,
         "error": None,
     }
-    service.reset_password.return_value = return_value
 
     response = client.post(
         "/login",
         json={
-            "username": username,
-            "password": password,
-            "session": session,
+            "username": USERNAME,
+            "password": PASSWORD,
+            "session": SESSION,
             "password_reset": True,
         },
     )
 
-    service.reset_password.assert_called_with(username, password, session)
+    service.reset_password.assert_called_with(USERNAME, PASSWORD, SESSION)
 
     response_data = json.loads(response.data)
 
     assert response.status_code == 200
-    assert response_data["token"] == token
-    assert response_data["session"] == session
+    assert response_data["token"] == TOKEN
+    assert response_data["session"] == SESSION
     assert response_data["success"] is True
     assert response_data["error"] is None

@@ -1,8 +1,4 @@
-# pylint: disable=redefined-outer-name, protected-access
-"""
-Tests for the DataBlueprint in the Flask application.
-"""
-
+# pylint: disable=redefined-outer-name, missing-function-docstring, missing-module-docstring, protected-access
 import json
 from unittest.mock import ANY, MagicMock, patch
 
@@ -16,8 +12,6 @@ from backend.tests.mock.decorators import trace_decorator
 
 # Decorator
 def test_given_callable_when_override_json_provider_then_provider_set():
-    """Test the override_json_provider decorator."""
-
     mock_app = MagicMock()
     mock_app_instance = MagicMock()
 
@@ -45,57 +39,43 @@ def test_given_callable_when_override_json_provider_then_provider_set():
 # Flask
 @pytest.fixture(scope="module", autouse=True)
 def mock_restrict_access():
-    """Mock restrict_access while preserving function names."""
-
     mock_decorator, decorator_call_map = trace_decorator()
 
     with patch("backend.flask.blueprints.data.restrict_access", mock_decorator):
         yield decorator_call_map
 
 
-@pytest.fixture(scope="module")
-def app():
-    """Set up the Flask application for testing."""
-
+@pytest.fixture()
+def app(blueprint):
     app = Flask(__name__)
+    app.register_blueprint(blueprint)
     yield app
 
 
-@pytest.fixture(scope="module")
-def blueprint(app):
-    """Set up the DataBlueprint."""
-
-    return DataBlueprint(app)
+@pytest.fixture()
+def blueprint(service):
+    return DataBlueprint(service=service)
 
 
 @pytest.fixture()
 def service():
-    """Set up a mock of the DataService."""
-
     return MagicMock(spec=DataService)
 
 
 @pytest.fixture()
-def client(app, blueprint, service):
-    """Set up a test client for making HTTP requests."""
-
-    blueprint._service = service
+def client(app):
     return app.test_client()
 
 
-def test_given_request_when_list_tables_then_endpoint_is_restricted_to_appllicable_groups(
+def test_when_list_tables_then_endpoint_is_restricted_to_appllicable_groups(
     client,
     mock_restrict_access,
 ):
-    """Test that the list_tables route is restricted to the superuser group."""
-
     client.get("/tables")
     assert mock_restrict_access["list_tables"] == ["superuser"]
 
 
 def test_given_request_when_list_tables_then_return_tables(client, service):
-    """Test the list_tables endpoint."""
-
     tables = ["table1", "table2"]
     service.list_tables.return_value = tables
 
@@ -106,19 +86,15 @@ def test_given_request_when_list_tables_then_return_tables(client, service):
     assert json.loads(response.data) == tables
 
 
-def test_given_request_when_get_table_then_endpoint_is_restricted_to_appllicable_groups(
+def test_when_get_table_then_endpoint_is_restricted_to_appllicable_groups(
     client,
     mock_restrict_access,
 ):
-    """Test that the get_table route is restricted to the superuser group."""
-
     client.get("/tables/table")
     assert mock_restrict_access["list_tables"] == ["superuser"]
 
 
 def test_given_request_when_get_table_then_table_returned(client, service):
-    """Test the get_table endpoint."""
-
     table_data = {"data": "table_data"}
     service.get_table.return_value = table_data
 
@@ -130,19 +106,15 @@ def test_given_request_when_get_table_then_table_returned(client, service):
     assert json.loads(response.data) == table_data
 
 
-def test_given_request_when_read_shows_then_endpoint_is_unrestricted(
+def test_when_read_shows_then_endpoint_is_unrestricted(
     client,
     mock_restrict_access,
 ):
-    """Test that the read_shows route is unrestricted."""
-
     client.get("/tables/shows/rows")
     assert "read_shows" not in mock_restrict_access
 
 
 def test_given_request_when_read_shows_then_shows_returned(client, blueprint):
-    """Test the read_shows endpoint."""
-
     with patch.object(blueprint, "_get_rows") as _get_rows:
         shows_data = [{"data": "shows_data"}]
         _get_rows.return_value = shows_data
@@ -155,19 +127,15 @@ def test_given_request_when_read_shows_then_shows_returned(client, blueprint):
         assert json.loads(response.data) == shows_data
 
 
-def test_given_request_when_read_rows_then_endpoint_is_restricted_to_appllicable_groups(
+def test_when_read_rows_then_endpoint_is_restricted_to_appllicable_groups(
     client,
     mock_restrict_access,
 ):
-    """Test that the read_rows route is restricted to the superuser group."""
-
     client.get("/tables/table/rows")
     assert mock_restrict_access["read_rows"] == ["superuser"]
 
 
 def test_given_request_when_read_rows_then_table_data_returned(client, blueprint):
-    """Test the read_rows endpoint."""
-
     with patch.object(blueprint, "_get_rows") as _get_rows:
         table_data = [{"data": "table_data"}]
         _get_rows.return_value = table_data
@@ -180,12 +148,10 @@ def test_given_request_when_read_rows_then_table_data_returned(client, blueprint
         assert json.loads(response.data) == table_data
 
 
-def test_given_request_when_write_rows_then_endpoint_is_restricted_to_appllicable_groups(
+def test_when_write_rows_then_endpoint_is_restricted_to_appllicable_groups(
     client,
     mock_restrict_access,
 ):
-    """Test that the write_rows route is restricted to the superuser group."""
-
     client.put("/tables/table/rows")
     assert mock_restrict_access["write_rows"] == ["superuser"]
 
@@ -193,18 +159,15 @@ def test_given_request_when_write_rows_then_endpoint_is_restricted_to_appllicabl
 def test_given_request_with_table_name_when_write_rows_then_table_name_is_validated(
     client, blueprint
 ):
-    """Test that the table name is validated in the write_rows method."""
-
+    table_name = "table"
     with patch.object(blueprint, "_service") as service:
-        client.put("/tables/table/rows", json={"rows": []})
-        service.validate_table_name.assert_called_once_with("table")
+        client.put(f"/tables/{table_name}/rows", json={"rows": []})
+        service.validate_table_name.assert_called_once_with(table_name)
 
 
 def test_given_request_when_write_rows_then_success_response_returned(
     client, blueprint
 ):
-    """Test the write_rows endpoint."""
-
     with patch.object(blueprint, "_service") as service:
         rows = [{"data": "row_data"}]
         service.write_rows.return_value = {"success": True}
@@ -216,8 +179,6 @@ def test_given_request_when_write_rows_then_success_response_returned(
 
 
 def test_given_filters_when_get_rows_then_filters_applied(app, blueprint):
-    """Test that the filters are applied in the _get_rows method."""
-
     with patch.object(blueprint, "_service") as service:
         filters = '{"data": "filter_data"}'
         request = MagicMock(args={"filters": filters})
@@ -231,8 +192,6 @@ def test_given_filters_when_get_rows_then_filters_applied(app, blueprint):
 def test_given_table_name_and_request_when_get_rows_then_table_name_validated(
     app, blueprint
 ):
-    """Test that the table name is validated in the _get_rows method."""
-
     with patch.object(blueprint, "_service") as service:
         request = MagicMock(args={})
         with app.app_context():
@@ -243,8 +202,6 @@ def test_given_table_name_and_request_when_get_rows_then_table_name_validated(
 
 
 def test_given_request_when_get_rows_then_rows_returned(app, blueprint):
-    """Test the _get_rows method return value."""
-
     with patch.object(blueprint, "_service") as service:
         request = MagicMock(args={})
         with app.app_context():

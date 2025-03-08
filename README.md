@@ -32,6 +32,7 @@ To Do
 -   The write flow for rows feels off.
     -   Most of my data is passed to table from DataManagement, which uses the table service to interact with backend
     -   My table takes the data, and the data service. It then uses the service to write to the backend. Something about this feels weird.
+    -   Making assumption about singular primary key
 
 # Data Management
 

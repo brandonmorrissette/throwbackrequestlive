@@ -276,10 +276,10 @@ class SQLALchemyJSONProvider(JSONProvider):
 
         if isinstance(constraint, UniqueConstraint):
             unique_constraint = (
-                f"Unique({', '.join(col.name for col in constraint.columns)})"
+                f"UniqueConstraint({', '.join(col.name for col in constraint.columns)})"
             )
             logging.debug("UniqueConstraint: %s", unique_constraint)
-            return constraint
+            return unique_constraint
 
         columns = getattr(constraint, "columns", [])
         column_names = ", ".join(col.name for col in columns)
