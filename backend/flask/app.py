@@ -63,7 +63,7 @@ def _create_app(app_config: Config) -> Flask:
     """
     flask_app = Flask(__name__)
     flask_app.json = JSONProvider(flask_app)
-    flask_app.config.from_object(app_config)
+    flask_app.config.from_object(app_config)  # pylint: disable=no-member
     flask_app.logger.debug("Config : %s", flask_app.config)
 
     # Logging
