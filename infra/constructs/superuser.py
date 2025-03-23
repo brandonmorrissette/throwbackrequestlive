@@ -3,7 +3,7 @@ This module contains the SuperUserConstruct class, which sets up a Cognito user 
 in a given user pool with elevated permissions and an ECS task definition for user creation.
 
 Classes:
-    SuperUserConstruct: A construct that sets up a Cognito user pool group 
+    SuperUserConstruct: A construct that sets up a Cognito user pool group
         and an ECS task definition for user creation.
 
 Usage example:
@@ -15,9 +15,49 @@ from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs as logs
 from aws_cdk.aws_cognito import CfnUserPoolGroup
-from config import Config
-from constructs.construct import Construct
-from stacks.stack import Stack
+
+from infra.config import Config
+from infra.constructs.construct import Construct, ConstructArgs
+from infra.stacks.stack import Stack
+
+PERMITTED_ACTIONS = [  # pylint: disable=R0801
+    "cognito-idp:AdminGetUser",
+    "cognito-idp:AdminCreateUser",
+    "cognito-idp:AdminDeleteUser",
+    "cognito-idp:AdminUpdateUserAttributes",
+    "cognito-idp:AdminAddUserToGroup",
+    "cognito-idp:AdminRemoveUserFromGroup",
+    "cognito-idp:AdminCreateGroup",
+    "cognito-idp:AdminDeleteGroup",
+    "cognito-idp:AdminUpdateGroup",
+    "cognito-idp:ListUserPools",
+    "cognito-idp:AdminListGroupsForUser",
+    "cognito-idp:ListUsers",
+]
+
+
+class SuperUserConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-methods
+    """
+    A class that defines properties for the SuperUserConstruct class.
+
+    Attributes:
+        config: Configuration object.
+        user_pool_id (str): The ID of the Cognito user pool.
+        uid (str, optional): The ID of the construct.
+            Defaults to "superuser".
+        prefix (str, optional): The prefix for the construct ID.
+            Defaults to f"{config.project_name}-{config.environment_name}-superuser".
+    """
+
+    def __init__(
+        self,
+        config: Config,
+        user_pool_id: str,
+        uid: str = "superuser",
+        prefix: str = "",
+    ) -> None:
+        super().__init__(config, uid, prefix)
+        self.user_pool_id = user_pool_id
 
 
 class SuperUserConstruct(Construct):
@@ -36,45 +76,28 @@ class SuperUserConstruct(Construct):
     def __init__(
         self,
         scope: Stack,
-        config: Config,
-        user_pool_id: str,
-        construct_id: str | None = None,
+        args: SuperUserConstructArgs,
     ) -> None:
         """
         Initializes the SuperUserConstruct with the given parameters.
 
         Args:
             scope (Stack): The parent stack.
-            config (Config): Configuration object.
-            user_pool_id (str): The ID of the Cognito user pool.
-            construct_id (str, optional): The ID of the construct.
-                Defaults to f"{config.project_name}-{config.environment_name}-superuser".
-            suffix (str, optional): Suffix for resource names. Defaults to "superuser".
+            args (SuperUserConstructArgs): The arguments for the construct.
         """
-        super().__init__(scope, config, construct_id, "superuser")
+        super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
         self.policy = iam.ManagedPolicy(
             self,
             "cognito-policy",
+            managed_policy_name=f"{args.config.project_name}-"
+            f"{args.config.environment_name}-cognito-policy",
             statements=[
                 iam.PolicyStatement(
-                    actions=[
-                        "cognito-idp:AdminGetUser",
-                        "cognito-idp:AdminCreateUser",
-                        "cognito-idp:AdminDeleteUser",
-                        "cognito-idp:AdminUpdateUserAttributes",
-                        "cognito-idp:AdminAddUserToGroup",
-                        "cognito-idp:AdminRemoveUserFromGroup",
-                        "cognito-idp:AdminCreateGroup",
-                        "cognito-idp:AdminDeleteGroup",
-                        "cognito-idp:AdminUpdateGroup",
-                        "cognito-idp:AdminAddUserToGroup",
-                        "cognito-idp:ListUsers",
-                        "cognito-idp:AdminListGroupsForUser",
-                    ],
+                    actions=PERMITTED_ACTIONS,
                     resources=[
-                        f"arn:aws:cognito-idp:{config.cdk_environment.region}:"
-                        f"{config.cdk_environment.account}:userpool/{user_pool_id}"
+                        f"arn:aws:cognito-idp:{args.config.cdk_environment.region}:"
+                        f"{args.config.cdk_environment.account}:userpool/{args.user_pool_id}"
                     ],
                 )
             ],
@@ -83,37 +106,19 @@ class SuperUserConstruct(Construct):
         role = iam.Role(
             self,
             "superuser-role",
+            role_name=f"{args.config.project_name}-"
+            f"{args.config.environment_name}-superuser-role",
             assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
+            managed_policies=[self.policy],
         )
-
-        role.add_managed_policy(self.policy)
 
         CfnUserPoolGroup(
             self,
             "superuser-group",
             group_name="superuser",
-            user_pool_id=user_pool_id,
+            user_pool_id=args.user_pool_id,
             description="Superuser group with elevated permissions",
             role_arn=role.role_arn,
-        )
-
-        user_creation_task_role = iam.Role(
-            self,
-            "SuperuserTaskRole",
-            assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
-            managed_policies=[self.policy],
-            inline_policies={
-                "SuperuserPolicy": iam.PolicyDocument(
-                    statements=[
-                        iam.PolicyStatement(
-                            actions=[
-                                "cognito-idp:ListUserPools",
-                            ],
-                            resources=["*"],
-                        ),
-                    ]
-                )
-            },
         )
 
         user_creation_task_definition = ecs.FargateTaskDefinition(
@@ -121,32 +126,22 @@ class SuperUserConstruct(Construct):
             "superuser-task-definition",
             memory_limit_mib=512,
             cpu=256,
-            execution_role=iam.Role(
-                self,
-                "superuser-execution-role",
-                role_name=f"{config.project_name}-superuser-execution-role",
-                assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
-                managed_policies=[
-                    iam.ManagedPolicy.from_aws_managed_policy_name(
-                        "service-role/AmazonECSTaskExecutionRolePolicy"
-                    )
-                ],
-            ),
-            task_role=user_creation_task_role,
+            task_role=role,
+        )
+
+        log_group = logs.LogGroup(
+            self,
+            "superuser-container-log-group",
+            log_group_name=f"{args.config.project_name}"
+            f"-superuser-container-logs-{self.node.id}",
+            removal_policy=RemovalPolicy.DESTROY,
         )
 
         user_creation_task_definition.add_container(
             "superuser-container",
             image=ecs.ContainerImage.from_asset("infra/setup/create_superuser"),
             logging=ecs.LogDrivers.aws_logs(
-                stream_prefix="superuser-creation",
-                log_group=logs.LogGroup(
-                    self,
-                    "superuser-container-log-group",
-                    log_group_name=f"/ecs/{config.project_name}"
-                    f"-superuser-container-logs-{self.node.id}",
-                    removal_policy=RemovalPolicy.DESTROY,
-                ),
+                stream_prefix="superuser-creation", log_group=log_group
             ),
         )
 

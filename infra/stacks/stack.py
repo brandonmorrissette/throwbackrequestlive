@@ -9,9 +9,22 @@ Usage example:
 """
 
 from aws_cdk import Stack as AwsCdkStack
-from config import Config
 from constructs import Construct as AwsCdkConstruct
-from resources.resource import Resource
+
+from infra.resources.resource import Resource, ResourceArgs
+
+
+class StackArgs(ResourceArgs):  # pylint: disable=too-few-public-methods
+    """
+    Arguments for the Stack class.
+
+    Attributes:
+        config: Configuration object.
+        uid (str): The ID of the stack.
+            Defaults to None.
+        prefix (str): Prefix for resource names.
+            Defaults to f"{config.project_name}-{config.environment_name}".
+    """
 
 
 class Stack(AwsCdkStack, Resource):
@@ -20,29 +33,20 @@ class Stack(AwsCdkStack, Resource):
 
     Attributes:
         stack_id: The ID of the stack.
-        suffix: The suffix for resource names.
+        prefix: The prefix for resource names.
 
     Methods:
         __init__: Initializes the Stack with the given parameters.
     """
 
-    def __init__(
-        self,
-        scope: AwsCdkConstruct,
-        config: Config,
-        stack_id: str | None = None,
-        suffix: str | None = None,
-        **kwargs
-    ):
+    def __init__(self, scope: AwsCdkConstruct, args: StackArgs, **kwargs):
         """
         Initializes the Stack with the given parameters.
 
         Args:
             scope (AwsCdkConstruct): The parent construct.
-            config (Config): Configuration object.
-            stack_id (str, optional): The ID of the stack.
-                Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): Suffix for resource names. Defaults to None.
+            args (StackArgs): The arguments for the stack.
         """
-        Resource.__init__(self, config, stack_id, suffix)
-        super().__init__(scope, self.id, env=config.cdk_environment, **kwargs)
+        super().__init__(
+            scope, self.format_id(args), env=args.config.cdk_environment, **kwargs
+        )

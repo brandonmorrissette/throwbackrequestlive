@@ -20,14 +20,15 @@ Usage example:
 import os
 
 import aws_cdk as cdk
-from aspects.tagging import TaggingAspect
 from aws_cdk import Aspects
-from config import Config
-from stacks.compute import ComputeStack
-from stacks.network import NetworkStack
-from stacks.runtime import RuntimeStack, RuntimeStackArgs
-from stacks.storage import StorageStack
-from stacks.user_management import UserManagementStack
+
+from infra.aspects.tagging import TaggingAspect
+from infra.config import Config
+from infra.stacks.compute import ComputeStack, ComputeStackArgs
+from infra.stacks.network import NetworkStack, NetworkStackArgs
+from infra.stacks.runtime import RuntimeStack, RuntimeStackArgs
+from infra.stacks.storage import StorageStack, StorageStackArgs
+from infra.stacks.user_management import UserManagementStack, UserManagementStackArgs
 
 app = cdk.App()
 config = Config(
@@ -43,20 +44,23 @@ config = Config(
 
 Aspects.of(app).add(TaggingAspect(config), priority=100)
 
-user_management_stack = UserManagementStack(app, config)
-network_stack = NetworkStack(app, config)
+user_management_stack = UserManagementStack(app, UserManagementStackArgs(config))
+network_stack = NetworkStack(app, NetworkStackArgs(config))
 
-compute_stack = ComputeStack(app, config, vpc=network_stack.vpc_constrcut.vpc)
+compute_stack = ComputeStack(
+    app, ComputeStackArgs(config, vpc=network_stack.vpc_constrcut.vpc)
+)
 compute_stack.add_dependency(network_stack)
 
-storage_stack = StorageStack(app, config, vpc=network_stack.vpc_constrcut.vpc)
+storage_stack = StorageStack(
+    app, StorageStackArgs(config, vpc=network_stack.vpc_constrcut.vpc)
+)
 storage_stack.add_dependency(network_stack)
 
 runtime_stack = RuntimeStack(
     app,
-    config,
     RuntimeStackArgs(
-        user_management_stack, network_stack, compute_stack, storage_stack
+        config, user_management_stack, network_stack, compute_stack, storage_stack
     ),
 )
 

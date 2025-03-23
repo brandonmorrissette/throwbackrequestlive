@@ -13,9 +13,31 @@ import boto3
 from aws_cdk import Token
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ssm as ssm
-from config import Config
-from constructs.construct import Construct
-from stacks.stack import Stack
+
+from infra.config import Config
+from infra.constructs.construct import Construct, ConstructArgs
+from infra.stacks.stack import Stack
+
+
+class UserPoolConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-methods
+    """
+    A class that defines properties for the UserPoolConstruct class.
+
+    Attributes:
+        config: Configuration object.
+        uid: Unique identifier for the resource.
+            Defaults to "user-pool".
+        prefix: Prefix for resource names.
+            Defaults to f"{config.project_name}-{config.environment_name}-user-pool".
+    """
+
+    def __init__(
+        self,
+        config: Config,
+        uid: str = "user-pool",
+        prefix: str = "",
+    ) -> None:
+        super().__init__(config, uid, prefix)
 
 
 class UserPoolConstruct(Construct):
@@ -33,29 +55,26 @@ class UserPoolConstruct(Construct):
     def __init__(
         self,
         scope: Stack,
-        config: Config,
-        construct_id: str | None = None,
+        args: UserPoolConstructArgs,
     ) -> None:
         """
         Initializes the UserPoolConstruct with the given parameters.
 
         Args:
             scope (Stack): The parent stack.
-            config (Config): Configuration object.
-            construct_id (str, optional): The ID of the construct.
-                Defaults to f"{config.project_name}-{config.environment_name}-user-pool".
+            args (UserPoolConstructArgs): The arguments for the construct.
         """
-        super().__init__(scope, config, construct_id, "user-pool")
+        super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
         self._cognito_client = boto3.client("cognito-idp")
-        user_pool_name = f"{config.project_name}-user-pool"
+        user_pool_name = f"{args.config.project_name}-user-pool"
 
         user_pool = self._get_user_pool(user_pool_name)
         self.user_pool_id = user_pool.user_pool_id
         ssm.StringParameter(
             self,
             "UserPoolIdParameter",
-            parameter_name=f"/{config.project_name}/user-pool-id",
+            parameter_name=f"/{args.config.project_name}/user-pool-id",
             string_value=user_pool.user_pool_id,
         )
 
@@ -64,7 +83,7 @@ class UserPoolConstruct(Construct):
         ssm.StringParameter(
             self,
             "UserPoolClientIdParameter",
-            parameter_name=f"/{config.project_name}/user-pool-client-id",
+            parameter_name=f"/{args.config.project_name}/user-pool-client-id",
             string_value=user_pool_client.user_pool_client_id,
         )
 

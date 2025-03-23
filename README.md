@@ -11,13 +11,14 @@ To Do
 -   route_53
     -   Remove hard coding. Find better way to pass or config.
 
-# Improve Front End Skills
+# Runtime Policy
 
--   Learn React and other front end libraries used
-    -   Context
-    -   Proper modeling for AG Grid ColumnDefs and AG Grid in general
-    -   Review DateTimeCellEditor
--   additionalProps typing in DataManagement
+-   Currently inherits from superuser. Fix this.
+
+# Docker
+
+-   Break up front end and back end containers
+    -   Consider breaking out postgress instance for local storage
 
 # Cognito/User concepts cleanup
 
@@ -38,24 +39,18 @@ To Do
 
 -   Default datetime to something more user friendly. It defaults to the exact second of Now.
 
+# Improve Front End Skills
+
+-   Learn React and other front end libraries used
+    -   Context
+    -   Proper modeling for AG Grid ColumnDefs and AG Grid in general
+    -   Review DateTimeCellEditor
+-   additionalProps typing in DataManagement
+
 # App UI
 
 -   Footer covers up bottom still
 
-# Docker
-
--   Break up front end and back end containers
-    -   Consider breaking out postgress instance for local storage
-
-# Resource Class
-
--   I'd rather handle id and suffix better.
-
 # Login
 
 -   The login, login form and password reset could benefit from some better seperation of concerns.
-
-# Pylint
-
--   There is conflict between infra/config and backend/config or more accurately, the use of relative imports in the codebase.
-    I'm thinking I may want to rethink the relative imports, but if my memory is correct Flask had a problem with more absolute imports (?)

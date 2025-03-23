@@ -12,9 +12,27 @@ Usage example:
 
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_elasticache as elasticache
-from config import Config
-from constructs.construct import Construct
-from stacks.stack import Stack
+
+from infra.constructs.construct import Construct, ConstructArgs
+from infra.stacks.stack import Stack
+
+
+class CacheConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-methods
+    """
+    A class that defines properties for the CacheConstruct class.
+
+    Attributes:
+        config (Config): Configuration object.
+        vpc (ec2.Vpc): The VPC in which to create the cache cluster.
+        uid (str): The ID of the construct.
+            Default is "cache".
+        prefix (str): The prefix for the construct ID.
+            Default is "{config.project_name}-{config.environment_name}-".
+    """
+
+    def __init__(self, config, vpc: ec2.Vpc, uid: str = "cache", prefix: str = ""):
+        super().__init__(config, uid, prefix)
+        self.vpc = vpc
 
 
 class CacheConstruct(Construct):
@@ -31,26 +49,21 @@ class CacheConstruct(Construct):
     def __init__(
         self,
         scope: Stack,
-        vpc: ec2.Vpc,
-        config: Config,
-        construct_id: str | None = None,
+        args: CacheConstructArgs,
     ):
         """
         Initializes the CacheConstruct with the given parameters.
 
         Args:
             scope (Stack): The parent stack.
-            vpc (ec2.Vpc): The VPC in which to create the cache cluster.
-            config (Config): Configuration object.
-            construct_id (str, optional): The ID of the construct.
-                Defaults to f"{config.project_name}-{config.environment_name}-cache".
+            args (CacheConstructArgs): Arguments containing the VPC and configuration.
         """
-        super().__init__(scope, config, construct_id, "cache")
+        super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
-        security_group = ec2.SecurityGroup(self, "RedisSG", vpc=vpc)
+        security_group = ec2.SecurityGroup(self, "RedisSG", vpc=args.vpc)
 
         security_group.add_ingress_rule(
-            ec2.Peer.ipv4(vpc.vpc_cidr_block),
+            ec2.Peer.ipv4(args.vpc.vpc_cidr_block),
             ec2.Port.tcp(6379),
             "Allow Redis access",
         )
@@ -58,7 +71,7 @@ class CacheConstruct(Construct):
         subnet_group = elasticache.CfnSubnetGroup(
             self,
             "RedisSubnetGroup",
-            subnet_ids=[subnet.subnet_id for subnet in vpc.private_subnets],
+            subnet_ids=[subnet.subnet_id for subnet in args.vpc.private_subnets],
             description="Subnet group for Redis",
         )
 

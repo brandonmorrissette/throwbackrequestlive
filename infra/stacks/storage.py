@@ -6,11 +6,36 @@ It creates RDS and Cache constructs using the provided VPC and configuration.
 
 from aws_cdk import CfnOutput
 from aws_cdk import aws_ec2 as ec2
-from config import Config
 from constructs import Construct
-from constructs.cache import CacheConstruct
-from constructs.rds import RdsConstruct
-from stacks.stack import Stack
+
+from infra.config import Config
+from infra.constructs.cache import CacheConstruct, CacheConstructArgs
+from infra.constructs.rds import RdsConstruct, RdsConstructArgs
+from infra.stacks.stack import Stack, StackArgs
+
+
+class StorageStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
+    """
+    A class that defines properties for the StorageStack class.
+
+    Attributes:
+        config (Config): Configuration object.
+        vpc (ec2.Vpc): The VPC in which to create the storage resources.
+        uid (str): The ID of the stack.
+            Defaults to "storage".
+        prefix (str): The prefix for the stack name.
+            Defaults to "{config.project_name}-{config.environment_name}-".
+    """
+
+    def __init__(
+        self,
+        config: Config,
+        vpc: ec2.Vpc,
+        uid: str = "storage",
+        prefix: str = "",
+    ) -> None:
+        super().__init__(config, uid, prefix)
+        self.vpc = vpc
 
 
 class StorageStack(Stack):
@@ -23,33 +48,30 @@ class StorageStack(Stack):
     def __init__(
         self,
         scope: Construct,
-        config: Config,
-        vpc: ec2.Vpc,
-        stack_id: str | None = None,
+        args: StorageStackArgs,
     ) -> None:
         """
         Initialize the StorageStack.
 
         Args:
             scope (Construct): The scope in which this stack is defined.
-            config (Config): The configuration object containing stack settings.
-            vpc (ec2.Vpc): The VPC in which to create the storage resources.
-            stack_id (str, optional): The ID of the stack.
-                Defaults to f"{config.project_name}-{config.environment_name}-storage".
+            args (StorageStackArgs): Arguments containing the VPC and configuration.
         """
-        super().__init__(scope, config, stack_id, "storage")
+        super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
-        self.rds_construct = RdsConstruct(self, vpc, config)
-        self.cache_construct = CacheConstruct(self, vpc, config)
+        self.rds_construct = RdsConstruct(self, RdsConstructArgs(args.config, args.vpc))
+        self.cache_construct = CacheConstruct(
+            self, CacheConstructArgs(args.config, args.vpc)
+        )
 
         CfnOutput(
             self,
-            "security-group-id",
+            "securitygroupid",
             value=self.rds_construct.security_group.security_group_id,
         )
 
         CfnOutput(
             self,
-            "sql-task-definition-arn",
+            "sqltaskdefinitionarn",
             value=self.rds_construct.task_definition.task_definition_arn,
         )

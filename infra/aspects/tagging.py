@@ -6,8 +6,9 @@ to all nodes in the AWS CDK construct tree based on the provided configuration.
 
 import jsii
 from aws_cdk import IAspect, Tags
-from config import Config
 from constructs import IConstruct
+
+from infra.config import Config
 
 
 @jsii.implements(IAspect)

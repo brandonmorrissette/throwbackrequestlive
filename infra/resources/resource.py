@@ -2,8 +2,25 @@
 """
 This module provides the Resource class for standardizing default IDs for cloud resources.
 """
+from infra.config import Config
 
-from config import Config
+
+class ResourceArgs:
+    """
+    Arguments for the Resource class.
+
+    Attributes:
+        config (Config): Configuration object.
+        uid (str, optional): The identifier for the resource.
+            Defaults to None.
+        prefix (str, optional): The prefix to prepend to the ID.
+            Defaults to None.
+    """
+
+    def __init__(self, config: Config, uid: str = "", prefix: str = "") -> None:
+        self.config = config
+        self.uid = uid
+        self.prefix = prefix
 
 
 class Resource:
@@ -14,26 +31,25 @@ class Resource:
         id (str): The identifier for the resource.
     """
 
-    def __init__(
+    def format_id(
         self,
-        config: Config,
-        resource_id: str | None = None,
-        suffix: str | None = None,
-    ) -> None:
+        args: ResourceArgs,
+    ) -> str:
         """
-        Initialize a Resource instance.
+        Formats the ID for a cloud resource.
 
         Args:
-            config (Config): The configuration object containing project and environment names.
-            id (str, optional): The initial ID for the resource.
-                Defaults to f"{config.project_name}-{config.environment_name}".
-            suffix (str, optional): An optional suffix to append to the ID. Defaults to None.
+            args (ResourceArgs): The arguments containing config, uid, and prefix.
+
+        Returns:
+            str: The formatted ID.
         """
-        self.id = (
-            resource_id
-            if resource_id
-            else f"{config.project_name}-{config.environment_name}"
+        formatted = (
+            args.prefix
+            if args.prefix
+            else f"{args.config.project_name}-{args.config.environment_name}"
         )
 
-        if suffix:
-            self.id = f"{self.id}-{suffix}"
+        if args.uid:
+            formatted = f"{formatted}-{args.uid}"
+        return formatted

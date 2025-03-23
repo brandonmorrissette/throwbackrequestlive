@@ -17,7 +17,7 @@ jobs:
 
             - name: Install dependencies
               run: |
-                  pip install pylint bandit -r infra/requirements.txt -r backend/requirements.txt
+                  pip install pylint pytest bandit -r infra/requirements.txt -r backend/requirements.txt
 
             - name: Running pylint on backend
               run: |
@@ -46,7 +46,10 @@ jobs:
                   npm install
                   npx eslint 'src/*.{ts,tsx}'
 
-            - name: Install pytest and run unit tests
+            - name: Run Infra Tests
               run: |
-                  pip install pytest
+                  pytest infra/tests --disable-warnings -q
+
+            - name: Run Backend Tests
+              run: |
                   pytest backend/tests --disable-warnings -q
