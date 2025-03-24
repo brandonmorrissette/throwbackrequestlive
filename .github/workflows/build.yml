@@ -47,6 +47,9 @@ jobs:
                   npx eslint 'src/*.{ts,tsx}'
 
             - name: Run Infra Tests
+              env:
+                  AWS_REGION: us-east-1
+                  AWS_ACCOUNT_ID: IntegrationTestAccount
               run: |
                   pytest infra/tests --disable-warnings -q
 

@@ -1,5 +1,4 @@
 # pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring, redefined-outer-name
-import os
 from typing import Any, Mapping
 
 import aws_cdk as cdk
@@ -17,12 +16,6 @@ ENVIRONMENT_NAME = "UnitTestEnv"
 STACK_NAME = "TestStack"
 ACCOUNT = "unittest"
 REGION = "us-east-1"
-
-
-@pytest.fixture(autouse=True)
-def set_required_aws_variables():
-    os.environ["AWS_ACCOUNT_ID"] = ACCOUNT
-    os.environ["AWS_REGION"] = REGION
 
 
 @pytest.fixture(scope="module")
