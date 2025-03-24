@@ -46,6 +46,9 @@ jobs:
                   npm install
                   npx eslint 'src/*.{ts,tsx}'
 
+            - name: Debug All Environment Variables
+              run: env
+
             - name: Run Infra Tests
               env:
                   AWS_REGION: us-east-1
