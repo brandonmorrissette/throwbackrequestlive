@@ -20,7 +20,8 @@ from infra.config import Config
 from infra.constructs.construct import Construct, ConstructArgs
 from infra.stacks.stack import Stack
 
-PERMITTED_ACTIONS = [  # pylint: disable=R0801
+# pylint: disable=R0801
+PERMITTED_ACTIONS = [
     "cognito-idp:AdminGetUser",
     "cognito-idp:AdminCreateUser",
     "cognito-idp:AdminDeleteUser",
@@ -132,8 +133,7 @@ class SuperUserConstruct(Construct):
         log_group = logs.LogGroup(
             self,
             "superuser-container-log-group",
-            log_group_name=f"{args.config.project_name}"
-            f"-superuser-container-logs-{self.node.id}",
+            log_group_name=f"{args.config.project_name}-superuser-container-logs",
             removal_policy=RemovalPolicy.DESTROY,
         )
 

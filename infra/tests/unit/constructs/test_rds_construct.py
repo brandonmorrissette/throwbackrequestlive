@@ -92,6 +92,7 @@ def test_db_instance_creation(
 def test_policy_creation(mock_rds_construct: tuple[RdsConstruct, Mocks]):
     construct, mocks = mock_rds_construct
 
+    # pylint: disable=R0801
     mocks.iam.ManagedPolicy.assert_called_once_with(
         construct,
         ANY,

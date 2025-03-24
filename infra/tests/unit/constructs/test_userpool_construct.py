@@ -1,12 +1,13 @@
 # pylint: disable=missing-function-docstring, missing-module-docstring, redefined-outer-name, unused-variable
 from unittest.mock import ANY, MagicMock, patch
 
+import aws_cdk as cdk
 import pytest
 
 from infra.config import Config
 from infra.constructs.construct import Construct
 from infra.constructs.userpool import UserPoolConstruct, UserPoolConstructArgs
-from infra.stacks.stack import Stack
+from infra.stacks.stack import Stack, StackArgs
 
 USER_POOL_ID = "mock_user_pool_id"
 
@@ -56,37 +57,47 @@ def test_user_pool_creation(
 
 
 def test_given_user_pool_exists_when_user_pool_construct_created_then_user_pool_is_retrieved(
-    stack: Stack,
     config: Config,
 ):
-
     user_pool_name = f"{config.project_name}-user-pool"
-
-    def side_effect(key):
-        if key == "Name":
-            return user_pool_name
-        if key == "Id":
-            return USER_POOL_ID
-        return key
+    user_pool_id = "uid"
 
     userpool = MagicMock()
-    userpool.__getitem__.side_effect = side_effect
+    userpool.__getitem__.side_effect = lambda key: (
+        user_pool_name if key == "Name" else user_pool_id if key == "Id" else key
+    )
 
     with patch("infra.constructs.userpool.boto3.client") as mock_boto3, patch(
         "infra.constructs.userpool.cognito"
     ) as mock_cognito:
-        mock_boto3.return_value.list_user_pools.return_value = {
-            "UserPools": [{"Id": USER_POOL_ID, "Name": user_pool_name}]
-        }
 
+        mock_boto3.return_value.list_user_pools.return_value = {
+            "UserPools": [{"Id": user_pool_id, "Name": user_pool_name}]
+        }
+        mock_boto3.return_value.list_user_pools.return_value = {"UserPools": [userpool]}
+        mock_cognito.UserPool.from_user_pool_id.return_value.user_pool_id = user_pool_id
+        mock_cognito.UserPool.return_value.user_pool_id = user_pool_id
+
+        # Satisfies jsii
         mock_cognito.UserPoolClient.from_user_pool_client_id.return_value.user_pool_client_id = (
             "mock_user_pool_client_id"
         )
-        mock_cognito.UserPool.from_user_pool_id.return_value.user_pool_id = USER_POOL_ID
-        mock_cognito.UserPool.return_value.user_pool_id = USER_POOL_ID
 
-        mock_boto3.return_value.list_user_pools.return_value = {"UserPools": [userpool]}
-        UserPoolConstruct(stack, UserPoolConstructArgs(config=config))
+        UserPoolConstruct(
+            Stack(
+                cdk.App(),
+                StackArgs(
+                    Config(
+                        project_name="userpooltest",
+                        environment_name="unit",
+                        cdk_environment=cdk.Environment(
+                            account="account", region="us-east-1"
+                        ),
+                    ),
+                ),
+            ),
+            UserPoolConstructArgs(config=config),
+        )
 
     mock_cognito.UserPool.from_user_pool_id.assert_called_once_with(
         ANY, ANY, user_pool_id=userpool["Id"]
@@ -114,6 +125,57 @@ def test_user_pool_client_creation(
     )
     mock_cognito.UserPoolClient.from_user_pool_client_id.assert_called_once_with(
         construct, ANY, user_pool_client_id=ANY
+    )
+
+
+def test_given_unresolve_userpool_id_and_app_client_exists_when_user_pool_construct_created_then_user_pool_app_client_is_retrieved(  # pylint: disable=line-too-long
+    config: Config,
+):
+    user_pool_name = f"{config.project_name}-user-pool"
+    user_pool_id = "uid"
+    client_id = "client_id"
+
+    userpool = MagicMock()
+    userpool.__getitem__.side_effect = lambda key: (
+        user_pool_name if key == "Name" else user_pool_id if key == "Id" else key
+    )
+
+    with patch("infra.constructs.userpool.boto3.client") as mock_boto3, patch(
+        "infra.constructs.userpool.cognito"
+    ) as mock_cognito:
+
+        mock_boto3.return_value.list_user_pool_clients.return_value = {
+            "UserPoolClients": [
+                {"ClientId": client_id, "ClientName": f"{user_pool_name}-app-client"}
+            ]
+        }
+        mock_boto3.return_value.list_user_pools.return_value = {"UserPools": [userpool]}
+        mock_cognito.UserPool.from_user_pool_id.return_value.user_pool_id = user_pool_id
+        mock_cognito.UserPool.return_value.user_pool_id = user_pool_id
+
+        # Satisfies jsii
+        mock_cognito.UserPoolClient.from_user_pool_client_id.return_value.user_pool_client_id = (
+            "mock_user_pool_client_id"
+        )
+
+        UserPoolConstruct(
+            Stack(
+                cdk.App(),
+                StackArgs(
+                    Config(
+                        project_name="userpooltest",
+                        environment_name="unit",
+                        cdk_environment=cdk.Environment(
+                            account="account", region="us-east-1"
+                        ),
+                    ),
+                ),
+            ),
+            UserPoolConstructArgs(config=config),
+        )
+
+    mock_cognito.UserPoolClient.from_user_pool_client_id.assert_called_once_with(
+        ANY, ANY, user_pool_client_id=client_id
     )
 
 

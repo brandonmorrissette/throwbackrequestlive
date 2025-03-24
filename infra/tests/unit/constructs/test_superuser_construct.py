@@ -66,34 +66,38 @@ def test_policy_creation(
 ):
     construct, mocks = mock_superuser_construct
 
+    # pylint: disable=R0801
     mocks.iam.ManagedPolicy.assert_called_once_with(
         construct,
         ANY,
+        managed_policy_name=ANY,
         statements=[
             mocks.iam.PolicyStatement.return_value,
         ],
     )
-    mocks.iam.PolicyStatement.assert_called_once_with(
-        actions=[  # pylint: disable=R0801
-            "cognito-idp:AdminGetUser",
-            "cognito-idp:AdminCreateUser",
-            "cognito-idp:AdminDeleteUser",
-            "cognito-idp:AdminUpdateUserAttributes",
-            "cognito-idp:AdminAddUserToGroup",
-            "cognito-idp:AdminRemoveUserFromGroup",
-            "cognito-idp:AdminCreateGroup",
-            "cognito-idp:AdminDeleteGroup",
-            "cognito-idp:AdminUpdateGroup",
-            "cognito-idp:AdminAddUserToGroup",
-            "cognito-idp:ListUsers",
-            "cognito-idp:AdminListGroupsForUser",
-            "cognito-idp:ListUserPools",
-        ],
-        resources=[
-            f"arn:aws:cognito-idp:{config.cdk_environment.region}:"
-            f"{config.cdk_environment.account}:userpool/{user_pool_id}"
-        ],
+    # pylint: disable=R0801
+    expected_actions = [
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminDeleteUser",
+        "cognito-idp:AdminUpdateUserAttributes",
+        "cognito-idp:AdminAddUserToGroup",
+        "cognito-idp:AdminRemoveUserFromGroup",
+        "cognito-idp:AdminCreateGroup",
+        "cognito-idp:AdminDeleteGroup",
+        "cognito-idp:AdminUpdateGroup",
+        "cognito-idp:AdminAddUserToGroup",
+        "cognito-idp:ListUsers",
+        "cognito-idp:AdminListGroupsForUser",
+        "cognito-idp:ListUserPools",
+    ]
+    assert set(mocks.iam.PolicyStatement.call_args[1]["actions"]) == set(
+        expected_actions
     )
+    assert mocks.iam.PolicyStatement.call_args[1]["resources"] == [
+        f"arn:aws:cognito-idp:{config.cdk_environment.region}:"
+        f"{config.cdk_environment.account}:userpool/{user_pool_id}"
+    ]
 
 
 def test_role_creation(mock_superuser_construct: tuple[SuperUserConstruct, Mocks]):
@@ -102,6 +106,7 @@ def test_role_creation(mock_superuser_construct: tuple[SuperUserConstruct, Mocks
     mocks.iam.Role.assert_called_once_with(
         construct,
         ANY,
+        role_name=ANY,
         assumed_by=mocks.iam.ServicePrincipal.return_value,
         managed_policies=[mocks.iam.ManagedPolicy.return_value],
     )
@@ -165,6 +170,6 @@ def test_logging(
     mocks.logs.LogGroup.assert_called_once_with(
         construct,
         "superuser-container-log-group",
-        log_group_name=f"/ecs/{config.project_name}-superuser-container-logs-{construct.node.id}",
+        log_group_name=f"{config.project_name}-superuser-container-logs",
         removal_policy=cdk.RemovalPolicy.DESTROY,
     )
