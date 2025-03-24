@@ -1,6 +1,9 @@
-# pylint: disable=missing-module-docstring, missing-function-docstring, redefined-outer-name
+# pylint: disable=missing-module-docstring, missing-function-docstring, redefined-outer-name, wrong-import-position
+
 import importlib
 import os
+
+print("VALIDATING THE AWS REGION:", os.environ.get("AWS_REGION", "Not Set"))
 
 import aws_cdk as cdk
 import pytest
