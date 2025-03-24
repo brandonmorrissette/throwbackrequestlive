@@ -1,7 +1,8 @@
 # pylint: disable=missing-function-docstring, missing-module-docstring, redefined-outer-name
+from typing import Any, Mapping
+
 import aws_cdk as cdk
 import pytest
-from aws_cdk import assertions
 
 from infra.config import Config
 from infra.stacks.compute import ComputeStack, ComputeStackArgs
@@ -56,11 +57,9 @@ def stack(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     )
 
 
-def test_runtime_service_resources(template: assertions.Template) -> None:
-    resources = template.find_resources("AWS::ECS::Service")
-    assert len(resources) == 1
+def test_runtime_service_resources(services: Mapping[str, Any]) -> None:
+    assert len(services) == 1
 
 
-def test_route53_resources(template: assertions.Template) -> None:
-    resources = template.find_resources("AWS::Route53::RecordSet")
-    assert len(resources) == 2
+def test_route53_resources(record_sets: Mapping[str, Any]) -> None:
+    assert len(record_sets) == 2

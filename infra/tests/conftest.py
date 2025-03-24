@@ -167,3 +167,58 @@ def cache_clusters(template: assertions.Template) -> Mapping[str, Any]:
 @pytest.fixture(scope="module")
 def user_pool_groups(template: assertions.Template) -> Mapping[str, Any]:
     return template.find_resources("AWS::Cognito::UserPoolGroup")
+
+
+@pytest.fixture(scope="module")
+def user_pools(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::Cognito::UserPool")
+
+
+@pytest.fixture(scope="module")
+def user_pool_clients(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::Cognito::UserPoolClient")
+
+
+@pytest.fixture(scope="module")
+def ssm_parameters(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::SSM::Parameter")
+
+
+@pytest.fixture(scope="module")
+def record_sets(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::Route53::RecordSet")
+
+
+@pytest.fixture(scope="module")
+def record_target(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::Route53::RecordSetTarget")
+
+
+@pytest.fixture(scope="module")
+def hosted_zones(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::Route53::HostedZone")
+
+
+@pytest.fixture(scope="module")
+def secrets(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::SecretsManager::Secret")
+
+
+@pytest.fixture(scope="module")
+def services(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::ECS::Service")
+
+
+@pytest.fixture(scope="module")
+def target_groups(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::ElasticLoadBalancingV2::TargetGroup")
+
+
+@pytest.fixture
+def subnets(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::EC2::Subnet")
+
+
+@pytest.fixture
+def policies(template: assertions.Template) -> Mapping[str, Any]:
+    return template.find_resources("AWS::IAM::Policy")

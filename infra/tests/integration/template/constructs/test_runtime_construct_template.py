@@ -2,7 +2,6 @@
 from typing import Any, Mapping
 
 import pytest
-from aws_cdk import assertions
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
@@ -87,21 +86,6 @@ def construct(
         stack,
         args=runtime_construct_args,
     )
-
-
-@pytest.fixture(scope="module")
-def secrets(template: assertions.Template) -> Mapping[str, Any]:
-    return template.find_resources("AWS::SecretsManager::Secret")
-
-
-@pytest.fixture(scope="module")
-def services(template: assertions.Template) -> Mapping[str, Any]:
-    return template.find_resources("AWS::ECS::Service")
-
-
-@pytest.fixture(scope="module")
-def target_groups(template: assertions.Template) -> Mapping[str, Any]:
-    return template.find_resources("AWS::ElasticLoadBalancingV2::TargetGroup")
 
 
 def test_jwt_secret(secrets: Mapping[str, Any]) -> None:

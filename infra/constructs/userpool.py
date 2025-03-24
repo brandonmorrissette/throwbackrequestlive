@@ -113,7 +113,7 @@ class UserPoolConstruct(Construct):
 
         return cognito.UserPool(
             self,
-            f"{user_pool_name}-{self.node.addr}",
+            f"{user_pool_name}",
             user_pool_name=user_pool_name,
             self_sign_up_enabled=False,
             sign_in_aliases=cognito.SignInAliases(email=True),
@@ -139,6 +139,10 @@ class UserPoolConstruct(Construct):
         Returns:
             cognito.UserPoolClient: The Cognito client.
         """
+        existing_client = self.node.try_find_child(f"{user_pool_name}-app-client")
+        if existing_client:
+            return existing_client
+
         if not Token.is_unresolved(self.user_pool_id):
             app_clients = self._cognito_client.list_user_pool_clients(
                 UserPoolId=self.user_pool_id, MaxResults=60
@@ -153,9 +157,9 @@ class UserPoolConstruct(Construct):
 
         cfn_client = cognito.CfnUserPoolClient(
             self,
-            f"{user_pool_name}-user-pool-app-client",
+            f"{user_pool_name}-app-client-L1",
             user_pool_id=self.user_pool_id,
-            client_name=f"{user_pool_name}-user-pool-app-client",
+            client_name=f"{user_pool_name}-app-client",
             explicit_auth_flows=[
                 "ALLOW_ADMIN_USER_PASSWORD_AUTH",
                 "ALLOW_USER_PASSWORD_AUTH",

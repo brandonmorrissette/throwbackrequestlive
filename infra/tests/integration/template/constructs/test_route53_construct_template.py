@@ -2,7 +2,6 @@
 from typing import Any, Mapping
 
 import pytest
-from aws_cdk import assertions
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_route53 as route53
@@ -48,21 +47,6 @@ def construct(
         stack,
         route53_construct_args,
     )
-
-
-@pytest.fixture(scope="module")
-def record_sets(template: assertions.Template) -> Mapping[str, Any]:
-    return template.find_resources("AWS::Route53::RecordSet")
-
-
-@pytest.fixture(scope="module")
-def record_target(template: assertions.Template) -> Mapping[str, Any]:
-    return template.find_resources("AWS::Route53::RecordSetTarget")
-
-
-@pytest.fixture(scope="module")
-def hosted_zones(template: assertions.Template) -> Mapping[str, Any]:
-    return template.find_resources("AWS::Route53::HostedZone")
 
 
 def test_alias_record(

@@ -14,11 +14,6 @@ def stack(app: cdk.App, config: Config) -> NetworkStack:
     return NetworkStack(app, NetworkStackArgs(config))
 
 
-@pytest.fixture
-def subnets(template: assertions.Template) -> Mapping[str, Any]:
-    return template.find_resources("AWS::EC2::Subnet")
-
-
 def test_vpc(vpcs: Mapping[str, Any]) -> None:
     assert len(vpcs) == 1
 

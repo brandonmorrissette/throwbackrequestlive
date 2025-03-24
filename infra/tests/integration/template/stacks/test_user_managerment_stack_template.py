@@ -14,21 +14,6 @@ def stack(app: cdk.App, config: Config) -> UserManagementStack:
     return UserManagementStack(app, UserManagementStackArgs(config))
 
 
-@pytest.fixture
-def user_pools(template: assertions.Template) -> Mapping[str, Any]:
-    return template.find_resources("AWS::Cognito::UserPool")
-
-
-@pytest.fixture
-def policies(template: assertions.Template) -> Mapping[str, Any]:
-    return template.find_resources("AWS::IAM::Policy")
-
-
-@pytest.fixture
-def user_groups(template: assertions.Template) -> Mapping[str, Any]:
-    return template.find_resources("AWS::Cognito::UserPoolGroup")
-
-
 def test_user_pool(user_pools: Mapping[str, Any]) -> None:
     assert len(user_pools) == 1
 
