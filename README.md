@@ -11,9 +11,9 @@ To Do
 -   route_53
     -   Remove hard coding. Find better way to pass or config.
 
-# Runtime Policy
+# Roles and policies
 
--   Currently inherits from superuser. Fix this.
+-   I have a better understanding now and wish to handle this with much better practice.
 
 # Docker
 
@@ -22,6 +22,7 @@ To Do
 
 # Cognito/User concepts cleanup
 
+-   Rip anything that requires boto out of this project and stand up an users project.
 -   Dynamic table properties for user flow (Currently hard coded)
 -   Want a much better super user creation process
     -   Current task has some assumptions in the code and is inflexible.
