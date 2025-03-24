@@ -68,6 +68,7 @@ class UserPoolConstruct(Construct):
         """
         super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
+        print("VALIDATING AWS REGION:", os.getenv("AWS_REGION"))
         self._cognito_client = boto3.client(
             "cognito-idp", region_name=os.getenv("AWS_REGION")
         )
