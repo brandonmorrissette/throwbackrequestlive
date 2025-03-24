@@ -46,9 +46,6 @@ jobs:
                   npm install
                   npx eslint 'src/*.{ts,tsx}'
 
-            - name: Debug All Environment Variables
-              run: env
-
             - name: Run Infra Tests
               env:
                   AWS_REGION: us-east-1
@@ -56,7 +53,7 @@ jobs:
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
               run: |
-                  pytest infra/tests --disable-warnings -q
+                  env && pytest infra/tests --disable-warnings -q
 
             - name: Run Backend Tests
               run: |
