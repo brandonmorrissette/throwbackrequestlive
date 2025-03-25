@@ -139,10 +139,6 @@ class UserPoolConstruct(Construct):
         Returns:
             cognito.UserPoolClient: The Cognito client.
         """
-        existing_client = self.node.try_find_child(f"{user_pool_name}-app-client")
-        if existing_client:
-            return existing_client
-
         if not Token.is_unresolved(self.user_pool_id):
             app_clients = self._cognito_client.list_user_pool_clients(
                 UserPoolId=self.user_pool_id, MaxResults=60
