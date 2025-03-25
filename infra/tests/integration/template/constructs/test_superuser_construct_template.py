@@ -30,6 +30,19 @@ def role(roles: Mapping[str, Any], config: Config) -> Any | None:
     )
 
 
+@pytest.fixture(scope="module")
+def task_role(roles: Mapping[str, Any], config: Config) -> Any | None:
+    return next(
+        (
+            role
+            for role in roles.values()
+            if role["Properties"].get("RoleName")
+            == f"{config.project_name}-{config.environment_name}-superuser-task-role"
+        ),
+        None,
+    )
+
+
 def test_policy(managed_policies: Mapping[str, Any], config: Config) -> None:
     policy = next(
         (
@@ -72,16 +85,33 @@ def test_user_pool_group(user_pool_groups: Mapping[str, Any]) -> None:
     )
 
 
+# pylint: disable=R0801
+def test_task_role(
+    task_role: Mapping[str, Any], managed_policies: Mapping[str, Any]
+) -> None:
+    assert task_role
+    assert task_role["Properties"]["AssumeRolePolicyDocument"]["Statement"] == [
+        {
+            "Action": "sts:AssumeRole",
+            "Effect": "Allow",
+            "Principal": {"Service": "ecs-tasks.amazonaws.com"},
+        }
+    ]
+    assert task_role["Properties"]["ManagedPolicyArns"] == [
+        {"Ref": next(iter(managed_policies.keys()))}
+    ]
+
+
 def test_task_definition(
     task_definitions: Mapping[str, Any],
     roles: Mapping[str, Any],
-    role: Mapping[str, Any],
+    task_role: Mapping[str, Any],
 ) -> None:
     task_definition = next(iter(task_definitions.values()))
 
     assert task_definition["Properties"]["RequiresCompatibilities"] == ["FARGATE"]
     assert task_definition["Properties"]["TaskRoleArn"]["Fn::GetAtt"] == [
-        next(key for key, value in roles.items() if value == role),
+        next(key for key, value in roles.items() if value == task_role),
         "Arn",
     ]
 

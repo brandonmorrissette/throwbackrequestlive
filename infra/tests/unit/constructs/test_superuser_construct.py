@@ -16,6 +16,11 @@ def user_pool_id():
     return "test-user-pool-id"
 
 
+@pytest.fixture(scope="module")
+def user_pool_resource_arn(config: Config, user_pool_id: str):
+    return f"arn:aws:cognito-idp:{config.cdk_environment.region}:{config.cdk_environment.account}:userpool/{user_pool_id}"  # pylint: disable=line-too-long
+
+
 @dataclass
 class Mocks:  # pylint: disable=missing-class-docstring
     iam: MagicMock
@@ -61,8 +66,7 @@ def test_default_id(
 
 def test_policy_creation(
     mock_superuser_construct: tuple[SuperUserConstruct, Mocks],
-    config: Config,
-    user_pool_id: str,
+    user_pool_resource_arn: str,
 ):
     construct, mocks = mock_superuser_construct
 
@@ -91,19 +95,18 @@ def test_policy_creation(
         "cognito-idp:AdminListGroupsForUser",
         "cognito-idp:ListUserPools",
     ]
-    assert set(mocks.iam.PolicyStatement.call_args[1]["actions"]) == set(
-        expected_actions
-    )
-    assert mocks.iam.PolicyStatement.call_args[1]["resources"] == [
-        f"arn:aws:cognito-idp:{config.cdk_environment.region}:"
-        f"{config.cdk_environment.account}:userpool/{user_pool_id}"
+    assert set(
+        mocks.iam.PolicyStatement.call_args_list[0].kwargs.get("actions")
+    ) == set(expected_actions)
+    assert mocks.iam.PolicyStatement.call_args_list[0].kwargs.get("resources") == [
+        user_pool_resource_arn
     ]
 
 
 def test_role_creation(mock_superuser_construct: tuple[SuperUserConstruct, Mocks]):
     construct, mocks = mock_superuser_construct
 
-    mocks.iam.Role.assert_called_once_with(
+    mocks.iam.Role.assert_any_call(
         construct,
         ANY,
         role_name=ANY,
@@ -111,7 +114,7 @@ def test_role_creation(mock_superuser_construct: tuple[SuperUserConstruct, Mocks
         managed_policies=[mocks.iam.ManagedPolicy.return_value],
     )
 
-    mocks.iam.ServicePrincipal.assert_called_once_with("cognito-idp.amazonaws.com")
+    mocks.iam.ServicePrincipal.assert_any_call("cognito-idp.amazonaws.com")
 
 
 def test_user_pool_group_creation(
@@ -126,6 +129,30 @@ def test_user_pool_group_creation(
         user_pool_id=user_pool_id,
         description="Superuser group with elevated permissions",
         role_arn=mocks.iam.Role.return_value.role_arn,
+    )
+
+
+def test_task_role_creation(
+    mock_superuser_construct: tuple[SuperUserConstruct, Mocks],
+    user_pool_resource_arn: str,
+):
+    construct, mocks = mock_superuser_construct
+
+    mocks.iam.PolicyStatement.assert_any_call(
+        actions=["cognito-idp:ListUserPools"],
+        resources=[user_pool_resource_arn],
+    )
+
+    mocks.iam.ServicePrincipal.assert_any_call("ecs-tasks.amazonaws.com")
+
+    mocks.iam.Role.assert_any_call(
+        construct,
+        ANY,
+        assumed_by=mocks.iam.ServicePrincipal.return_value,
+        managed_policies=[mocks.iam.ManagedPolicy.return_value],
+        inline_policies={
+            "SuperuserPolicy": mocks.iam.PolicyDocument.return_value,
+        },
     )
 
 

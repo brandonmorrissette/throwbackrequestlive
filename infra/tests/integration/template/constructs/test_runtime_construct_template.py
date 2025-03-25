@@ -118,6 +118,7 @@ def test_policy(
     } in policy["Properties"]["PolicyDocument"]["Statement"]
 
 
+# pylint: disable=R0801
 def test_task_role(
     roles: Mapping[str, Any], config: Config, managed_policies: Mapping[str, Any]
 ) -> None:

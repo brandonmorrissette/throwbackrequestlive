@@ -88,6 +88,11 @@ class SuperUserConstruct(Construct):
         """
         super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
+        user_pool_resource_arn = (
+            f"arn:aws:cognito-idp:{args.config.cdk_environment.region}:"
+            f"{args.config.cdk_environment.account}:userpool/{args.user_pool_id}"
+        )
+
         self.policy = iam.ManagedPolicy(
             self,
             "cognito-policy",
@@ -97,8 +102,7 @@ class SuperUserConstruct(Construct):
                 iam.PolicyStatement(
                     actions=PERMITTED_ACTIONS,
                     resources=[
-                        f"arn:aws:cognito-idp:{args.config.cdk_environment.region}:"
-                        f"{args.config.cdk_environment.account}:userpool/{args.user_pool_id}"
+                        user_pool_resource_arn,
                     ],
                 )
             ],
@@ -122,12 +126,33 @@ class SuperUserConstruct(Construct):
             role_arn=role.role_arn,
         )
 
+        task_role = iam.Role(
+            self,
+            "SuperuserTaskRole",
+            role_name=f"{args.config.project_name}-"
+            f"{args.config.environment_name}-superuser-task-role",
+            assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            managed_policies=[self.policy],
+            inline_policies={
+                "SuperuserPolicy": iam.PolicyDocument(
+                    statements=[
+                        iam.PolicyStatement(
+                            actions=[
+                                "cognito-idp:ListUserPools",
+                            ],
+                            resources=[user_pool_resource_arn],
+                        ),
+                    ]
+                )
+            },
+        )
+
         user_creation_task_definition = ecs.FargateTaskDefinition(
             self,
             "superuser-task-definition",
             memory_limit_mib=512,
             cpu=256,
-            task_role=role,
+            task_role=task_role,
         )
 
         log_group = logs.LogGroup(
