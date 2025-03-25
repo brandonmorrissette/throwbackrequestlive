@@ -140,7 +140,7 @@ class SuperUserConstruct(Construct):
                             actions=[
                                 "cognito-idp:ListUserPools",
                             ],
-                            resources=[user_pool_resource_arn],
+                            resources=["*"],
                         ),
                     ]
                 )

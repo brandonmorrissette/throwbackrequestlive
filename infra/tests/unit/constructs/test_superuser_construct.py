@@ -134,13 +134,12 @@ def test_user_pool_group_creation(
 
 def test_task_role_creation(
     mock_superuser_construct: tuple[SuperUserConstruct, Mocks],
-    user_pool_resource_arn: str,
 ):
     construct, mocks = mock_superuser_construct
 
     mocks.iam.PolicyStatement.assert_any_call(
         actions=["cognito-idp:ListUserPools"],
-        resources=[user_pool_resource_arn],
+        resources=["*"],
     )
 
     mocks.iam.ServicePrincipal.assert_any_call("ecs-tasks.amazonaws.com")
@@ -148,6 +147,7 @@ def test_task_role_creation(
     mocks.iam.Role.assert_any_call(
         construct,
         ANY,
+        role_name=ANY,
         assumed_by=mocks.iam.ServicePrincipal.return_value,
         managed_policies=[mocks.iam.ManagedPolicy.return_value],
         inline_policies={
