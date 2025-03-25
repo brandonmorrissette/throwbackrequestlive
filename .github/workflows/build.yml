@@ -55,7 +55,6 @@ jobs:
 
             - name: Run Infra Tests
               run: |
-                  export PYTHONPATH="$PYTHONPATH:$(pwd)"
                   pytest infra/tests --disable-warnings -q
 
             - name: Run Backend Tests

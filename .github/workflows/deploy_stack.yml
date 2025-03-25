@@ -56,7 +56,10 @@ jobs:
               run: cdk bootstrap || echo "Bootstrap already complete"
 
             - name: Deploy Stack
-              run: cdk deploy ${{ github.event.repository.name }}-${{ env.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py" --require-approval never
+              run: |
+                  export PYTHONPATH="$(pwd):$PYTHONPATH"
+                  cdk deploy ${{ github.event.repository.name }}-${{ env.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py" --require-approval never
+
               env:
                   PROJECT_NAME: ${{ github.event.repository.name }}
                   ENVIRONMENT_NAME: 'production'
