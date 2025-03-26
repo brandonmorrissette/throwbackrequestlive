@@ -46,9 +46,14 @@ class CognitoService:
         Args:
             config (Config): The configuration object.
         """
-        self._user_pool_id = config.cognito_user_pool_id
+        ssm_client = boto3.client("ssm", region_name=config.aws_default_region)
+
+        self._user_pool_id = ssm_client.get_parameter(
+            Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
+        )["Parameter"]["Value"]
+
         self._cognito_client = boto3.client(
-            "cognito-idp", region_name=config.cognito_region
+            "cognito-idp", region_name=config.aws_default_region
         )
 
         self._redis_client = redis.StrictRedis(

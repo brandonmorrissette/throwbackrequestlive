@@ -16,10 +16,8 @@ JWT_TOKEN_LOCATION = MagicMock()
 JWT_HEADER_NAME = MagicMock()
 JWT_HEADER_TYPE = MagicMock()
 
-# Cognito
-COGNITO_APP_CLIENT_ID = MagicMock()
-COGNITO_USER_POOL_ID = MagicMock()
-COGNITO_REGION = MagicMock()
+# AWS
+AWS_DEFAULT_REGION = MagicMock()
 
 # Database
 DB_USER = MagicMock()
@@ -64,8 +62,8 @@ def test_given_no_overrides_when_config_instantiated_then_config_set_to_default(
     assert config.jwt_header_name == JWT_HEADER_NAME
     assert config.jwt_header_type == JWT_HEADER_TYPE
 
-    # Cognito
-    assert config.cognito_region == COGNITO_REGION
+    # AWS
+    assert config.aws_default_region == AWS_DEFAULT_REGION
 
     # Database
     assert config.db_user == DB_USER
@@ -102,7 +100,7 @@ def test_given_overrides_when_config_instantiated_then_overrirdes_set(variables)
     assert config.jwt_header_type == JWT_HEADER_TYPE
 
     # Cognito
-    assert config.cognito_region == COGNITO_REGION
+    assert config.aws_default_region == AWS_DEFAULT_REGION
 
     # Database
     assert config.db_user == DB_USER
@@ -133,7 +131,7 @@ def test_given_no_environment_or_overrirdes_when_get_config_then_config_set_to_d
     assert config.jwt_header_type == "Bearer"
 
     # Cognito
-    assert config.cognito_region is None
+    assert config.aws_default_region is None
 
     # Database
     assert config.db_user is None

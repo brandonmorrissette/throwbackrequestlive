@@ -21,9 +21,7 @@ class Config:
         jwt_token_location (list): JWT token location.
         jwt_header_name (str): JWT header name.
         jwt_header_type (str): JWT header type.
-        cognito_app_client_id (str): Cognito app client ID.
-        cognito_user_pool_id (str): Cognito user pool ID.
-        cognito_region (str): Cognito region.
+        aws_default_region (str): AWS region.
         db_user (str): Database user.
         db_password (str): Database password.
         db_host (str): Database host.
@@ -60,9 +58,9 @@ class Config:
             "jwt_header_type", os.getenv("JWT_HEADER_TYPE", "Bearer")
         )
 
-        # Cognito
-        self.cognito_region = overrides.get(
-            "cognito_region", os.getenv("COGNITO_REGION")
+        # AWS
+        self.aws_default_region = overrides.get(
+            "aws_default_region", os.getenv("AWS_DEFAULT_REGION")
         )
 
         # Database

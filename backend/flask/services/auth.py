@@ -24,9 +24,11 @@ class AuthService:
         Args:
             config (Config): The configuration object.
         """
-        self._client = boto3.client("cognito-idp", region_name=config.cognito_region)
+        self._client = boto3.client(
+            "cognito-idp", region_name=config.aws_default_region
+        )
 
-        ssm_client = boto3.client("ssm", region_name=config.cognito_region)
+        ssm_client = boto3.client("ssm", region_name=config.aws_default_region)
 
         self._client_id = ssm_client.get_parameter(
             Name=f"/{config.project_name}/user-pool-client-id", WithDecryption=True
