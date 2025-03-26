@@ -14,23 +14,24 @@ class Config:
     """Base configuration class.
 
     Attributes:
-        DEBUG (bool): Debug mode.
-        LOG_LEVEL (str): Logging level.
-        JWT_SECRET_KEY (str): JWT secret key.
-        JWT_TOKEN_LOCATION (list): JWT token location.
-        JWT_HEADER_NAME (str): JWT header name.
-        JWT_HEADER_TYPE (str): JWT header type.
-        COGNITO_APP_CLIENT_ID (str): Cognito app client ID.
-        COGNITO_USER_POOL_ID (str): Cognito user pool ID.
-        COGNITO_REGION (str): Cognito region.
-        DB_USER (str): Database user.
-        DB_PASSWORD (str): Database password.
-        DB_HOST (str): Database host.
-        DB_NAME (str): Database name.
-        DB_ENGINE (str): Database engine.
-        DB_PORT (int): Database port.
-        REDIS_HOST (str): Redis host.
-        REDIS_PORT (int): Redis port.
+        project_name (str): Project name.
+        debug (bool): Debug mode.
+        log_level (str): Log level.
+        jwt_secret_key (str): JWT secret key.
+        jwt_token_location (list): JWT token location.
+        jwt_header_name (str): JWT header name.
+        jwt_header_type (str): JWT header type.
+        cognito_app_client_id (str): Cognito app client ID.
+        cognito_user_pool_id (str): Cognito user pool ID.
+        cognito_region (str): Cognito region.
+        db_user (str): Database user.
+        db_password (str): Database password.
+        db_host (str): Database host.
+        db_name (str): Database name.
+        db_engine (str): Database engine.
+        db_port (str): Database port.
+        redis_host (str): Redis host.
+        redis_port (str): Redis port.
     """
 
     def __init__(self, environment=None, **overrides):
@@ -40,6 +41,7 @@ class Config:
             overrides["debug"] = bool(os.getenv("DEBUG", "True"))
 
         # App
+        self.project_name = overrides.get("project_name", os.getenv("PROJECT_NAME"))
         self.debug = overrides.get("debug", bool(os.getenv("DEBUG")))
         self.log_level = overrides.get("log_level", os.getenv("LOG_LEVEL", "INFO"))
 
@@ -59,12 +61,6 @@ class Config:
         )
 
         # Cognito
-        self.cognito_app_client_id = overrides.get(
-            "cognito_app_client_id", os.getenv("COGNITO_APP_CLIENT_ID")
-        )
-        self.cognito_user_pool_id = overrides.get(
-            "cognito_user_pool_id", os.getenv("COGNITO_USER_POOL_ID")
-        )
         self.cognito_region = overrides.get(
             "cognito_region", os.getenv("COGNITO_REGION")
         )

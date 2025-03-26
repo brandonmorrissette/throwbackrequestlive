@@ -117,8 +117,7 @@ def test_runtime_construct(  # pylint: disable=too-many-arguments, too-many-posi
         policy=mock_user_management_stack.superuser_construct.policy,
         cluster=mock_compute_stack.cluster_construct.cluster,
         runtime_variables={
-            "COGNITO_APP_CLIENT_ID": mocks.ssm.StringParameter.value_for_string_parameter.return_value,  # pylint: disable=line-too-long
-            "COGNITO_USER_POOL_ID": mocks.ssm.StringParameter.value_for_string_parameter.return_value,  # pylint: disable=line-too-long
+            "PROJECT_NAME": config.project_name,
             "DB_NAME": config.project_name,
             "REDIS_HOST": mock_storage_stack.cache_construct.cluster.attr_redis_endpoint_address,  # pylint: disable=line-too-long
             "REDIS_PORT": mock_storage_stack.cache_construct.cluster.attr_redis_endpoint_port,
@@ -128,13 +127,6 @@ def test_runtime_construct(  # pylint: disable=too-many-arguments, too-many-posi
             "DB_PASSWORD": mocks.ecs.Secret.from_secrets_manager.return_value,
             "DB_HOST": mocks.ecs.Secret.from_secrets_manager.return_value,
         },
-    )
-
-    mocks.ssm.StringParameter.value_for_string_parameter.assert_any_call(
-        stack, f"/{config.project_name}/user-pool-client-id"
-    )
-    mocks.ssm.StringParameter.value_for_string_parameter.assert_any_call(
-        stack, f"/{config.project_name}/user-pool-id"
     )
 
     mocks.ecs.Secret.from_secrets_manager.assert_any_call(

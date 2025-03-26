@@ -22,6 +22,28 @@ def auth_service(config):
         return AuthService(config)
 
 
+def test_when_init_then_cognito_params_are_retrieved(config: Config):
+    with patch("boto3.client") as mock_boto:
+        service = AuthService(config)
+
+    mock_boto.assert_any_call("cognito-idp", region_name=config.cognito_region)
+    mock_boto.assert_any_call("ssm", region_name=config.cognito_region)
+
+    mock_boto.return_value.get_parameter.assert_any_call(
+        Name=f"/{config.project_name}/user-pool-client-id", WithDecryption=True
+    )
+    mock_boto.return_value.get_parameter.assert_any_call(
+        Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
+    )
+
+    service._client_id = mock_boto.return_value.get_parameter.return_value["Parameter"][
+        "Value"
+    ]
+    service._user_pool_id = mock_boto.return_value.get_parameter.return_value[
+        "Parameter"
+    ]["Value"]
+
+
 def test_given_valid_creds_when_authenticate_user_then_return_token(auth_service):
     with patch("backend.flask.services.auth.AuthService.generate_jwt") as generate_jwt:
         response = auth_service.authenticate_user("test_user", "test_password")

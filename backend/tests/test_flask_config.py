@@ -5,6 +5,8 @@ import pytest
 
 from backend.flask.config import Config
 
+# App
+PROJECT_NAME = MagicMock()
 DEBUG = False
 LOG_LEVEL = MagicMock()
 
@@ -52,6 +54,7 @@ def test_given_no_overrides_when_config_instantiated_then_config_set_to_default(
         config = Config()
 
     # App
+    assert config.project_name == PROJECT_NAME
     assert config.debug == DEBUG
     assert config.log_level == LOG_LEVEL
 
@@ -62,8 +65,6 @@ def test_given_no_overrides_when_config_instantiated_then_config_set_to_default(
     assert config.jwt_header_type == JWT_HEADER_TYPE
 
     # Cognito
-    assert config.cognito_app_client_id == COGNITO_APP_CLIENT_ID
-    assert config.cognito_user_pool_id == COGNITO_USER_POOL_ID
     assert config.cognito_region == COGNITO_REGION
 
     # Database
@@ -90,6 +91,7 @@ def test_given_overrides_when_config_instantiated_then_overrirdes_set(variables)
     config = Config(**{key.lower(): value for key, value in variables.items()})
 
     # App
+
     assert config.debug == debug
     assert config.log_level == LOG_LEVEL
 
@@ -100,8 +102,6 @@ def test_given_overrides_when_config_instantiated_then_overrirdes_set(variables)
     assert config.jwt_header_type == JWT_HEADER_TYPE
 
     # Cognito
-    assert config.cognito_app_client_id == COGNITO_APP_CLIENT_ID
-    assert config.cognito_user_pool_id == COGNITO_USER_POOL_ID
     assert config.cognito_region == COGNITO_REGION
 
     # Database
@@ -122,6 +122,7 @@ def test_given_no_environment_or_overrirdes_when_get_config_then_config_set_to_d
         config = Config()
 
     # App
+    assert config.project_name is None
     assert config.debug is False
     assert config.log_level == "INFO"
 
@@ -132,8 +133,6 @@ def test_given_no_environment_or_overrirdes_when_get_config_then_config_set_to_d
     assert config.jwt_header_type == "Bearer"
 
     # Cognito
-    assert config.cognito_app_client_id is None
-    assert config.cognito_user_pool_id is None
     assert config.cognito_region is None
 
     # Database

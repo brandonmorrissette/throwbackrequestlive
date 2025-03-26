@@ -25,8 +25,17 @@ class AuthService:
             config (Config): The configuration object.
         """
         self._client = boto3.client("cognito-idp", region_name=config.cognito_region)
-        self._client_id = config.cognito_app_client_id
-        self._user_pool_id = config.cognito_user_pool_id
+
+        ssm_client = boto3.client("ssm", region_name=config.cognito_region)
+
+        self._client_id = ssm_client.get_parameter(
+            Name=f"/{config.project_name}/user-pool-client-id", WithDecryption=True
+        )["Parameter"]["Value"]
+
+        self._user_pool_id = ssm_client.get_parameter(
+            Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
+        )["Parameter"]["Value"]
+
         self._jwt_secret_key = config.jwt_secret_key
         self._jwt_algorithm = "HS256"
 
