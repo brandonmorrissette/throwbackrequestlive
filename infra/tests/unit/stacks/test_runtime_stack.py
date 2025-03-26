@@ -45,7 +45,6 @@ class Mocks:  # pylint: disable=missing-class-docstring
     runtime_construct_args: MagicMock
     route53_construct: MagicMock
     route53_construct_args: MagicMock
-    ssm: MagicMock
     ecs: MagicMock
 
 
@@ -67,8 +66,6 @@ def mocked_runtime_stack(  # pylint: disable=too-many-arguments, too-many-positi
     ) as mock_route53_construct, patch(
         "infra.stacks.runtime.Route53ConstructArgs"
     ) as mock_route53_construct_args, patch(
-        "infra.stacks.runtime.ssm"
-    ) as mock_ssm, patch(
         "infra.stacks.runtime.ecs"
     ) as mock_ecs:
         args = RuntimeStackArgs(
@@ -83,7 +80,6 @@ def mocked_runtime_stack(  # pylint: disable=too-many-arguments, too-many-positi
             mock_runtime_construct_args,
             mock_route53_construct,
             mock_route53_construct_args,
-            mock_ssm,
             mock_ecs,
         )
 

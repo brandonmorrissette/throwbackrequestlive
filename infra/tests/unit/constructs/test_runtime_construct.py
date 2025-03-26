@@ -98,18 +98,30 @@ def test_jwt_secret_creation(
     )
 
 
-def test_policy_created(mock_runtime_construct: tuple[RuntimeConstruct, Mocks]):
+def test_policy_created(
+    mock_runtime_construct: tuple[RuntimeConstruct, Mocks], config: Config
+):
     construct, mocks = mock_runtime_construct
 
     mocks.iam.ManagedPolicy.assert_called_once_with(
         construct,
         ANY,
         managed_policy_name=ANY,
-        statements=[mocks.iam.PolicyStatement.return_value],
+        statements=[
+            mocks.iam.PolicyStatement.return_value,
+            mocks.iam.PolicyStatement.return_value,
+        ],
     )
-    mocks.iam.PolicyStatement.assert_called_once_with(
+    mocks.iam.PolicyStatement.assert_any_call(
         actions=["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
         resources=[mocks.secretsmanager.Secret.return_value.secret_arn],
+    )
+    mocks.iam.PolicyStatement.assert_any_call(
+        actions=["ssm:GetParameter"],
+        resources=[
+            f"arn:aws:ssm:{config.cdk_environment.region}:"
+            f"{config.cdk_environment.account}:parameter/{config.project_name}/*"
+        ],
     )
 
 

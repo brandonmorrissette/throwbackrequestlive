@@ -113,6 +113,16 @@ class RuntimeConstruct(Construct):
                     ],
                     resources=[jwt_secret.secret_arn],
                 ),
+                iam.PolicyStatement(
+                    actions=[
+                        "ssm:GetParameter",
+                    ],
+                    resources=[
+                        f"arn:aws:ssm:{args.config.cdk_environment.region}:"
+                        f"{args.config.cdk_environment.account}:"
+                        f"parameter/{args.config.project_name}/*"
+                    ],
+                ),
             ],
         )
 
