@@ -166,4 +166,4 @@ class UserPoolConstruct(Construct):
         #     self, f"{user_pool_name}-app-client", user_pool_client_id=cfn_client.ref
         # )
 
-        return cfn_client.logical_id
+        return cfn_client.ref
