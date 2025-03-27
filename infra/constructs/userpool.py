@@ -78,13 +78,12 @@ class UserPoolConstruct(Construct):
             string_value=user_pool.user_pool_id,
         )
 
-        user_pool_client = self._get_user_pool_client(user_pool_name)
-        self.user_pool_client_id = user_pool_client.user_pool_client_id
+        self.user_pool_client_id = self._get_user_pool_client_id(user_pool_name)
         ssm.StringParameter(
             self,
             "UserPoolClientIdParameter",
             parameter_name=f"/{args.config.project_name}/user-pool-client-id",
-            string_value=user_pool_client.user_pool_client_id,
+            string_value=self.user_pool_client_id,
         )
 
     def _get_user_pool(self, user_pool_name):
@@ -127,7 +126,7 @@ class UserPoolConstruct(Construct):
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
         )
 
-    def _get_user_pool_client(self, user_pool_name):
+    def _get_user_pool_client_id(self, user_pool_name):
         """
         Retrieves the Cognito client for the user pool.
         If the client does not exist,
