@@ -9,6 +9,7 @@ services:
         depends_on:
             - redis
         environment:
+            - PROJECT_NAME=${PROJECT_NAME}
             - ENVIRONMENT=${ENVIRONMENT}
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}

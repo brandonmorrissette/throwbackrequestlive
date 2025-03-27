@@ -26,8 +26,8 @@ def test_when_init_then_cognito_params_are_retrieved(config: Config):
     with patch("boto3.client") as mock_boto:
         service = AuthService(config)
 
-    mock_boto.assert_any_call("cognito-idp", region_name=config.aws_default_region)
-    mock_boto.assert_any_call("ssm", region_name=config.aws_default_region)
+    mock_boto.assert_any_call("cognito-idp", region_name=config.AWS_DEFAULT_REGION)
+    mock_boto.assert_any_call("ssm", region_name=config.AWS_DEFAULT_REGION)
 
     mock_boto.return_value.get_parameter.assert_any_call(
         Name=f"/{config.project_name}/user-pool-client-id", WithDecryption=True

@@ -34,6 +34,7 @@ class Config:
 
     def __init__(self, environment=None, **overrides):
 
+        # pylint: disable=invalid-name
         if environment == "development":
             # Any string equates to True for bool
             overrides["debug"] = bool(os.getenv("DEBUG", "True"))
@@ -44,22 +45,22 @@ class Config:
         self.log_level = overrides.get("log_level", os.getenv("LOG_LEVEL", "INFO"))
 
         # JWT
-        self.jwt_secret_key = overrides.get(
+        self.JWT_SECRET_KEY = overrides.get(
             "jwt_secret_key", os.getenv("JWT_SECRET_KEY")
         )
-        self.jwt_token_location = overrides.get(
+        self.JWT_TOKEN_LOCATION = overrides.get(
             "jwt_token_location",
             os.getenv("JWT_TOKEN_LOCATION", "headers").split(","),
         )
-        self.jwt_header_name = overrides.get(
+        self.JWT_HEADER_NAME = overrides.get(
             "jwt_header_name", os.getenv("JWT_HEADER_NAME", "Authorization")
         )
-        self.jwt_header_type = overrides.get(
+        self.JWT_HEADER_TYPE = overrides.get(
             "jwt_header_type", os.getenv("JWT_HEADER_TYPE", "Bearer")
         )
 
         # AWS
-        self.aws_default_region = overrides.get(
+        self.AWS_DEFAULT_REGION = overrides.get(
             "aws_default_region", os.getenv("AWS_DEFAULT_REGION")
         )
 

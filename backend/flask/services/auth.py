@@ -25,10 +25,10 @@ class AuthService:
             config (Config): The configuration object.
         """
         self._client = boto3.client(
-            "cognito-idp", region_name=config.aws_default_region
+            "cognito-idp", region_name=config.AWS_DEFAULT_REGION
         )
 
-        ssm_client = boto3.client("ssm", region_name=config.aws_default_region)
+        ssm_client = boto3.client("ssm", region_name=config.AWS_DEFAULT_REGION)
 
         self._client_id = ssm_client.get_parameter(
             Name=f"/{config.project_name}/user-pool-client-id", WithDecryption=True
@@ -38,7 +38,7 @@ class AuthService:
             Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
         )["Parameter"]["Value"]
 
-        self._jwt_secret_key = config.jwt_secret_key
+        self._jwt_secret_key = config.JWT_SECRET_KEY
         self._jwt_algorithm = "HS256"
 
     @raise_http_exception
