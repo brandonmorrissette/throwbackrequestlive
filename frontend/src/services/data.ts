@@ -10,7 +10,7 @@ export interface IDataService {
     writeRows(tableName: string, rows: any[]): Promise<void>;
 }
 
-class DataService implements IDataService {
+export class DataService implements IDataService {
     /**
      * Fetches the list of table names.
      * @returns {Promise<string[]>} The list of table names.

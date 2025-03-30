@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Modal from '../../components/modal/Modal';
+import { useError } from '../../contexts/ErrorContext';
+import { default as RequestService } from '../../services/request';
 import styles from './Request.module.css';
 
 interface Song {
     song_name: string;
-    band: string;
+    band_name: string;
+    id: string;
 }
 
 /**
@@ -18,31 +22,40 @@ interface Song {
  */
 const Request: React.FC = () => {
     const [songs, setSongs] = useState<Song[]>([]);
-    const [selectedSong, setSelectedSong] = useState<string | null>(null);
+    const [selectedSong, setSelectedSong] = useState<Song | null>(null);
 
-    /**
-     * Fetches the list of songs from the API when the component mounts.
-     */
+    const [searchParams] = useSearchParams();
+    const showId = searchParams.get('showId') || '';
+
+    const navigate = useNavigate();
+    const { setError } = useError();
+
     useEffect(() => {
-        fetch('/api/songs')
-            .then((response) => response.json())
-            .then((data) => setSongs(data));
+        if (!showId) {
+            const error = new Error('Show ID is missing in the request');
+            console.error(error);
+            setError(error);
+            navigate('/');
+        }
+    }, [showId]);
+
+    useEffect(() => {
+        const songs = RequestService.readRows('songs');
+        songs
+            .then((data) => {
+                setSongs(data);
+            })
+            .catch((error) => {
+                error.message = 'Error fetching songs: ' + error.message;
+                console.error(error);
+                setError(error);
+            });
     }, []);
 
-    /**
-     * Handles the song request by sending the selected song to the API.
-     */
-    const handleRequest = () => {
+    const handleRequest = async () => {
         if (selectedSong) {
-            fetch('/api/request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ song: selectedSong }),
-            }).then((response) => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                }
-            });
+            RequestService.writeRequest(selectedSong.id, showId);
+            navigate('/?song=' + encodeURIComponent(selectedSong.song_name));
         }
     };
 
@@ -55,10 +68,12 @@ const Request: React.FC = () => {
                         key={index}
                         type="button"
                         className={styles.requestButton}
-                        onClick={() => setSelectedSong(song.song_name)}
+                        onClick={() => setSelectedSong(song)}
                     >
                         <div className={styles.songDetails}>
-                            <span className={styles.songBand}>{song.band}</span>
+                            <span className={styles.songBand}>
+                                {song.band_name}
+                            </span>
                             <span className={styles.songName}>
                                 {song.song_name}
                             </span>
@@ -72,7 +87,7 @@ const Request: React.FC = () => {
                     <h3>Confirm Your Selection</h3>
                     <p>Are you sure you want to select:</p>
                     <p>
-                        <strong>{selectedSong}</strong>
+                        <strong>{selectedSong.song_name}</strong>
                     </p>
                     <div className={styles.modalActions}>
                         <button

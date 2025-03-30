@@ -127,6 +127,27 @@ def test_given_request_when_read_shows_then_shows_returned(client, blueprint):
         assert json.loads(response.data) == shows_data
 
 
+def test_when_read_songs_then_endpoint_is_unrestricted(
+    client,
+    mock_restrict_access,
+):
+    client.get("/tables/songs/rows")
+    assert "read_songs" not in mock_restrict_access
+
+
+def test_given_request_when_read_songs_then_songs_returned(client, blueprint):
+    with patch.object(blueprint, "_get_rows") as _get_rows:
+        songs_data = [{"data": "songs_data"}]
+        _get_rows.return_value = songs_data
+
+        response = client.get("/tables/songs/rows")
+
+        _get_rows.assert_called_once_with("songs", ANY)
+
+        assert response.status_code == 200
+        assert json.loads(response.data) == songs_data
+
+
 def test_when_read_rows_then_endpoint_is_restricted_to_appllicable_groups(
     client,
     mock_restrict_access,

@@ -1,5 +1,6 @@
 import jwtDecode from 'jwt-decode';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -19,9 +20,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     redirectTo,
 }) => {
     const token = sessionStorage.getItem('auth_token');
+    const navigate = useNavigate();
 
     if (!token) {
-        window.location.href = redirectTo;
+        navigate(redirectTo);
         return null;
     }
 
@@ -30,11 +32,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         const currentTime = Date.now() / 1000;
 
         if (decodedToken.exp < currentTime) {
-            window.location.href = redirectTo;
+            navigate(redirectTo);
             return null;
         }
     } catch (error) {
-        window.location.href = redirectTo;
+        navigate(redirectTo);
         return null;
     }
 

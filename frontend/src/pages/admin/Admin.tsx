@@ -1,5 +1,6 @@
 import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DataManagement from './DataManagement';
 import UserManagement from './UserManagement';
 
@@ -14,6 +15,8 @@ export interface AdminComponent extends React.FC {
 const Admin: React.FC = () => {
     const [userGroups, setUserGroups] = useState<string[]>([]);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         const token = sessionStorage.getItem('auth_token');
 
@@ -25,10 +28,10 @@ const Admin: React.FC = () => {
                 setUserGroups(groups);
             } catch (e) {
                 console.error('Invalid token', e);
-                window.location.href = '/login';
+                navigate('/login');
             }
         } else {
-            window.location.href = '/login';
+            navigate('/login');
         }
     }, []);
 

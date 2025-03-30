@@ -89,6 +89,15 @@ class DataBlueprint(Blueprint):
             """
             return self._get_rows("shows", request)
 
+        # Public route
+        @self.route("/tables/songs/rows", methods=["GET"])
+        def read_songs() -> Tuple[Any, int]:
+            """
+            Read rows from the 'songs' table.
+            :return: JSON response with the rows.
+            """
+            return self._get_rows("songs", request)
+
         @self.route("/tables/<table_name>/rows", methods=["GET"])
         @restrict_access(["superuser"])
         def read_rows(table_name: str) -> Tuple[Any, int]:
