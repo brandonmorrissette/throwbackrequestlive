@@ -1,16 +1,38 @@
 """
-This module defines the UserManagementStack class, 
+This module defines the UserManagementStack class,
 which sets up the user management resources for the application.
 
 It creates User Pool and Superuser constructs using the provided configuration.
 """
 
 from aws_cdk import CfnOutput
-from config import Config
 from constructs import Construct
-from constructs.superuser import SuperUserConstruct
-from constructs.userpool import UserPoolConstruct
-from stacks.stack import Stack
+
+from infra.config import Config
+from infra.constructs.superuser import SuperUserConstruct, SuperUserConstructArgs
+from infra.constructs.userpool import UserPoolConstruct, UserPoolConstructArgs
+from infra.stacks.stack import Stack, StackArgs
+
+
+class UserManagementStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
+    """
+    Arguments for the UserManagementStack.
+
+    Attributes:
+        config (Config): Configuration object.
+        uid (str): The ID of the stack.
+            Defaults to "user-management".
+        prefix (str): The prefix for the stack name.
+            Defaults to "{config.project_name}-{config.environment_name}-".
+    """
+
+    def __init__(
+        self,
+        config: Config,
+        uid: str = "user-management",
+        prefix: str = "",
+    ) -> None:
+        super().__init__(config, uid, prefix)
 
 
 class UserManagementStack(Stack):
@@ -23,27 +45,27 @@ class UserManagementStack(Stack):
     def __init__(
         self,
         scope: Construct,
-        config: Config,
-        stack_id: str | None = None,
+        args: UserManagementStackArgs,
     ) -> None:
         """
         Initialize the UserManagementStack.
 
         Args:
             scope (Construct): The scope in which this stack is defined.
-            config (Config): The configuration object containing stack settings.
-            stack_id (str, optional): The ID of the stack.
-                Defaults to f"{config.project_name}-{config.environment_name}-user-management".
+            args (UserManagementStackArgs): The arguments for the stack.
         """
-        super().__init__(scope, config, stack_id, "user-management")
+        super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
-        self.user_pool_construct = UserPoolConstruct(self, config)
+        self.user_pool_construct = UserPoolConstruct(
+            self, UserPoolConstructArgs(args.config)
+        )
         self.superuser_construct = SuperUserConstruct(
-            self, config, self.user_pool_construct.user_pool_id
+            self,
+            SuperUserConstructArgs(args.config, self.user_pool_construct.user_pool_id),
         )
 
         CfnOutput(
             self,
-            "superuser-task-definition-arn",
+            "superusertaskdefinitionarn",
             value=self.superuser_construct.user_creation_task_def_arn,
         )

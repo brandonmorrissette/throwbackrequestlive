@@ -10,8 +10,9 @@ from datetime import datetime
 
 import boto3
 import redis
-from config import Config
-from exceptions.boto import raise_http_exception
+
+from backend.flask.config import Config
+from backend.flask.exceptions.boto import raise_http_exception
 
 
 def cognito_json_encoder(obj) -> str:
@@ -45,14 +46,19 @@ class CognitoService:
         Args:
             config (Config): The configuration object.
         """
-        self._user_pool_id = config.COGNITO_USER_POOL_ID
+        ssm_client = boto3.client("ssm", region_name=config.AWS_DEFAULT_REGION)
+
+        self._user_pool_id = ssm_client.get_parameter(
+            Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
+        )["Parameter"]["Value"]
+
         self._cognito_client = boto3.client(
-            "cognito-idp", region_name=config.COGNITO_REGION
+            "cognito-idp", region_name=config.AWS_DEFAULT_REGION
         )
 
         self._redis_client = redis.StrictRedis(
-            host=config.REDIS_HOST,
-            port=int(config.REDIS_PORT),
+            host=config.redis_host,
+            port=int(config.redis_port),
             decode_responses=True,
         )
 
@@ -76,9 +82,7 @@ class CognitoService:
             groups = [group["GroupName"] for group in groups_response["Groups"]]
             user["Groups"] = groups
 
-            self._redis_client.set(
-                username, json.dumps(user, default=cognito_json_encoder)
-            )
+            self._persist_user(username, user)
 
             users.append(user)
 

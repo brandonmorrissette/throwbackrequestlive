@@ -5,7 +5,8 @@ This module provides a decorator to handle boto ClientError exceptions and raise
 import logging
 
 from botocore.exceptions import ClientError
-from exceptions.http import HTTPException
+
+from backend.flask.exceptions.http import HTTPException
 
 
 def raise_http_exception(func):

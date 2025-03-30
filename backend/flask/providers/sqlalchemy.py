@@ -8,7 +8,6 @@ import types
 from collections.abc import Iterable, Mapping
 from datetime import datetime
 
-from providers.json import JSONProvider
 from sqlalchemy import (
     Boolean,
     Column,
@@ -22,6 +21,8 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.schema import Constraint
+
+from backend.flask.providers.json import JSONProvider
 
 
 class SQLALchemyJSONProvider(JSONProvider):
@@ -275,10 +276,10 @@ class SQLALchemyJSONProvider(JSONProvider):
 
         if isinstance(constraint, UniqueConstraint):
             unique_constraint = (
-                f"Unique({', '.join(col.name for col in constraint.columns)})"
+                f"UniqueConstraint({', '.join(col.name for col in constraint.columns)})"
             )
             logging.debug("UniqueConstraint: %s", unique_constraint)
-            return constraint
+            return unique_constraint
 
         columns = getattr(constraint, "columns", [])
         column_names = ", ".join(col.name for col in columns)

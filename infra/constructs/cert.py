@@ -11,9 +11,30 @@ Usage example:
 
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_route53 as route53
-from config import Config
-from constructs.construct import Construct
-from stacks.stack import Stack
+
+from infra.constructs.construct import Construct, ConstructArgs
+from infra.stacks.stack import Stack
+
+
+class CertConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-methods
+    """
+    Arguments for the CertConstruct.
+
+    Attributes:
+        config (Config): Configuration object.
+        uid (str): The ID of the construct.
+            Default is "cert".
+        prefix (str): The prefix for the construct ID.
+            Default is "{config.project_name}-{config.environment_name}-".
+    """
+
+    def __init__(
+        self,
+        config,
+        uid: str = "cert",
+        prefix: str = "",
+    ) -> None:
+        super().__init__(config, uid, prefix)
 
 
 class CertConstruct(Construct):
@@ -29,18 +50,18 @@ class CertConstruct(Construct):
     """
 
     def __init__(
-        self, scope: Stack, config: Config, construct_id: str | None = None
+        self,
+        scope: Stack,
+        args: CertConstructArgs,
     ) -> None:
         """
         Initializes the CertConstruct with the given parameters.
 
         Args:
             scope (Stack): The parent stack.
-            config (Config): Configuration object.
-            construct_id (str, optional): The ID of the construct.
-                Defaults to f"{config.project_name}-{config.environment_name}-cert".
+            args (CertConstructArgs): The arguments for the construct.
         """
-        super().__init__(scope, config, construct_id, "cert")
+        super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
         self.hosted_zone = route53.HostedZone.from_lookup(
             self, "hosed-zone", domain_name="throwbackrequestlive.com"

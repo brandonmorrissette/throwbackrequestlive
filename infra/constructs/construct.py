@@ -8,18 +8,33 @@ Usage example:
     base_construct = Construct(scope, config)
 """
 
-from config import Config
-from constructs import Construct as AwsCdkConstruct
-from resources.resource import Resource
+from constructs import Construct as AwsConstruct
+
+from infra.resources.resource import Resource, ResourceArgs
 
 
-class Construct(AwsCdkConstruct, Resource):
+class ConstructArgs(ResourceArgs):  # pylint: disable=too-few-public-methods
+    """
+    Arguments for the Construct class.
+
+    Attributes:
+        config: Configuration object.
+        uid: Unique identifier for the resource.
+            Defaults to None.
+        prefix: Prefix for resource names.
+            Defaults to f"{config.project_name}-{config.environment_name}-".
+    """
+
+
+class Construct(AwsConstruct, Resource):
     """
     A base construct that sets default Resource attributes to pass to the AWS CDK Construct.
 
     Attributes:
         construct_id: The ID of the construct.
-        suffix: The suffix for resource names.
+            Defaults to None.
+        prefix: The prefix for resource names.
+            Defaults to f"{config.project_name}-{config.environment_name}-".
 
     Methods:
         __init__: Initializes the Construct with the given parameters.
@@ -27,20 +42,14 @@ class Construct(AwsCdkConstruct, Resource):
 
     def __init__(
         self,
-        scope: AwsCdkConstruct,
-        config: Config,
-        construct_id: str | None = None,
-        suffix: str | None = None,
+        scope: AwsConstruct,
+        args: ConstructArgs,
     ) -> None:
         """
         Initializes the Construct with the given parameters.
 
         Args:
-            scope (AwsCdkConstruct): The parent construct.
-            config (Config): Configuration object.
-            construct_id (str, optional): The ID of the construct.
-                Defaults to f"{config.project_name}-{config.environment_name}-".
-            suffix (str, optional): Suffix for resource names. Defaults to None.
+            scope (Construct): The parent construct.
+            args (ConstructArgs): The arguments for the construct.
         """
-        Resource.__init__(self, config, construct_id, suffix)
-        super().__init__(scope, self.id)
+        super().__init__(scope, self.format_id(args))

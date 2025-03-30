@@ -2,9 +2,10 @@
 Blueprint module for rendering static HTML files for different routes.
 """
 
-from blueprints.blueprint import Blueprint
 from flask import Response
 from flask import current_app as app
+
+from backend.flask.blueprints.blueprint import Blueprint
 
 
 class RenderBlueprint(Blueprint):

@@ -1,5 +1,5 @@
 """
-This module defines the DataBlueprint class and related functions 
+This module defines the DataBlueprint class and related functions
 for handling data-related routes in a Flask application.
 """
 
@@ -7,12 +7,13 @@ import json
 from functools import wraps
 from typing import Any, Callable, Tuple
 
-from blueprints.blueprint import Blueprint
-from decorators.auth import restrict_access
-from flask import Flask
+from flask import Flask, Request
 from flask import current_app as app
 from flask import jsonify, request
-from services.data import DataService, get_json_provider_class
+
+from backend.flask.blueprints.blueprint import Blueprint
+from backend.flask.decorators.auth import restrict_access
+from backend.flask.services.data import DataService, get_json_provider_class
 
 
 def override_json_provider(provider: Callable) -> Callable:
@@ -113,7 +114,7 @@ class DataBlueprint(Blueprint):
             result = self._service.write_rows(table_name, rows)
             return jsonify(result), 200
 
-    def _get_rows(self, table_name: str, _request: Any) -> Tuple[Any, int]:
+    def _get_rows(self, table_name: str, _request: Request) -> Tuple[Any, int]:
         """
         Helper method to get rows from a table with optional filters.
         :param table_name: The name of the table.

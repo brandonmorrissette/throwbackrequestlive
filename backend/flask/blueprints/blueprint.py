@@ -3,7 +3,6 @@ Base blueprint module for defining common blueprint functionality.
 """
 
 from flask import Blueprint as FlaskBlueprint
-from flask import Flask
 
 
 class Blueprint(FlaskBlueprint):
@@ -13,10 +12,9 @@ class Blueprint(FlaskBlueprint):
 
     def __init__(
         self,
-        app: Flask,
         import_name: str | None = None,
         service=None,
-        url_prefix="/api",
+        url_prefix=None,
     ) -> None:
         """
         Initialize the blueprint.
@@ -33,7 +31,6 @@ class Blueprint(FlaskBlueprint):
         super().__init__(name, import_name, url_prefix=url_prefix)
         self._service = service
         self.register_routes()
-        app.register_blueprint(self, url_prefix=url_prefix)
 
     def register_routes(self) -> None:
         """

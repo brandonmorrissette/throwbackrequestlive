@@ -11,9 +11,30 @@ Usage example:
 
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
-from config import Config
-from constructs.construct import Construct
-from stacks.stack import Stack
+
+from infra.config import Config
+from infra.constructs.construct import Construct, ConstructArgs
+from infra.stacks.stack import Stack
+
+
+class ClusterConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-methods
+    """
+    Arguments for the ClusterConstruct.
+
+    Attributes:
+        config (Config): Configuration object.
+        vpc (ec2.Vpc): The VPC in which to create the ECS cluster.
+        uid (str): The ID of the construct.
+            Default is "cluster".
+        prefix (str): The prefix for the construct ID.
+            Default is "{config.project_name}-{config.environment_name}-".
+    """
+
+    def __init__(
+        self, config: Config, vpc: ec2.Vpc, uid: str = "cluster", prefix: str = ""
+    ):
+        super().__init__(config, uid, prefix)
+        self.vpc = vpc
 
 
 class ClusterConstruct(Construct):
@@ -30,20 +51,19 @@ class ClusterConstruct(Construct):
     def __init__(
         self,
         scope: Stack,
-        config: Config,
-        vpc: ec2.Vpc,
-        construct_id: str | None = None,
+        args: ClusterConstructArgs,
     ) -> None:
         """
         Initializes the ClusterConstruct with the given parameters.
 
         Args:
             scope (Stack): The parent stack.
-            config (Config): Configuration object.
-            vpc (ec2.Vpc): The VPC in which to create the ECS cluster.
-            construct_id (str, optional): The ID of the construct.
-                Defaults to f"{config.project_name}-{config.environment_name}-cluster".
+            args (ClusterConstructArgs): The arguments for the construct.
         """
-        super().__init__(scope, config, construct_id, "cluster")
+        super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
-        self.cluster = ecs.Cluster(self, self.id, vpc=vpc)
+        self.cluster = ecs.Cluster(
+            self,
+            f"{args.config.project_name}-{args.config.environment_name}-cluster",
+            vpc=args.vpc,
+        )

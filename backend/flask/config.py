@@ -9,65 +9,71 @@ configuration classes for the Flask application.
 import os
 
 
+# pylint: disable=too-many-instance-attributes
 class Config:
     """Base configuration class.
 
     Attributes:
-        DEBUG (bool): Debug mode.
-        LOG_LEVEL (str): Logging level.
-        JWT_SECRET_KEY (str): JWT secret key.
-        JWT_TOKEN_LOCATION (list): JWT token location.
-        JWT_HEADER_NAME (str): JWT header name.
-        JWT_HEADER_TYPE (str): JWT header type.
-        COGNITO_APP_CLIENT_ID (str): Cognito app client ID.
-        COGNITO_USER_POOL_ID (str): Cognito user pool ID.
-        COGNITO_REGION (str): Cognito region.
-        DB_USER (str): Database user.
-        DB_PASSWORD (str): Database password.
-        DB_HOST (str): Database host.
-        DB_NAME (str): Database name.
-        DB_ENGINE (str): Database engine.
-        DB_PORT (int): Database port.
-        REDIS_HOST (str): Redis host.
-        REDIS_PORT (int): Redis port.
+        project_name (str): Project name.
+        debug (bool): Debug mode.
+        log_level (str): Log level.
+        jwt_secret_key (str): JWT secret key.
+        jwt_token_location (list): JWT token location.
+        jwt_header_name (str): JWT header name.
+        jwt_header_type (str): JWT header type.
+        aws_default_region (str): AWS region.
+        db_user (str): Database user.
+        db_password (str): Database password.
+        db_host (str): Database host.
+        db_name (str): Database name.
+        db_engine (str): Database engine.
+        db_port (str): Database port.
+        redis_host (str): Redis host.
+        redis_port (str): Redis port.
     """
 
-    # App
-    DEBUG = False
-    LOG_LEVEL = "INFO"
+    def __init__(self, environment=None, **overrides):
 
-    # JWT
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-    JWT_TOKEN_LOCATION = ["headers"]
-    JWT_HEADER_NAME = "Authorization"
-    JWT_HEADER_TYPE = "Bearer"
+        # pylint: disable=invalid-name
+        if environment == "development":
+            # Any string equates to True for bool
+            overrides["debug"] = bool(os.getenv("DEBUG", "True"))
 
-    # Cognito
-    COGNITO_APP_CLIENT_ID = os.getenv("COGNITO_APP_CLIENT_ID")
-    COGNITO_USER_POOL_ID = os.getenv("COGNITO_USER_POOL_ID")
-    COGNITO_REGION = os.getenv("COGNITO_REGION")
+        # App
+        self.project_name = overrides.get("project_name", os.getenv("PROJECT_NAME"))
+        self.debug = overrides.get("debug", bool(os.getenv("DEBUG")))
+        self.log_level = overrides.get("log_level", os.getenv("LOG_LEVEL", "INFO"))
 
-    # Database
-    DB_USER = os.getenv("DB_USER")
-    DB_PASSWORD = os.getenv("DB_PASSWORD")
-    DB_HOST = os.getenv("DB_HOST")
-    DB_NAME = os.getenv("DB_NAME")
-    DB_ENGINE = os.getenv("DB_ENGINE", "postgresql")
-    DB_PORT = os.getenv("DB_PORT", "5432")
+        # JWT
+        self.JWT_SECRET_KEY = overrides.get(
+            "jwt_secret_key", os.getenv("JWT_SECRET_KEY")
+        )
+        self.JWT_TOKEN_LOCATION = overrides.get(
+            "jwt_token_location",
+            os.getenv("JWT_TOKEN_LOCATION", "headers").split(","),
+        )
+        self.JWT_HEADER_NAME = overrides.get(
+            "jwt_header_name", os.getenv("JWT_HEADER_NAME", "Authorization")
+        )
+        self.JWT_HEADER_TYPE = overrides.get(
+            "jwt_header_type", os.getenv("JWT_HEADER_TYPE", "Bearer")
+        )
 
-    # Redis
-    REDIS_HOST = os.getenv("REDIS_HOST", "redis")
-    REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+        # AWS
+        self.AWS_DEFAULT_REGION = overrides.get(
+            "aws_default_region", os.getenv("AWS_DEFAULT_REGION")
+        )
 
+        # Database
+        self.db_user = overrides.get("db_user", os.getenv("DB_USER"))
+        self.db_password = overrides.get("db_password", os.getenv("DB_PASSWORD"))
+        self.db_host = overrides.get("db_host", os.getenv("DB_HOST"))
+        self.db_name = overrides.get("db_name", os.getenv("DB_NAME"))
+        self.db_engine = overrides.get(
+            "db_engine", os.getenv("DB_ENGINE", "postgresql")
+        )
+        self.db_port = overrides.get("db_port", os.getenv("DB_PORT", "5432"))
 
-class DevelopmentConfig(Config):
-    """Development environment configuration.
-
-    Attributes:
-        DEBUG (bool): Debug mode.
-        LOG_LEVEL (str): Logging level.
-    """
-
-    # App
-    DEBUG = True
-    LOG_LEVEL = "DEBUG"
+        # Redis
+        self.redis_host = overrides.get("redis_host", os.getenv("REDIS_HOST", "redis"))
+        self.redis_port = overrides.get("redis_port", os.getenv("REDIS_PORT", "6379"))

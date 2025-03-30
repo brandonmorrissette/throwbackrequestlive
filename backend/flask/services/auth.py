@@ -2,12 +2,13 @@
 This module provides the AuthService class for handling authentication.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import boto3
 import jwt
-from config import Config
-from exceptions.boto import raise_http_exception
+
+from backend.flask.config import Config
+from backend.flask.exceptions.boto import raise_http_exception
 
 
 class AuthService:
@@ -23,9 +24,20 @@ class AuthService:
         Args:
             config (Config): The configuration object.
         """
-        self._client = boto3.client("cognito-idp", region_name=config.COGNITO_REGION)
-        self._client_id = config.COGNITO_APP_CLIENT_ID
-        self._user_pool_id = config.COGNITO_USER_POOL_ID
+        self._client = boto3.client(
+            "cognito-idp", region_name=config.AWS_DEFAULT_REGION
+        )
+
+        ssm_client = boto3.client("ssm", region_name=config.AWS_DEFAULT_REGION)
+
+        self._client_id = ssm_client.get_parameter(
+            Name=f"/{config.project_name}/user-pool-client-id", WithDecryption=True
+        )["Parameter"]["Value"]
+
+        self._user_pool_id = ssm_client.get_parameter(
+            Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
+        )["Parameter"]["Value"]
+
         self._jwt_secret_key = config.JWT_SECRET_KEY
         self._jwt_algorithm = "HS256"
 
@@ -115,8 +127,8 @@ class AuthService:
             "sub": username,
             "username": username,
             "groups": groups,
-            "iat": datetime.utcnow(),
-            "exp": datetime.utcnow() + timedelta(hours=1),
+            "iat": datetime.now(timezone.utc),
+            "exp": datetime.now(timezone.utc) + timedelta(hours=1),
         }
 
         token = jwt.encode(payload, self._jwt_secret_key, algorithm=self._jwt_algorithm)
