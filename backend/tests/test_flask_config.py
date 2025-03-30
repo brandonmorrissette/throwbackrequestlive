@@ -5,6 +5,8 @@ import pytest
 
 from backend.flask.config import Config
 
+# App
+PROJECT_NAME = MagicMock()
 DEBUG = False
 LOG_LEVEL = MagicMock()
 
@@ -14,10 +16,8 @@ JWT_TOKEN_LOCATION = MagicMock()
 JWT_HEADER_NAME = MagicMock()
 JWT_HEADER_TYPE = MagicMock()
 
-# Cognito
-COGNITO_APP_CLIENT_ID = MagicMock()
-COGNITO_USER_POOL_ID = MagicMock()
-COGNITO_REGION = MagicMock()
+# AWS
+AWS_DEFAULT_REGION = MagicMock()
 
 # Database
 DB_USER = MagicMock()
@@ -52,19 +52,18 @@ def test_given_no_overrides_when_config_instantiated_then_config_set_to_default(
         config = Config()
 
     # App
+    assert config.project_name == PROJECT_NAME
     assert config.debug == DEBUG
     assert config.log_level == LOG_LEVEL
 
     # JWT
-    assert config.jwt_secret_key == JWT_SECRET_KEY
-    assert config.jwt_token_location == JWT_TOKEN_LOCATION.split.return_value
-    assert config.jwt_header_name == JWT_HEADER_NAME
-    assert config.jwt_header_type == JWT_HEADER_TYPE
+    assert config.JWT_SECRET_KEY == JWT_SECRET_KEY
+    assert config.JWT_TOKEN_LOCATION == JWT_TOKEN_LOCATION.split.return_value
+    assert config.JWT_HEADER_NAME == JWT_HEADER_NAME
+    assert config.JWT_HEADER_TYPE == JWT_HEADER_TYPE
 
-    # Cognito
-    assert config.cognito_app_client_id == COGNITO_APP_CLIENT_ID
-    assert config.cognito_user_pool_id == COGNITO_USER_POOL_ID
-    assert config.cognito_region == COGNITO_REGION
+    # AWS
+    assert config.AWS_DEFAULT_REGION == AWS_DEFAULT_REGION
 
     # Database
     assert config.db_user == DB_USER
@@ -90,19 +89,18 @@ def test_given_overrides_when_config_instantiated_then_overrirdes_set(variables)
     config = Config(**{key.lower(): value for key, value in variables.items()})
 
     # App
+
     assert config.debug == debug
     assert config.log_level == LOG_LEVEL
 
     # JWT
-    assert config.jwt_secret_key == JWT_SECRET_KEY
-    assert config.jwt_token_location == JWT_TOKEN_LOCATION
-    assert config.jwt_header_name == JWT_HEADER_NAME
-    assert config.jwt_header_type == JWT_HEADER_TYPE
+    assert config.JWT_SECRET_KEY == JWT_SECRET_KEY
+    assert config.JWT_TOKEN_LOCATION == JWT_TOKEN_LOCATION
+    assert config.JWT_HEADER_NAME == JWT_HEADER_NAME
+    assert config.JWT_HEADER_TYPE == JWT_HEADER_TYPE
 
     # Cognito
-    assert config.cognito_app_client_id == COGNITO_APP_CLIENT_ID
-    assert config.cognito_user_pool_id == COGNITO_USER_POOL_ID
-    assert config.cognito_region == COGNITO_REGION
+    assert config.AWS_DEFAULT_REGION == AWS_DEFAULT_REGION
 
     # Database
     assert config.db_user == DB_USER
@@ -122,19 +120,18 @@ def test_given_no_environment_or_overrirdes_when_get_config_then_config_set_to_d
         config = Config()
 
     # App
+    assert config.project_name is None
     assert config.debug is False
     assert config.log_level == "INFO"
 
     # JWT
-    assert config.jwt_secret_key is None
-    assert config.jwt_token_location == ["headers"]
-    assert config.jwt_header_name == "Authorization"
-    assert config.jwt_header_type == "Bearer"
+    assert config.JWT_SECRET_KEY is None
+    assert config.JWT_TOKEN_LOCATION == ["headers"]
+    assert config.JWT_HEADER_NAME == "Authorization"
+    assert config.JWT_HEADER_TYPE == "Bearer"
 
     # Cognito
-    assert config.cognito_app_client_id is None
-    assert config.cognito_user_pool_id is None
-    assert config.cognito_region is None
+    assert config.AWS_DEFAULT_REGION is None
 
     # Database
     assert config.db_user is None

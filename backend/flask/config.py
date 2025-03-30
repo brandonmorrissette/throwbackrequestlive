@@ -14,59 +14,54 @@ class Config:
     """Base configuration class.
 
     Attributes:
-        DEBUG (bool): Debug mode.
-        LOG_LEVEL (str): Logging level.
-        JWT_SECRET_KEY (str): JWT secret key.
-        JWT_TOKEN_LOCATION (list): JWT token location.
-        JWT_HEADER_NAME (str): JWT header name.
-        JWT_HEADER_TYPE (str): JWT header type.
-        COGNITO_APP_CLIENT_ID (str): Cognito app client ID.
-        COGNITO_USER_POOL_ID (str): Cognito user pool ID.
-        COGNITO_REGION (str): Cognito region.
-        DB_USER (str): Database user.
-        DB_PASSWORD (str): Database password.
-        DB_HOST (str): Database host.
-        DB_NAME (str): Database name.
-        DB_ENGINE (str): Database engine.
-        DB_PORT (int): Database port.
-        REDIS_HOST (str): Redis host.
-        REDIS_PORT (int): Redis port.
+        project_name (str): Project name.
+        debug (bool): Debug mode.
+        log_level (str): Log level.
+        jwt_secret_key (str): JWT secret key.
+        jwt_token_location (list): JWT token location.
+        jwt_header_name (str): JWT header name.
+        jwt_header_type (str): JWT header type.
+        aws_default_region (str): AWS region.
+        db_user (str): Database user.
+        db_password (str): Database password.
+        db_host (str): Database host.
+        db_name (str): Database name.
+        db_engine (str): Database engine.
+        db_port (str): Database port.
+        redis_host (str): Redis host.
+        redis_port (str): Redis port.
     """
 
     def __init__(self, environment=None, **overrides):
 
+        # pylint: disable=invalid-name
         if environment == "development":
             # Any string equates to True for bool
             overrides["debug"] = bool(os.getenv("DEBUG", "True"))
 
         # App
+        self.project_name = overrides.get("project_name", os.getenv("PROJECT_NAME"))
         self.debug = overrides.get("debug", bool(os.getenv("DEBUG")))
         self.log_level = overrides.get("log_level", os.getenv("LOG_LEVEL", "INFO"))
 
         # JWT
-        self.jwt_secret_key = overrides.get(
+        self.JWT_SECRET_KEY = overrides.get(
             "jwt_secret_key", os.getenv("JWT_SECRET_KEY")
         )
-        self.jwt_token_location = overrides.get(
+        self.JWT_TOKEN_LOCATION = overrides.get(
             "jwt_token_location",
             os.getenv("JWT_TOKEN_LOCATION", "headers").split(","),
         )
-        self.jwt_header_name = overrides.get(
+        self.JWT_HEADER_NAME = overrides.get(
             "jwt_header_name", os.getenv("JWT_HEADER_NAME", "Authorization")
         )
-        self.jwt_header_type = overrides.get(
+        self.JWT_HEADER_TYPE = overrides.get(
             "jwt_header_type", os.getenv("JWT_HEADER_TYPE", "Bearer")
         )
 
-        # Cognito
-        self.cognito_app_client_id = overrides.get(
-            "cognito_app_client_id", os.getenv("COGNITO_APP_CLIENT_ID")
-        )
-        self.cognito_user_pool_id = overrides.get(
-            "cognito_user_pool_id", os.getenv("COGNITO_USER_POOL_ID")
-        )
-        self.cognito_region = overrides.get(
-            "cognito_region", os.getenv("COGNITO_REGION")
+        # AWS
+        self.AWS_DEFAULT_REGION = overrides.get(
+            "aws_default_region", os.getenv("AWS_DEFAULT_REGION")
         )
 
         # Database

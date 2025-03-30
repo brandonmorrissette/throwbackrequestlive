@@ -9,8 +9,6 @@ Usage example:
     user_pool_construct = UserPoolConstruct(scope, config)
 """
 
-import os
-
 import boto3
 from aws_cdk import Token
 from aws_cdk import aws_cognito as cognito
@@ -68,9 +66,7 @@ class UserPoolConstruct(Construct):
         """
         super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
-        self._cognito_client = boto3.client(
-            "cognito-idp", region_name=os.getenv("AWS_REGION")
-        )
+        self._cognito_client = boto3.client("cognito-idp")
         user_pool_name = f"{args.config.project_name}-user-pool"
 
         user_pool = self._get_user_pool(user_pool_name)
@@ -143,10 +139,6 @@ class UserPoolConstruct(Construct):
         Returns:
             cognito.UserPoolClient: The Cognito client.
         """
-        existing_client = self.node.try_find_child(f"{user_pool_name}-app-client")
-        if existing_client:
-            return existing_client
-
         if not Token.is_unresolved(self.user_pool_id):
             app_clients = self._cognito_client.list_user_pool_clients(
                 UserPoolId=self.user_pool_id, MaxResults=60
