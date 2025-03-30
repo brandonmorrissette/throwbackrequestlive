@@ -40,6 +40,10 @@ To Do
 
 -   Default datetime to something more user friendly. It defaults to the exact second of Now.
 
+# SSM
+
+-   Find a more central way of resolving ssm params in backend
+
 # Improve Front End Skills
 
 -   Learn React and other front end libraries used

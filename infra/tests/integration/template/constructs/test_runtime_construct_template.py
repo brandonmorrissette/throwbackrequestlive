@@ -117,6 +117,14 @@ def test_policy(
         "Resource": {"Ref": next(key for key in secrets if "JWTSecret" in key)},
     } in policy["Properties"]["PolicyDocument"]["Statement"]
 
+    assert {
+        "Action": "ssm:GetParameter",
+        "Effect": "Allow",
+        "Resource": f"arn:aws:ssm:{config.cdk_environment.region}:"
+        f"{config.cdk_environment.account}:"
+        f"parameter/{config.project_name}/*",
+    } in policy["Properties"]["PolicyDocument"]["Statement"]
+
 
 # pylint: disable=R0801
 def test_task_role(
