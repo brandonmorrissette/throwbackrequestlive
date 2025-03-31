@@ -12,11 +12,9 @@ Usage example:
 
 from aws_cdk import Duration, RemovalPolicy
 from aws_cdk import aws_certificatemanager as acm
-from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
-from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs
 from aws_cdk import aws_secretsmanager as secretsmanager
@@ -169,35 +167,6 @@ class RuntimeConstruct(Construct):
             task_role=task_role,
         )
 
-        load_balancer_security_group = ec2.SecurityGroup(
-            self,
-            "LoadBalancerSecurityGroup",
-            vpc=args.cluster.vpc,
-            description="Security group for the load balancer",
-            allow_all_outbound=True,
-        )
-
-        load_balancer_security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(), ec2.Port.tcp(80), "Allow HTTP"
-        )
-        load_balancer_security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(), ec2.Port.tcp(443), "Allow HTTPS"
-        )
-
-        task_security_group = ec2.SecurityGroup(
-            self,
-            "EcsTaskSecurityGroup",
-            vpc=args.cluster.vpc,
-            description="Security group for ECS Fargate tasks",
-            allow_all_outbound=True,
-        )
-
-        task_security_group.add_ingress_rule(
-            load_balancer_security_group,
-            ec2.Port.tcp(5000),
-            "Allow ALB to access Flask API",
-        )
-
         self.runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
             "runtime-service",
@@ -210,32 +179,11 @@ class RuntimeConstruct(Construct):
             certificate=args.certificate,
             redirect_http=True,
             health_check_grace_period=Duration.minutes(5),
-            security_groups=[load_balancer_security_group],
         )
-
-        self.runtime_service.service.connections.add_security_group(task_security_group)
 
         self.runtime_service.target_group.configure_health_check(
             path="/",
             interval=Duration.seconds(30),
             timeout=Duration.seconds(10),
             healthy_http_codes="200",
-        )
-
-        self.runtime_service.listener.add_action(
-            "AllowReact",
-            priority=1,
-            conditions=[elbv2.ListenerCondition.path_patterns(["/", "/static/*"])],
-            action=elbv2.ListenerAction.forward([self.runtime_service.target_group]),
-        )
-
-        self.runtime_service.listener.add_action(
-            "RestrictAPI",
-            priority=2,
-            conditions=[elbv2.ListenerCondition.path_patterns(["/api/*"])],
-            action=elbv2.ListenerAction.fixed_response(
-                status_code=403,
-                content_type="application/json",
-                message_body='{"error": "Forbidden"}',
-            ),
         )
