@@ -1,6 +1,6 @@
 import { ColDef } from '../components/table/ColDef';
 import { Options } from '../components/table/Options';
-import get from '../routing/Request';
+import apiRequest from '../routing/Request';
 import { IDataService } from './data';
 
 class UserService implements IDataService {
@@ -66,7 +66,7 @@ class UserService implements IDataService {
      * @returns {Promise<any>} The user rows.
      */
     async readRows(tableName: string): Promise<any> {
-        const data = await get(`/api/${tableName}`);
+        const data = await apiRequest(`/api/${tableName}`);
 
         const transformed = data.map((user: any) => {
             const email = user.Attributes.find(
@@ -95,7 +95,7 @@ class UserService implements IDataService {
      * @throws {Error} If the request fails.
      */
     async writeRows(tableName: string, rows: any[]): Promise<void> {
-        const response = await get(`/api/${tableName}`, {
+        const response = await apiRequest(`/api/${tableName}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

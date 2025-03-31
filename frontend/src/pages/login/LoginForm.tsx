@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useError } from '../../contexts/ErrorContext';
-import get from '../../routing/Request';
+import apiRequest from '../../routing/Request';
 import PasswordReset from './PasswordReset';
 
 /**
@@ -25,7 +25,7 @@ const LoginForm: React.FC = () => {
         setLoading(true);
 
         try {
-            const response = await get('/api/login', {
+            const response = await apiRequest('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
