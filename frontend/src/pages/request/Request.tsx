@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Modal from '../../components/modal/Modal';
 import { useError } from '../../contexts/ErrorContext';
-import { default as RequestService } from '../../services/request';
+import {
+    DuplicateRequestError,
+    default as RequestService,
+} from '../../services/request';
 import styles from './Request.module.css';
 
 interface Song {
@@ -29,6 +32,21 @@ const Request: React.FC = () => {
 
     const navigate = useNavigate();
     const { setError } = useError();
+
+    useEffect(() => {
+        const enforcer = async () => {
+            try {
+                await RequestService.enforceUniqueRequest(showId);
+            } catch (error: any) {
+                setError(error);
+                if (error instanceof DuplicateRequestError) {
+                    console.warn('Duplicate request:', error.message);
+                    navigate('/?song=' + encodeURIComponent(error.song_name));
+                }
+            }
+        };
+        enforcer();
+    }, [navigate]);
 
     useEffect(() => {
         if (!showId) {
