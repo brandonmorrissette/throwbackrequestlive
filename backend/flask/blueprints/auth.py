@@ -2,6 +2,7 @@
 This module contains the AuthBlueprint class which handles authentication-related routes.
 """
 
+from datetime import datetime
 from typing import Any, Tuple
 
 from flask import jsonify, make_response, redirect, request, url_for
@@ -69,9 +70,9 @@ class AuthBlueprint(Blueprint):
             Establishes an entry point for establishing a session.
             :return: JSON response with the authentication token.
             """
-            entry_id = request.get_json().get("entryId")
+            entry_id = request.args.get("entryId")
             if not self._service.read_rows(
-                "entryPoints",
+                "entrypoints",
                 filters=[f"id = '{entry_id}'"],
             ):
                 return (
@@ -89,7 +90,7 @@ class AuthBlueprint(Blueprint):
             if uid:
                 rows = self._service.read_rows(
                     "submissions",
-                    filters=[f"uid = '{uid}'"],
+                    filters=[f"uid = '{uid}'", f"expires < {datetime.now()}"],
                 )
                 if rows:
                     return self._handle_duplicate_submission(uid)
