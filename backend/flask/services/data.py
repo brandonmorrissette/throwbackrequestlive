@@ -112,7 +112,7 @@ class DataService:
         if table_name not in self._metadata.tables:
             raise ValueError(f"Table {table_name} does not exist.")
 
-    def read_rows(self, table_name: str, filters: list = None) -> list:
+    def read_rows(self, table_name: str, filters: list | None = None) -> list:
         """
         Read rows from a table with optional filters.
 

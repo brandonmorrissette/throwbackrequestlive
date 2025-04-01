@@ -2,16 +2,20 @@
 This module provides the AuthService class for handling authentication.
 """
 
+import secrets
 from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 
 import boto3
 import jwt
+import redis
 
 from backend.flask.config import Config
 from backend.flask.exceptions.boto import raise_http_exception
+from backend.flask.services.data import DataService
 
 
-class AuthService:
+class AuthService(DataService):
     """
     Service for handling authentication.
     """
@@ -24,7 +28,9 @@ class AuthService:
         Args:
             config (Config): The configuration object.
         """
-        self._client = boto3.client(
+        super().__init__(config)
+
+        self._cognito_client = boto3.client(
             "cognito-idp", region_name=config.AWS_DEFAULT_REGION
         )
 
@@ -41,6 +47,12 @@ class AuthService:
         self._jwt_secret_key = config.JWT_SECRET_KEY
         self._jwt_algorithm = "HS256"
 
+        self._redis_client = redis.StrictRedis(
+            host=config.redis_host,
+            port=int(config.redis_port),
+            decode_responses=True,
+        )
+
     @raise_http_exception
     def authenticate_user(self, username: str, password: str) -> dict:
         """
@@ -53,7 +65,7 @@ class AuthService:
         Returns:
             dict: A dictionary containing the JWT token and any errors.
         """
-        response = self._client.initiate_auth(
+        response = self._cognito_client.initiate_auth(
             ClientId=self._client_id,
             AuthFlow="USER_PASSWORD_AUTH",
             AuthParameters={"USERNAME": username, "PASSWORD": password},
@@ -84,7 +96,7 @@ class AuthService:
         Returns:
             dict: A dictionary containing the JWT token.
         """
-        self._client.respond_to_auth_challenge(
+        self._cognito_client.respond_to_auth_challenge(
             ClientId=self._client_id,
             ChallengeName="NEW_PASSWORD_REQUIRED",
             ChallengeResponses={"USERNAME": username, "NEW_PASSWORD": password},
@@ -106,7 +118,7 @@ class AuthService:
         Returns:
             list: A list of group names.
         """
-        response = self._client.admin_list_groups_for_user(
+        response = self._cognito_client.admin_list_groups_for_user(
             UserPoolId=self._user_pool_id, Username=username
         )
         groups = [group["GroupName"] for group in response.get("Groups", [])]
@@ -133,3 +145,43 @@ class AuthService:
 
         token = jwt.encode(payload, self._jwt_secret_key, algorithm=self._jwt_algorithm)
         return token
+
+    def generate_uid(
+        self, plain_text: list | None = None, encoded: list | None = None
+    ) -> str:
+        """
+        Generate a unique identifier (UID) for a user.
+
+        Args:
+            plain_text (list): A list of values to include in the uid
+                that will be displayed in plain text.
+            encoded (list): A list of values to include in the uid that will be encoded.
+
+        Returns:
+            str: The generated UID.
+        """
+        plain_text = plain_text or []
+        encoded = encoded or []
+
+        uid = str(uuid4())
+        if plain_text:
+            uid += "".join(plain_text)
+        if encoded:
+            uid += jwt.encode(
+                {"encoded_values": encoded},
+                self._jwt_secret_key,
+                algorithm="HS256",
+            )
+        return uid
+
+    def generate_access_key(self) -> str:
+        """
+        Generate an access key.
+
+        Returns:
+            str: The generated access key.
+        """
+        access_key = secrets.token_urlsafe(32)
+        self._redis_client.set(access_key, access_key)
+        self._redis_client.expire(access_key, 3600)
+        return access_key
