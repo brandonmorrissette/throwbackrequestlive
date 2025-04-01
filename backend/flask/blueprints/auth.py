@@ -2,7 +2,6 @@
 This module contains the AuthBlueprint class which handles authentication-related routes.
 """
 
-from datetime import datetime
 from typing import Any, Tuple
 
 from flask import jsonify, make_response, redirect, request, url_for
@@ -70,10 +69,10 @@ class AuthBlueprint(Blueprint):
             Establishes an entry point for establishing a session.
             :return: JSON response with the authentication token.
             """
-            entry_id = request.args.get("entryId")
+            entry_point_id = request.args.get("entryPointId", "")
             if not self._service.read_rows(
                 "entrypoints",
-                filters=[f"id = '{entry_id}'"],
+                filters=[f"id = '{entry_point_id}'"],
             ):
                 return (
                     jsonify(
@@ -86,45 +85,54 @@ class AuthBlueprint(Blueprint):
                     400,
                 )
 
-            uid = request.cookies.get("uid")
-            if uid:
-                rows = self._service.read_rows(
-                    "submissions",
-                    filters=[f"uid = '{uid}'", f"expires < {datetime.now()}"],
-                )
-                if rows:
-                    return self._handle_duplicate_submission(uid)
+            return self._redirect(entry_point_id)
 
-            response = make_response(redirect(url_for("render_request")))
-            response.set_cookie(
-                "uid",
-                self._service.generate_uid(),
-                httponly=True,
-                secure=True,
-                samesite="Lax",
-            )
-            response.set_cookie(
-                "accessKey",
-                self._service.generate_access_key(),
-                httponly=True,
-                secure=True,
-                samesite="Lax",
-            )
-
-            return response
-
-    def _handle_duplicate_submission(self, uid: str) -> Response:
+    def _redirect(self, entry_point_id: str) -> Response:
         """
-        Handle duplicate submission.
-        This method should be implemented in a subclass.
+        Redirect to the main page with the given UID.
+        :param entry_point_id: The entry_point_id for the submission.
+        :return: Redirect response to the main page.
         """
-        raise NotImplementedError("This method should be implemented in a subclass.")
+        raise NotImplementedError("Child classes must implement _redirect.")
 
 
 class RequestAuthBlueprint(AuthBlueprint):
     """
     Blueprint for handling routing with Request data.
     """
+
+    def _redirect(self, entry_point_id: str) -> Response:
+        """
+        Enforces uniqueness and then redirects to Requests page.
+        :param entry_point_id: The entry_point_id for the submission.
+        :return: Redirect response to the main page.
+        """
+        uid = request.cookies.get("uid")
+        if uid:
+            rows = self._service.read_rows(
+                "submissions",
+                filters=[f"uid = '{uid}'", f"entrypoint_id = '{entry_point_id}'"],
+            )
+            if rows:
+                return self._handle_duplicate_submission(uid)
+
+        response = make_response(redirect(url_for("render_request")))
+        response.set_cookie(
+            "uid",
+            self._service.generate_uid(),
+            httponly=True,
+            secure=True,
+            samesite="Lax",
+        )
+        response.set_cookie(
+            "accessKey",
+            self._service.generate_access_key(),
+            httponly=True,
+            secure=True,
+            samesite="Lax",
+        )
+
+        return response
 
     def _handle_duplicate_submission(self, uid: str) -> Response:
         """

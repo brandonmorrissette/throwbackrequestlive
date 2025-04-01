@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS shows (
     venue VARCHAR(255),
     street VARCHAR(255),
     city VARCHAR(255),
-    state VARCHAR(255)
+    state VARCHAR(255),
+    
 );
