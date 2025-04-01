@@ -163,5 +163,5 @@ class AuthService(DataService):
         """
         access_key = secrets.token_urlsafe(32)
         self._redis_client.set(access_key, access_key)
-        self._redis_client.expire(access_key, 3600)
+        self._redis_client.expire(access_key, 600)
         return access_key

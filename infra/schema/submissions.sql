@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS submissions (
-    id SERIAL PRIMARY KEY,
-    uuid UUID NOT NULL UNIQUE,
+    id UUID NOT NULL,
     entrypoint_id UUID NOT NULL,
-    FOREIGN KEY (uuid) REFERENCES requests(request_id),
+    FOREIGN KEY (uuid) REFERENCES requests(id),
+    FOREIGN KEY (entrypoint_id) REFERENCES entrypoints(id),
     UNIQUE (uuid, entrypoint_id)
 );

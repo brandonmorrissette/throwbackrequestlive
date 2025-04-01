@@ -72,7 +72,7 @@ class AuthBlueprint(Blueprint):
             entry_point_id = request.args.get("entryPointId", "")
             if not self._service.read_rows(
                 "entrypoints",
-                filters=[f"id = '{entry_point_id}'"],
+                filters=[f"entrypoint_id = '{entry_point_id}'"],
             ):
                 return (
                     jsonify(
@@ -111,7 +111,7 @@ class RequestAuthBlueprint(AuthBlueprint):
         if uid:
             rows = self._service.read_rows(
                 "submissions",
-                filters=[f"uid = '{uid}'", f"entrypoint_id = '{entry_point_id}'"],
+                filters=[f"id = '{uid}'", f"entrypoint_id = '{entry_point_id}'"],
             )
             if rows:
                 return self._handle_duplicate_submission(uid)
