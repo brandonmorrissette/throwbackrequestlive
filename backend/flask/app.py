@@ -41,9 +41,11 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from backend.flask.blueprints.auth import AuthBlueprint
+from backend.flask.blueprints.auth import RequestAuthBlueprint
 from backend.flask.blueprints.data import DataBlueprint
 from backend.flask.blueprints.render import RenderBlueprint
+from backend.flask.blueprints.show import ShowBlueprint
+from backend.flask.blueprints.song import SongBlueprint
 from backend.flask.blueprints.user import UserBlueprint
 from backend.flask.config import Config
 from backend.flask.providers.json import JSONProvider
@@ -79,16 +81,21 @@ def _create_app(app_config: Config) -> Flask:
 
     JWTManager(flask_app)
 
+    # Services
+    data_service = DataService(app_config)
+    auth_service = AuthService(app_config)
+    cognito_service = CognitoService(app_config)
+
     # API Blueprints
     flask_app.register_blueprint(
-        AuthBlueprint(service=AuthService(app_config), url_prefix="/api")
+        RequestAuthBlueprint(service=auth_service, url_prefix="/api")
     )
     flask_app.register_blueprint(
-        UserBlueprint(service=CognitoService(app_config), url_prefix="/api")
+        UserBlueprint(service=cognito_service, url_prefix="/api")
     )
-    flask_app.register_blueprint(
-        DataBlueprint(service=DataService(app_config), url_prefix="/api")
-    )
+    flask_app.register_blueprint(DataBlueprint(service=data_service, url_prefix="/api"))
+    flask_app.register_blueprint(ShowBlueprint(service=data_service, url_prefix="/api"))
+    flask_app.register_blueprint(SongBlueprint(service=data_service, url_prefix="/api"))
 
     # Render Blueprints
     flask_app.register_blueprint(RenderBlueprint())

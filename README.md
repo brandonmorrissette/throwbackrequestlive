@@ -28,6 +28,10 @@ To Do
     -   Current task has some assumptions in the code and is inflexible.
 -   Only Update Cognito users when there have been actual updates
 
+# SQL Deployment
+
+-   Externalize the tasks for deploying SQL from the storage. Think about these responsibilities, what resources are needed and whose responsibility that is. Too tightly coupled currently.
+
 # Data
 
 -   Consider tables and data in an ETL context for future proofing (I don't remember what this means, but I THINK it means better modeling as OOP)

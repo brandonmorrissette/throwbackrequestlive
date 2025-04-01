@@ -5,6 +5,7 @@ This module contains the AuthBlueprint class which handles authentication-relate
 from typing import Any, Tuple
 
 from flask import jsonify, make_response, redirect, request, url_for
+from werkzeug.wrappers.response import Response
 
 from backend.flask.blueprints.blueprint import Blueprint
 from backend.flask.services.auth import AuthService
@@ -91,7 +92,7 @@ class AuthBlueprint(Blueprint):
                     filters=[f"uid = '{uid}'"],
                 )
                 if rows:
-                    return _handle_duplicate_submission(uid)
+                    return self._handle_duplicate_submission(uid)
 
             response = make_response(redirect(url_for("render_request")))
             response.set_cookie(
@@ -111,32 +112,44 @@ class AuthBlueprint(Blueprint):
 
             return response
 
-        # This is use case specific. Consider a better way of handling.
-        def _handle_duplicate_submission(uid):
-            """
-            Handle duplicate submission by redirecting to the main page."
-            """
+    def _handle_duplicate_submission(self, uid: str) -> Response:
+        """
+        Handle duplicate submission.
+        This method should be implemented in a subclass.
+        """
+        raise NotImplementedError("This method should be implemented in a subclass.")
 
-            redirect_args = _get_duplicate_submission(uid)
-            return redirect(
-                url_for(
-                    "render_main",
-                    song_name=next(iter(redirect_args), {}).get(
-                        "song_name", "UNABLE TO RETRIEVE SONG NAME"
-                    ),
-                )
-            )
 
-        def _get_duplicate_submission(uid: str):
-            """
-            Get duplicate submission by uid.
-            :param uid: The unique identifier for the submission.
-            :return: JSON response with the duplicate submission details.
-            """
-            request_rows = self._service.read_rows(
-                "requests", filters=[f"request_id = {uid}"]
+class RequestAuthBlueprint(AuthBlueprint):
+    """
+    Blueprint for handling routing with Request data.
+    """
+
+    def _handle_duplicate_submission(self, uid: str) -> Response:
+        """
+        Handle duplicate submission by redirecting to the main page."
+        """
+
+        redirect_args = self._get_duplicate_submission(uid)
+        return redirect(
+            url_for(
+                "render_main",
+                song_name=next(iter(redirect_args), {}).get(
+                    "song_name", "UNABLE TO RETRIEVE SONG NAME"
+                ),
             )
-            return self._service.read_rows(
-                "songs",
-                filters=[f"song_id = {next(iter(request_rows), {}).get('song_id')}"],
-            )
+        )
+
+    def _get_duplicate_submission(self, uid: str) -> list:
+        """
+        Get duplicate submission by uid.
+        :param uid: The unique identifier for the submission.
+        :return: JSON response with the duplicate submission details.
+        """
+        request_rows = self._service.read_rows(
+            "requests", filters=[f"request_id = {uid}"]
+        )
+        return self._service.read_rows(
+            "songs",
+            filters=[f"song_id = {next(iter(request_rows), {}).get('song_id')}"],
+        )
