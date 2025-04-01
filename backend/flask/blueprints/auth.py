@@ -93,14 +93,20 @@ class AuthBlueprint(Blueprint):
                 if rows:
                     return _handle_duplicate_submission(uid)
 
-            uid = self._service.generate_uid(plain_text=[entry_id])
-            access_key = self._service.generate_access_key()
-
             response = make_response(redirect(url_for("render_request")))
-
-            response.set_cookie("uid", uid, httponly=True, secure=True, samesite="Lax")
             response.set_cookie(
-                "accessKey", access_key, httponly=True, secure=True, samesite="Lax"
+                "uid",
+                self._service.generate_uid(),
+                httponly=True,
+                secure=True,
+                samesite="Lax",
+            )
+            response.set_cookie(
+                "accessKey",
+                self._service.generate_access_key(),
+                httponly=True,
+                secure=True,
+                samesite="Lax",
             )
 
             return response

@@ -13,18 +13,18 @@ import ThankYou from './ThankYou';
 const Home: React.FC = () => {
     const location = useLocation();
     const params = new URLSearchParams(location.search);
-    const song = params.get('song');
+    const songName = params.get('songName');
 
-    const [showModal, setShowModal] = useState(!!song);
+    const [showModal, setShowModal] = useState(!!songName);
 
     return (
         <div>
             <TableServiceProvider service={DataService}>
                 <Shows />
             </TableServiceProvider>
-            {showModal && song && (
+            {showModal && songName && (
                 <Modal onClose={() => setShowModal(false)}>
-                    <ThankYou song={song} />
+                    <ThankYou songName={songName} />
                 </Modal>
             )}
         </div>

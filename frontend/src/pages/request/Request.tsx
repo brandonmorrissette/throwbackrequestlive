@@ -73,7 +73,9 @@ const Request: React.FC = () => {
     const handleRequest = async () => {
         if (selectedSong) {
             RequestService.writeRequest(selectedSong.id, showId);
-            navigate('/?song=' + encodeURIComponent(selectedSong.song_name));
+            navigate(
+                '/?songName=' + encodeURIComponent(selectedSong.song_name)
+            );
         }
     };
 

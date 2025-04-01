@@ -37,7 +37,7 @@ Entry Point:
 import logging
 import os
 
-from flask import Flask, jsonify, request
+from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
@@ -92,18 +92,6 @@ def _create_app(app_config: Config) -> Flask:
 
     # Render Blueprints
     flask_app.register_blueprint(RenderBlueprint())
-
-    @flask_app.before_request
-    def check_origin():  # pylint: disable=inconsistent-return-statements
-        """
-        Checks the 'Origin' or 'Referer' header to ensure it matches an allowed origin.
-        If the origin is invalid, the request is rejected.
-        """
-        allowed_origin = "https://throwbackrequestlive.com"
-        origin = request.headers.get("Origin") or request.headers.get("Referer") or ""
-
-        if not origin.startswith(allowed_origin):
-            return jsonify({"message": "Invalid origin!"}), 403
 
     return flask_app
 

@@ -146,33 +146,13 @@ class AuthService(DataService):
         token = jwt.encode(payload, self._jwt_secret_key, algorithm=self._jwt_algorithm)
         return token
 
-    def generate_uid(
-        self, plain_text: list | None = None, encoded: list | None = None
-    ) -> str:
+    def generate_uid(self) -> str:
         """
         Generate a unique identifier (UID) for a user.
-
-        Args:
-            plain_text (list): A list of values to include in the uid
-                that will be displayed in plain text.
-            encoded (list): A list of values to include in the uid that will be encoded.
-
         Returns:
             str: The generated UID.
         """
-        plain_text = plain_text or []
-        encoded = encoded or []
-
-        uid = str(uuid4())
-        if plain_text:
-            uid += "".join(plain_text)
-        if encoded:
-            uid += jwt.encode(
-                {"encoded_values": encoded},
-                self._jwt_secret_key,
-                algorithm="HS256",
-            )
-        return uid
+        return str(uuid4())
 
     def generate_access_key(self) -> str:
         """
