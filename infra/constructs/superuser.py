@@ -158,7 +158,7 @@ class SuperUserConstruct(Construct):
         log_group = logs.LogGroup(
             self,
             "superuser-container-log-group",
-            log_group_name=f"{args.config.project_name}-superuser-container-logs",
+            log_group_name=f"{args.config.project_name}-{args.config.environment_name}superuser-container-logs",  # pylint: disable=line-too-long
             removal_policy=RemovalPolicy.DESTROY,
         )
 

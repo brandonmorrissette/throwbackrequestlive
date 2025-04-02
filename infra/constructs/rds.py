@@ -142,7 +142,7 @@ class RdsConstruct(Construct):
         log_group = logs.LogGroup(
             self,
             "sql-container-log-group",
-            log_group_name=f"/{args.config.project_name}-sql-container-logs-{self.node.id}",
+            log_group_name=f"/{args.config.project_name}-{args.config.environment_name}-sql-container-logs",  # pylint: disable=line-too-long
             removal_policy=RemovalPolicy.DESTROY,
         )
 
