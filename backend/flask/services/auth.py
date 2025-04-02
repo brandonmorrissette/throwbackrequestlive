@@ -9,6 +9,7 @@ from uuid import uuid4
 import boto3
 import jwt
 import redis
+from sqlalchemy import select
 
 from backend.flask.config import Config
 from backend.flask.exceptions.boto import raise_http_exception
@@ -165,3 +166,28 @@ class AuthService(DataService):
         self._redis_client.set(access_key, access_key)
         self._redis_client.expire(access_key, 600)
         return access_key
+
+
+class RequestAuthService(AuthService):
+    """
+    Service for handling request authentication.
+    """
+
+    def get_shows_by_entry_point_id(self, entry_point_id: str) -> list:
+        """
+        Get shows by entry point ID.
+
+        Args:
+            entry_point_id (str): The entry point ID.
+
+        Returns:
+            list: A list of shows.
+        """
+
+        shows = self.get_table("shows")
+        entrypoints = self.get_table("entrypoints")
+        return self.execute(
+            select(shows)
+            .join(entrypoints, shows.c.id == entrypoints.c.show_id)
+            .where(entrypoints.c.id == entry_point_id)
+        )

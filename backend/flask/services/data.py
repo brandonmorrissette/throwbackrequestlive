@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql.expression import ClauseElement
 
 from backend.flask.config import Config
 from backend.flask.providers.sqlalchemy import SQLALchemyJSONProvider
@@ -180,6 +181,17 @@ class DataService:
                     .where(table.c[primary_key] == row[primary_key])
                     .values(**row)
                 )
+
+    def execute(self, statement: ClauseElement) -> list:
+        """
+        Execute a raw SQL statement.
+
+        Args:
+            statement (ClauseElement): The SQL statement to execute.
+        """
+        with self._session_scope() as session:
+            result = session.execute(statement)
+            return [dict(row) for row in result]
 
 
 def _map_filters(filters: list, table) -> list:
