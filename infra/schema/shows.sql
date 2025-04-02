@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS shows (
     id SERIAL PRIMARY KEY,
-    startTime TIMESTAMP NOT NULL,
-    endTime TIMESTAMP NOT NULL,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
     name VARCHAR(255) NOT NULL,
     venue VARCHAR(255),
     street VARCHAR(255),

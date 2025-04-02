@@ -11,9 +11,10 @@ To Do
 -   route_53
     -   Remove hard coding. Find better way to pass or config.
 
-# Roles and policies
+# Infra
 
--   I have a better understanding now and wish to handle this with much better practice.
+-   I have a better understanding of roles and policies now and wish to handle this with much better practice.
+-   Remove db variable dependency from runtime. Resolve via ssm.
 
 # Docker
 

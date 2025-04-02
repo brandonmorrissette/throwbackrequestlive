@@ -9,7 +9,8 @@ import styles from './Shows.module.css';
  */
 export class Show {
     name: string;
-    datetime: string;
+    start_time: string;
+    end_time: string;
     venue: string;
     street: string;
     city: string;
@@ -21,7 +22,8 @@ export class Show {
      */
     constructor(show: Show) {
         this.name = show.name;
-        this.datetime = this.formatDateTime(show.datetime);
+        this.start_time = this.formatDateTime(show.start_time);
+        this.end_time = this.formatDateTime(show.end_time);
         this.venue = show.venue;
         this.street = show.street;
         this.city = show.city;
@@ -68,7 +70,7 @@ const Shows: React.FC = () => {
                 } 00:00:00`;
 
                 console.log('startOfDay:', startOfDay);
-                const filters = [`startTime >= ${startOfDay}`];
+                const filters = [`start_time >= ${startOfDay}`];
                 const data = await DataService.readRows('shows', {
                     filters: filters,
                 });
@@ -118,9 +120,9 @@ const Shows: React.FC = () => {
                         <div
                             className={`d-flex justify-content-between ${styles['show-details']}`}
                         >
-                            <div className={styles['show-date-time']}>
-                                <span className={styles['show-datetime']}>
-                                    {show.datetime}
+                            <div className={styles['show-start-time-parent']}>
+                                <span className={styles['show-start-time']}>
+                                    {show.start_time}
                                 </span>
                             </div>
                             <span className={styles['show-address']}>

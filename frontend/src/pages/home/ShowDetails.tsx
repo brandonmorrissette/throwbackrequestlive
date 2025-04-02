@@ -25,7 +25,7 @@ const ShowDetail: React.FC<ShowDetailProps> = ({ show, onClose }) => {
         <Modal onClose={onClose}>
             <h2 className="modal-title">{show.name}</h2>
             <p>
-                <strong>When:</strong> {show.datetime}
+                <strong>When:</strong> {show.start_time}
             </p>
             <p>
                 <strong>Where:</strong> {show.venue}
