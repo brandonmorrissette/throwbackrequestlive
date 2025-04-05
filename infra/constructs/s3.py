@@ -53,7 +53,6 @@ class S3Construct(Construct):
             self,
             "s3-bucket",
             bucket_name=f"{config.project_name}-{config.environment_name}-bucket",
-            versioned=True,
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
         )
