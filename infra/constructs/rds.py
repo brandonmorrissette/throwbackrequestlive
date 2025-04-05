@@ -92,7 +92,7 @@ class RdsConstruct(Construct):
             vpc=args.vpc,
             credentials=rds.Credentials.from_generated_secret(
                 "db_master_user",
-                secret_name=f"{args.config.project_name}-db-credentials",
+                secret_name=f"{args.config.project_name}-{args.config.environment_name}-db-credentials",  # pylint: disable=line-too-long
             ),
             allocated_storage=20,
             multi_az=False,

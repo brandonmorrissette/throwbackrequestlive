@@ -9,6 +9,7 @@ from uuid import uuid4
 import boto3
 import jwt
 import redis
+from flask import current_app as app
 from sqlalchemy import select
 
 from backend.flask.config import Config
@@ -38,11 +39,13 @@ class AuthService(DataService):
         ssm_client = boto3.client("ssm", region_name=config.AWS_DEFAULT_REGION)
 
         self._client_id = ssm_client.get_parameter(
-            Name=f"/{config.project_name}/user-pool-client-id", WithDecryption=True
+            Name=f"/{config.project_name}-{config.environment}/user-pool-client-id",
+            WithDecryption=True,
         )["Parameter"]["Value"]
 
         self._user_pool_id = ssm_client.get_parameter(
-            Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
+            Name=f"/{config.project_name}-{config.environment}/user-pool-id",
+            WithDecryption=True,
         )["Parameter"]["Value"]
 
         self._jwt_secret_key = config.JWT_SECRET_KEY
@@ -167,6 +170,18 @@ class AuthService(DataService):
         self._redis_client.expire(access_key, 600)
         return access_key
 
+    def validate_access_key(self, access_key: str) -> bool:
+        """
+        Validate the access key.
+
+        Args:
+            access_key (str): The access key to validate.
+
+        Returns:
+            bool: True if valid, False otherwise.
+        """
+        return self._redis_client.exists(access_key) > 0
+
 
 class RequestAuthService(AuthService):
     """
@@ -186,8 +201,10 @@ class RequestAuthService(AuthService):
 
         shows = self.get_table("shows")
         entrypoints = self.get_table("entrypoints")
-        return self.execute(
+        statement = (
             select(shows)
-            .join(entrypoints, shows.c.id == entrypoints.c.show_id)
+            .join(entrypoints, shows.c.entry_point_id == entrypoints.c.id)
             .where(entrypoints.c.id == entry_point_id)
         )
+        app.logger.debug(f"Statement: {statement}")
+        return self.execute(statement)

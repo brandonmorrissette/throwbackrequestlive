@@ -47,12 +47,14 @@ def test_ssm_parameters(ssm_parameters: Mapping[str, Any], config: Config) -> No
     user_pool_id_param = next(
         param
         for param in ssm_parameters.values()
-        if param["Properties"]["Name"] == f"/{config.project_name}/user-pool-id"
+        if param["Properties"]["Name"]
+        == f"/{config.project_name}-{config.environment_name}/user-pool-id"
     )
     user_pool_client_id_param = next(
         param
         for param in ssm_parameters.values()
-        if param["Properties"]["Name"] == f"/{config.project_name}/user-pool-client-id"
+        if param["Properties"]["Name"]
+        == f"/{config.project_name}-{config.environment_name}/user-pool-client-id"
     )
 
     assert user_pool_id_param

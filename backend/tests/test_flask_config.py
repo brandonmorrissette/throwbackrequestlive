@@ -65,14 +65,6 @@ def test_given_no_overrides_when_config_instantiated_then_config_set_to_default(
     # AWS
     assert config.AWS_DEFAULT_REGION == AWS_DEFAULT_REGION
 
-    # Database
-    assert config.db_user == DB_USER
-    assert config.db_password == DB_PASSWORD
-    assert config.db_host == DB_HOST
-    assert config.db_name == DB_NAME
-    assert config.db_engine == DB_ENGINE
-    assert config.db_port == DB_PORT
-
     # Redis
     assert config.redis_host == REDIS_HOST
     assert config.redis_port == REDIS_PORT
@@ -102,14 +94,6 @@ def test_given_overrides_when_config_instantiated_then_overrirdes_set(variables)
     # Cognito
     assert config.AWS_DEFAULT_REGION == AWS_DEFAULT_REGION
 
-    # Database
-    assert config.db_user == DB_USER
-    assert config.db_password == DB_PASSWORD
-    assert config.db_host == DB_HOST
-    assert config.db_name == DB_NAME
-    assert config.db_engine == DB_ENGINE
-    assert config.db_port == DB_PORT
-
     # Redis
     assert config.redis_host == REDIS_HOST
     assert config.redis_port == REDIS_PORT
@@ -132,14 +116,6 @@ def test_given_no_environment_or_overrirdes_when_get_config_then_config_set_to_d
 
     # Cognito
     assert config.AWS_DEFAULT_REGION is None
-
-    # Database
-    assert config.db_user is None
-    assert config.db_password is None
-    assert config.db_host is None
-    assert config.db_name is None
-    assert config.db_engine == "postgresql"
-    assert config.db_port == "5432"
 
     # Redis
     assert config.redis_host == "redis"

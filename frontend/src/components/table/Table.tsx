@@ -121,6 +121,7 @@ const Table: React.FC<{
      */
     const saveChanges = async () => {
         try {
+            console.log('Rows to save:', rowData);
             const updatedRows = await tableServiceInstance.saveChanges(
                 options,
                 rowData

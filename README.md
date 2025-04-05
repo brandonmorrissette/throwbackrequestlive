@@ -10,6 +10,7 @@ To Do
 
 -   route_53
     -   Remove hard coding. Find better way to pass or config.
+-   unknown paths are not routing to main
 
 # Infra
 
@@ -40,6 +41,7 @@ To Do
     -   Most of my data is passed to table from DataManagement, which uses the table service to interact with backend
     -   My table takes the data, and the data service. It then uses the service to write to the backend. Something about this feels weird.
     -   Making assumption about singular primary key
+-   Want to make the calls async in the backend
 
 # Data Management
 
@@ -56,6 +58,11 @@ To Do
     -   Proper modeling for AG Grid ColumnDefs and AG Grid in general
     -   Review DateTimeCellEditor
 -   additionalProps typing in DataManagement
+
+# Error handling
+
+-   Want to be able to send errors to toasty from the backed.
+    -   Right now the problem seems to be I am navigating to home before the write_rows put error is received. Consider async and awaiting?
 
 # App UI
 

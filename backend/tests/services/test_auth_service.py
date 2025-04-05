@@ -30,10 +30,12 @@ def test_when_init_then_cognito_params_are_retrieved(config: Config):
     mock_boto.assert_any_call("ssm", region_name=config.AWS_DEFAULT_REGION)
 
     mock_boto.return_value.get_parameter.assert_any_call(
-        Name=f"/{config.project_name}/user-pool-client-id", WithDecryption=True
+        Name=f"/{config.project_name}-{config.environment}/user-pool-client-id",
+        WithDecryption=True,
     )
     mock_boto.return_value.get_parameter.assert_any_call(
-        Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
+        Name=f"/{config.project_name}-{config.environment}/user-pool-id",
+        WithDecryption=True,
     )
 
     service._client_id = mock_boto.return_value.get_parameter.return_value["Parameter"][

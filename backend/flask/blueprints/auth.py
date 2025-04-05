@@ -4,8 +4,7 @@ This module contains the AuthBlueprint class which handles authentication-relate
 
 from typing import Any, Tuple
 
-from flask import jsonify, make_response, redirect, request, url_for
-from werkzeug.wrappers.response import Response
+from flask import jsonify, request
 
 from backend.flask.blueprints.blueprint import Blueprint
 from backend.flask.services.auth import AuthService
@@ -17,6 +16,21 @@ class AuthBlueprint(Blueprint):
     """
 
     _service: AuthService
+
+    def __init__(
+        self,
+        service: AuthService,
+        import_name: str | None = None,
+        url_prefix: str | None = None,
+    ) -> None:
+        """
+        Initialize the AuthBlueprint.
+
+        :param service: service for the blueprint
+        :param import_name: (Optional) Import name of the module
+        :param url_prefix: (Optional) URL prefix for the blueprint routes
+        """
+        super().__init__(import_name, service, url_prefix)
 
     def register_routes(self) -> None:
         """
@@ -62,103 +76,3 @@ class AuthBlueprint(Blueprint):
                 ),
                 200,
             )
-
-        @self.route("/entry", methods=["POST"])
-        def entry():
-            """
-            Establishes an entry point for establishing a session.
-            :return: JSON response with the authentication token.
-            """
-            entry_point_id = request.args.get("entryPointId", "")
-            if not self._service.read_rows(
-                "entrypoints",
-                filters=[f"entrypoint_id = '{entry_point_id}'"],
-            ):
-                return (
-                    jsonify(
-                        {
-                            "success": False,
-                            "error": "Invalid entryPointId",
-                            "code": 400,
-                        }
-                    ),
-                    400,
-                )
-
-            return self._redirect(entry_point_id)
-
-    def _redirect(self, entry_point_id: str) -> Response:
-        """
-        Redirect to the main page with the given UID.
-        :param entry_point_id: The entry_point_id for the submission.
-        :return: Redirect response to the main page.
-        """
-        raise NotImplementedError("Child classes must implement _redirect.")
-
-
-class RequestAuthBlueprint(AuthBlueprint):
-    """
-    Blueprint for handling routing with Request data.
-    """
-
-    def _redirect(self, entry_point_id: str) -> Response:
-        """
-        Enforces uniqueness and then redirects to Requests page.
-        :param entry_point_id: The entry_point_id for the submission.
-        :return: Redirect response to the main page.
-        """
-        uid = request.cookies.get("uid")
-        if uid:
-            rows = self._service.read_rows(
-                "submissions",
-                filters=[f"id = '{uid}'", f"entrypoint_id = '{entry_point_id}'"],
-            )
-            if rows:
-                return self._handle_duplicate_submission(uid)
-
-        response = make_response(redirect(url_for("render_request")))
-        response.set_cookie(
-            "uid",
-            self._service.generate_uid(),
-            httponly=True,
-            secure=True,
-            samesite="Lax",
-        )
-        response.set_cookie(
-            "accessKey",
-            self._service.generate_access_key(),
-            httponly=True,
-            secure=True,
-            samesite="Lax",
-        )
-
-        return response
-
-    def _handle_duplicate_submission(self, uid: str) -> Response:
-        """
-        Handle duplicate submission by redirecting to the main page."
-        """
-
-        redirect_args = self._get_duplicate_submission(uid)
-        return redirect(
-            url_for(
-                "render_main",
-                song_name=next(iter(redirect_args), {}).get(
-                    "song_name", "UNABLE TO RETRIEVE SONG NAME"
-                ),
-            )
-        )
-
-    def _get_duplicate_submission(self, uid: str) -> list:
-        """
-        Get duplicate submission by uid.
-        :param uid: The unique identifier for the submission.
-        :return: JSON response with the duplicate submission details.
-        """
-        request_rows = self._service.read_rows(
-            "requests", filters=[f"request_id = {uid}"]
-        )
-        return self._service.read_rows(
-            "songs",
-            filters=[f"song_id = {next(iter(request_rows), {}).get('song_id')}"],
-        )

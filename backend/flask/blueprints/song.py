@@ -23,7 +23,6 @@ class SongBlueprint(DataBlueprint):
         Register routes for song operations.
         """
 
-        # Public route
         @self.route("/tables/songs/rows", methods=["GET"])
         def read_songs() -> Tuple[Any, int]:
             """

@@ -5,7 +5,6 @@ import pytest
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_secretsmanager as secretsmanager
 
 from infra.config import Config
 from infra.constructs.runtime import RuntimeConstruct, RuntimeConstructArgs
@@ -47,25 +46,12 @@ def runtime_variables() -> dict:
 
 
 @pytest.fixture(scope="module")
-def runtime_secrets(stack: Stack) -> dict:
-    runtime_secret = secretsmanager.Secret(
-        stack,
-        "MockRuntimeSecret",
-        generate_secret_string=secretsmanager.SecretStringGenerator(
-            password_length=32, exclude_punctuation=True
-        ),
-    )
-    return {"RuntimeSecret": ecs.Secret.from_secrets_manager(runtime_secret)}
-
-
-@pytest.fixture(scope="module")
 def runtime_construct_args(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     config: Config,
     certificate: acm.Certificate,
     policy: iam.ManagedPolicy,
     cluster: ecs.Cluster,
     runtime_variables: dict,
-    runtime_secrets: dict,
 ) -> RuntimeConstructArgs:
     return RuntimeConstructArgs(
         config=config,
@@ -73,7 +59,6 @@ def runtime_construct_args(  # pylint: disable=too-many-arguments, too-many-posi
         policy=policy,
         cluster=cluster,
         runtime_variables=runtime_variables,
-        runtime_secrets=runtime_secrets,
     )
 
 
@@ -122,7 +107,7 @@ def test_policy(
         "Effect": "Allow",
         "Resource": f"arn:aws:ssm:{config.cdk_environment.region}:"
         f"{config.cdk_environment.account}:"
-        f"parameter/{config.project_name}/*",
+        f"parameter/{config.project_name}-{config.environment_name}/*",
     } in policy["Properties"]["PolicyDocument"]["Statement"]
 
 

@@ -49,7 +49,8 @@ class CognitoService:
         ssm_client = boto3.client("ssm", region_name=config.AWS_DEFAULT_REGION)
 
         self._user_pool_id = ssm_client.get_parameter(
-            Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
+            Name=f"/{config.project_name}-{config.environment}/user-pool-id",
+            WithDecryption=True,
         )["Parameter"]["Value"]
 
         self._cognito_client = boto3.client(

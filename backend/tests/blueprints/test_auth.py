@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 import pytest
 from flask import Flask
 
-from backend.flask.blueprints.auth import RequestAuthBlueprint
 from backend.flask.services.auth import AuthService
 
 USERNAME = "username"
@@ -15,11 +14,9 @@ TOKEN = "token"
 
 
 @pytest.fixture()
-def app(
-    service,
-):
+def app():
     app = Flask(__name__)
-    app.register_blueprint(RequestAuthBlueprint(service=service))
+    # app.register_blueprint(RequestAuthBlueprint(service=service))
     yield app
 
 

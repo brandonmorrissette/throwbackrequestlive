@@ -188,12 +188,12 @@ def test_ssm_parameters_creation(
     mock_ssm.StringParameter.assert_any_call(
         construct,
         "UserPoolIdParameter",
-        parameter_name=f"/{config.project_name}/user-pool-id",
+        parameter_name=f"/{config.project_name}-{config.environment_name}/user-pool-id",
         string_value=ANY,
     )
     mock_ssm.StringParameter.assert_any_call(
         construct,
         "UserPoolClientIdParameter",
-        parameter_name=f"/{config.project_name}/user-pool-client-id",
+        parameter_name=f"/{config.project_name}-{config.environment_name}/user-pool-client-id",
         string_value=ANY,
     )

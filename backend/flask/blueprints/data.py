@@ -100,9 +100,10 @@ class DataBlueprint(Blueprint):
             """
             data = request.get_json()
             rows = data.get("rows", [])
-            app.logger.debug(f"Writing rows to {table_name}")
+            app.logger.debug(f"Writing rows to {table_name} : {rows}")
             self._service.validate_table_name(table_name)
-            result = self._service.write_rows(table_name, rows)
+            app.logger.debug(f"Table {table_name} validated")
+            result = self._service.write_table(table_name, rows)
             return jsonify(result), 200
 
     def _get_rows(self, table_name: str, _request: Request) -> Tuple[Any, int]:

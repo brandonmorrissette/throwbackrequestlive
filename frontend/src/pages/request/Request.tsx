@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Modal from '../../components/modal/Modal';
 import { useError } from '../../contexts/ErrorContext';
-import {
-    DuplicateRequestError,
-    default as RequestService,
-} from '../../services/request';
+import { default as AuthService } from '../../services/auth';
+import { default as DataService } from '../../services/data';
 import styles from './Request.module.css';
 
 interface Song {
@@ -34,31 +32,25 @@ const Request: React.FC = () => {
     const { setError } = useError();
 
     useEffect(() => {
-        const enforcer = async () => {
+        const validate = async () => {
             try {
-                await RequestService.enforceUniqueRequest(showId);
-            } catch (error: any) {
-                setError(error);
-                if (error instanceof DuplicateRequestError) {
-                    console.warn('Duplicate request:', error.message);
-                    navigate('/?song=' + encodeURIComponent(error.song_name));
+                const response = await AuthService.validateSession();
+
+                if (!response.success) {
+                    throw new Error('Session validation failed');
                 }
+            } catch (error: any) {
+                console.error('Error validating session:', error);
+                setError(error);
+                navigate('/');
             }
         };
-        enforcer();
-    }, [navigate]);
+
+        validate();
+    }, [navigate, setError]);
 
     useEffect(() => {
-        if (!showId) {
-            const error = new Error('Show ID is missing in the request');
-            console.error(error);
-            setError(error);
-            navigate('/');
-        }
-    }, [showId]);
-
-    useEffect(() => {
-        const songs = RequestService.readRows('songs');
+        const songs = DataService.readRows('songs');
         songs
             .then((data) => {
                 setSongs(data);
@@ -72,7 +64,12 @@ const Request: React.FC = () => {
 
     const handleRequest = async () => {
         if (selectedSong) {
-            RequestService.writeRequest(selectedSong.id, showId);
+            DataService.writeRows('requests', [
+                {
+                    song_id: selectedSong.id,
+                    show_id: showId,
+                },
+            ]);
             navigate(
                 '/?songName=' + encodeURIComponent(selectedSong.song_name)
             );

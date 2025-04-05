@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from backend.flask.app import _create_app
-from backend.flask.blueprints.auth import RequestAuthBlueprint
 from backend.flask.blueprints.data import DataBlueprint
 from backend.flask.blueprints.render import RenderBlueprint
 from backend.flask.blueprints.user import UserBlueprint
@@ -84,7 +83,6 @@ def test_given_services_when_create_app_then_services_injected_into_blueprints(
 def test_given_blueprints_when_create_app_then_blueprints_are_registered(config):
     app = _create_app(config)
 
-    assert isinstance(app.blueprints["authblueprint"], RequestAuthBlueprint)
     assert isinstance(app.blueprints["userblueprint"], UserBlueprint)
     assert isinstance(app.blueprints["datablueprint"], DataBlueprint)
     assert isinstance(app.blueprints["renderblueprint"], RenderBlueprint)

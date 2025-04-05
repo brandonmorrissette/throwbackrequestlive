@@ -19,7 +19,6 @@ def runtime_construct_args(config: Config) -> RuntimeConstructArgs:
         cluster=MagicMock(),
         policy=MagicMock(),
         runtime_variables=MagicMock(),
-        runtime_secrets=MagicMock(),
     )
 
 
@@ -120,7 +119,7 @@ def test_policy_created(
         actions=["ssm:GetParameter"],
         resources=[
             f"arn:aws:ssm:{config.cdk_environment.region}:"
-            f"{config.cdk_environment.account}:parameter/{config.project_name}/*"
+            f"{config.cdk_environment.account}:parameter/{config.project_name}-{config.environment_name}/*"  # pylint: disable=line-too-long
         ],
     )
 

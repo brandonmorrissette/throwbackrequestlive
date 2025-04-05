@@ -39,18 +39,18 @@ const Admin: React.FC = () => {
         const content = (
             <div>
                 {userGroups.some((element) =>
-                    UserManagement.allowed_groups?.includes(element)
-                ) && (
-                    <div>
-                        <UserManagement />
-                        <hr />
-                    </div>
-                )}
-                {userGroups.some((element) =>
                     DataManagement.allowed_groups?.includes(element)
                 ) && (
                     <div>
                         <DataManagement />
+                        <hr />
+                    </div>
+                )}
+                {userGroups.some((element) =>
+                    UserManagement.allowed_groups?.includes(element)
+                ) && (
+                    <div>
+                        <UserManagement />
                         <hr />
                     </div>
                 )}

@@ -5,7 +5,9 @@ Data service module for interacting with the database.
 import logging
 from contextlib import contextmanager
 
-from sqlalchemy import MetaData, create_engine
+import boto3
+from flask import current_app as app
+from sqlalchemy import MetaData, and_, create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import ClauseElement
@@ -36,9 +38,15 @@ class DataService:
         Args:
             config (Config): The configuration object.
         """
+        secrets_client = boto3.client(
+            "secretsmanager", region_name=config.AWS_DEFAULT_REGION
+        )
+        secret_name = f"{config.project_name}-{config.environment}-db-credentials"
+        secrets = secrets_client.get_secret_value(SecretId=secret_name)["SecretString"]
+
         database_url = (
-            f"{config.db_engine}://{config.db_user}:{config.db_password}@"
-            f"{config.db_host}:{int(config.db_port)}/{config.db_name}"
+            f"{secrets["engine"]}://{secrets["username"]}:{secrets["password"]}@"
+            f"{secrets["host"]}:{int(secrets["port"])}/{secrets["dbname"]}"
         )
 
         logging.debug("Connecting to database: %s", database_url)
@@ -53,18 +61,18 @@ class DataService:
         """
         Provide a transactional scope around a series of operations.
         """
-        logging.debug("Creating session")
+        app.logger.debug("Creating session")
         session = self._session()
         try:
             yield session
-            logging.debug("Committing session")
+            app.logger.debug("Committing session")
             session.commit()
         except SQLAlchemyError as e:
-            logging.error("Error in session: %s. Rolling back.", e)
+            app.logger.error("Error in session: %s. Rolling back.", e)
             session.rollback()
             raise e
         finally:
-            logging.debug("Closing session")
+            app.logger.debug("Closing session")
             session.close()
 
     def _refresh_metadata(self) -> None:
@@ -124,61 +132,108 @@ class DataService:
         Returns:
             list: A list of row dictionaries.
         """
-        logging.debug("Reading rows from %s with filters: %s", table_name, filters)
-        self._refresh_metadata()
-        table = self._metadata.tables.get(table_name)
+        app.logger.debug("Reading rows from %s with filters: %s", table_name, filters)
 
-        if table is None:
-            raise ValueError(f"Table {table_name} does not exist.")
+        table = self.get_table(table_name)
 
         with self._session_scope() as session:
             query = session.query(table)
 
             if filters:
                 filters_mapped = _map_filters(filters, table)
-                logging.debug("Filters mapped: %s", filters_mapped)
+                app.logger.debug("Filters mapped: %s", filters_mapped)
                 query = query.filter(*filters_mapped)
 
-            logging.debug("Query: %s", query)
+            app.logger.debug("Query: %s", query)
             return [row._asdict() for row in query.all()]
 
-    def write_rows(self, table_name: str, rows: list) -> None:
+    def insert_rows(self, table_name: str, rows: list) -> None:
+        """
+        Inserts rows to a table.
+
+        Args:
+            table_name (str): The name of the table.
+            rows (dict): A dictionary of row data.
+        """
+        app.logger.debug("Adding rows to %s: %s", table_name, rows)
+        table = self.get_table(table_name)
+        with self._session_scope() as session:
+            session.execute(table.insert(), rows)
+
+    def write_table(self, table_name: str, rows: list) -> None:
         """
         Write rows to a table.
+        This assumes rows are the full data set.
+        Any rows in the database that are not in the rows list will be deleted.
 
         Args:
             table_name (str): The name of the table.
             rows (list): A list of row dictionaries.
         """
-        self._refresh_metadata()
-        table = self._metadata.tables.get(table_name)
-        if table is None:
-            raise ValueError(f"Table {table_name} does not exist.")
+        app.logger.debug("Write service invoked with %s: %s", table_name, rows)
+        table = self.get_table(table_name)
 
-        primary_key = list(table.primary_key.columns)[0].name
+        primary_keys = [col.name for col in table.primary_key.columns]
+        if primary_keys is None:
+            raise ValueError(
+                f"Table {table_name} has no primary key defined. Unable to write rows."
+            )
+
         with self._session_scope() as session:
             sql_alchemy_ids = {
-                row[primary_key] for row in session.query(table.c[primary_key]).all()
+                tuple(row)
+                for row in session.query(*[table.c[col] for col in primary_keys]).all()
             }
-            front_end_ids = {row[primary_key] for row in rows if primary_key in row}
+            front_end_ids = {
+                tuple(row[col] for col in primary_keys if col in row) for row in rows
+            }
+            app.logger.debug(
+                "SQLAlchemy IDs: %s, Front-end IDs: %s", sql_alchemy_ids, front_end_ids
+            )
 
-            rows_to_add = [row for row in rows if row.get(primary_key) is None]
+            rows_to_add = [
+                row
+                for row in rows
+                if any(row.get(col) is None for col in primary_keys)
+                or tuple(row[col] for col in primary_keys) not in sql_alchemy_ids
+            ]
+            app.logger.debug("Rows to add: %s", rows_to_add)
             if rows_to_add:
                 session.execute(table.insert(), rows_to_add)
 
             rows_to_delete = sql_alchemy_ids - front_end_ids
+            app.logger.debug("Rows to delete: %s", rows_to_delete)
             if rows_to_delete:
-                session.execute(
-                    table.delete().where(table.c[primary_key].in_(rows_to_delete))
-                )
+                for key_tuple in rows_to_delete:
+                    session.execute(
+                        table.delete().where(
+                            and_(
+                                *[
+                                    table.c[col] == key
+                                    for col, key in zip(primary_keys, key_tuple)
+                                ]
+                            )
+                        )
+                    )
 
             rows_to_update = [
-                row for row in rows if row.get(primary_key) in sql_alchemy_ids
+                row
+                for row in rows
+                if tuple(row.get(col) for col in primary_keys) in sql_alchemy_ids
             ]
+            app.logger.debug("Rows to update: %s", rows_to_update)
             for row in rows_to_update:
+                key_tuple = tuple(row[col] for col in primary_keys)
                 session.execute(
                     table.update()
-                    .where(table.c[primary_key] == row[primary_key])
+                    .where(
+                        and_(
+                            *[
+                                table.c[col] == key
+                                for col, key in zip(primary_keys, key_tuple)
+                            ]
+                        )
+                    )
                     .values(**row)
                 )
 
@@ -210,7 +265,7 @@ def _map_filters(filters: list, table) -> list:
     for filter_str in filters:
         try:
             column_name, operator, value = filter_str.split(maxsplit=2)
-            logging.debug(
+            app.logger.debug(
                 "Column: %s, Operator: %s, Value: %s", column_name, operator, value
             )
 

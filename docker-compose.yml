@@ -10,10 +10,13 @@ services:
             - redis
         environment:
             - PROJECT_NAME=${PROJECT_NAME}
+            - DEBUG=${DEBUG}
             - ENVIRONMENT=${ENVIRONMENT}
+            - LOG_LEVEL=${LOG_LEVEL}
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+            - COGNIT_REGION=${COGNIT_REGION}
             - JWT_SECRET_KEY=${JWT_SECRET_KEY}
             - DB_USER=${DB_USER}
             - DB_PASSWORD=${DB_PASSWORD}

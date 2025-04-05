@@ -6,7 +6,6 @@ It creates ECS runtime constructs and Route 53 configurations
 using the provided stacks and configuration.
 """
 
-from aws_cdk import aws_ecs as ecs
 from constructs import Construct
 
 from infra.config import Config
@@ -84,22 +83,8 @@ class RuntimeStack(Stack):
                 runtime_variables={
                     # pylint:disable=line-too-long
                     "PROJECT_NAME": args.config.project_name,
-                    # I'd like to update this to not use config.project_name, but have yet to find the right solution.
-                    # The address requires a database name, which is not available in a db_instance
-                    "DB_NAME": args.config.project_name,
                     "REDIS_HOST": args.storage_stack.cache_construct.cluster.attr_redis_endpoint_address,
                     "REDIS_PORT": args.storage_stack.cache_construct.cluster.attr_redis_endpoint_port,
-                },
-                runtime_secrets={
-                    "DB_USER": ecs.Secret.from_secrets_manager(
-                        args.storage_stack.rds_construct.db_instance.secret, "username"
-                    ),
-                    "DB_PASSWORD": ecs.Secret.from_secrets_manager(
-                        args.storage_stack.rds_construct.db_instance.secret, "password"
-                    ),
-                    "DB_HOST": ecs.Secret.from_secrets_manager(
-                        args.storage_stack.rds_construct.db_instance.secret, "host"
-                    ),
                 },
             ),
         )

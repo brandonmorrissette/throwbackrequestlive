@@ -14,6 +14,7 @@ class Config:
     """Base configuration class.
 
     Attributes:
+        environment (str): Environment name.
         project_name (str): Project name.
         debug (bool): Debug mode.
         log_level (str): Log level.
@@ -22,18 +23,13 @@ class Config:
         jwt_header_name (str): JWT header name.
         jwt_header_type (str): JWT header type.
         aws_default_region (str): AWS region.
-        db_user (str): Database user.
-        db_password (str): Database password.
-        db_host (str): Database host.
-        db_name (str): Database name.
-        db_engine (str): Database engine.
-        db_port (str): Database port.
         redis_host (str): Redis host.
         redis_port (str): Redis port.
     """
 
     def __init__(self, environment=None, **overrides):
 
+        self.environment = environment or os.getenv("ENVIRONMENT", "development")
         # pylint: disable=invalid-name
         if environment == "development":
             # Any string equates to True for bool
@@ -63,16 +59,6 @@ class Config:
         self.AWS_DEFAULT_REGION = overrides.get(
             "aws_default_region", os.getenv("AWS_DEFAULT_REGION")
         )
-
-        # Database
-        self.db_user = overrides.get("db_user", os.getenv("DB_USER"))
-        self.db_password = overrides.get("db_password", os.getenv("DB_PASSWORD"))
-        self.db_host = overrides.get("db_host", os.getenv("DB_HOST"))
-        self.db_name = overrides.get("db_name", os.getenv("DB_NAME"))
-        self.db_engine = overrides.get(
-            "db_engine", os.getenv("DB_ENGINE", "postgresql")
-        )
-        self.db_port = overrides.get("db_port", os.getenv("DB_PORT", "5432"))
 
         # Redis
         self.redis_host = overrides.get("redis_host", os.getenv("REDIS_HOST", "redis"))
