@@ -20,15 +20,17 @@ Usage example:
 import os
 
 import aws_cdk as cdk
-from aws_cdk import Aspects
 
-from infra.aspects.tagging import TaggingAspect
+# from infra.aspects.tagging import TaggingAspect
 from infra.config import Config
 from infra.stacks.compute import ComputeStack, ComputeStackArgs
 from infra.stacks.network import NetworkStack, NetworkStackArgs
 from infra.stacks.runtime import RuntimeStack, RuntimeStackArgs
 from infra.stacks.storage import StorageStack, StorageStackArgs
 from infra.stacks.user_management import UserManagementStack, UserManagementStackArgs
+
+# from aws_cdk import Aspects
+
 
 app = cdk.App()
 config = Config(
@@ -42,7 +44,7 @@ config = Config(
     ),
 )
 
-Aspects.of(app).add(TaggingAspect(config), priority=100)
+# Aspects.of(app).add(TaggingAspect(config), priority=100)
 
 user_management_stack = UserManagementStack(app, UserManagementStackArgs(config))
 network_stack = NetworkStack(app, NetworkStackArgs(config))
