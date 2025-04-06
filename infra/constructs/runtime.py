@@ -105,7 +105,10 @@ class RuntimeConstruct(Construct):
                         "secretsmanager:GetSecretValue",
                         "secretsmanager:DescribeSecret",
                     ],
-                    resources=[jwt_secret.secret_arn],
+                    resources=[
+                        jwt_secret.secret_arn,
+                        f"{args.config.project_name}-{args.config.environment_name}-db-credentials",
+                    ],
                 ),
                 iam.PolicyStatement(
                     actions=[
