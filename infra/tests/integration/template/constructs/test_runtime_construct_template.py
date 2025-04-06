@@ -46,11 +46,17 @@ def runtime_variables() -> dict:
 
 
 @pytest.fixture(scope="module")
+def db_credentials_arn() -> str:
+    return "arn:aws:rds:us-east-1:123456789012:secret:mysecret"
+
+
+@pytest.fixture(scope="module")
 def runtime_construct_args(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     config: Config,
     certificate: acm.Certificate,
     policy: iam.ManagedPolicy,
     cluster: ecs.Cluster,
+    db_credentials_arn: str,
     runtime_variables: dict,
 ) -> RuntimeConstructArgs:
     return RuntimeConstructArgs(
@@ -58,6 +64,7 @@ def runtime_construct_args(  # pylint: disable=too-many-arguments, too-many-posi
         certificate=certificate,
         policy=policy,
         cluster=cluster,
+        db_credentials_arn=db_credentials_arn,
         runtime_variables=runtime_variables,
     )
 

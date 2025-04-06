@@ -80,6 +80,7 @@ class RuntimeStack(Stack):
                 certificate=args.network_stack.cert_construct.certificate,
                 policy=args.user_management_stack.superuser_construct.policy,
                 cluster=args.compute_stack.cluster_construct.cluster,
+                db_credentials_arn=args.storage_stack.rds_construct.db_instance.secret.secret_arn,
                 runtime_variables={
                     # pylint:disable=line-too-long
                     "PROJECT_NAME": args.config.project_name,

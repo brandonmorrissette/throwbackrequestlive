@@ -18,6 +18,7 @@ def runtime_construct_args(config: Config) -> RuntimeConstructArgs:
         certificate=MagicMock(),
         cluster=MagicMock(),
         policy=MagicMock(),
+        db_credentials_arn=MagicMock(),
         runtime_variables=MagicMock(),
     )
 
