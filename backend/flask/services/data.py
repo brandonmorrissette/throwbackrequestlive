@@ -48,8 +48,10 @@ class DataService:
             )["SecretString"]
         )
 
+        # Was getting different behavior with postgresql and postgres
         database_url = (
-            f"{secrets["engine"]}://{secrets["username"]}:{secrets["password"]}@"
+            f"{secrets["engine"].replace("postgres", "postgresql")}://"
+            f"{secrets["username"]}:{secrets["password"]}@"
             f"{secrets["host"]}:{int(secrets["port"])}/{secrets["dbname"]}"
         )
 
