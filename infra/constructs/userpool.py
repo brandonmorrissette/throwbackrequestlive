@@ -68,7 +68,7 @@ class UserPoolConstruct(Construct):
 
         self._cognito_client = boto3.client("cognito-idp")
         user_pool_name = (
-            f"{args.config.project_name}-{args.config.project_name}-user-pool"
+            f"{args.config.project_name}-{args.config.environment_name}-user-pool"
         )
 
         user_pool = self._get_user_pool(user_pool_name)
