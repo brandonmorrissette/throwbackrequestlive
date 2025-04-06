@@ -173,7 +173,7 @@ class RuntimeConstruct(Construct):
                 stream_prefix=args.config.project_name, log_group=log_group
             ),
             environment=args.runtime_variables,
-            secrets={"JWT_SECRET": ecs.Secret.from_secrets_manager(jwt_secret)},
+            secrets={"JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret)},
             task_role=task_role,
         )
 
