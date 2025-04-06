@@ -2,6 +2,7 @@
 Data service module for interacting with the database.
 """
 
+import json
 import logging
 from contextlib import contextmanager
 
@@ -41,9 +42,11 @@ class DataService:
         secrets_client = boto3.client(
             "secretsmanager", region_name=config.AWS_DEFAULT_REGION
         )
-        secrets = secrets_client.get_secret_value(
-            SecretId=f"{config.project_name}-{config.environment}-db-credentials"
-        )["SecretString"]
+        secrets = json.loads(
+            secrets_client.get_secret_value(
+                SecretId=f"{config.project_name}-{config.environment}-db-credentials"
+            )["SecretString"]
+        )
 
         database_url = (
             f"{secrets["engine"]}://{secrets["username"]}:{secrets["password"]}@"
