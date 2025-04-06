@@ -29,11 +29,7 @@ class Config:
 
     def __init__(self, environment=None, **overrides):
 
-        self.environment = environment or os.getenv("ENVIRONMENT", "development")
-        # pylint: disable=invalid-name
-        if environment == "development":
-            # Any string equates to True for bool
-            overrides["debug"] = bool(os.getenv("DEBUG", "True"))
+        self.environment = environment
 
         # App
         self.project_name = overrides.get("project_name", os.getenv("PROJECT_NAME"))
@@ -41,6 +37,7 @@ class Config:
         self.log_level = overrides.get("log_level", os.getenv("LOG_LEVEL", "INFO"))
 
         # JWT
+        # pylint: disable=invalid-name
         self.JWT_SECRET_KEY = overrides.get(
             "jwt_secret_key", os.getenv("JWT_SECRET_KEY")
         )

@@ -96,7 +96,7 @@ def _create_app(app_config: Config) -> Flask:
 
 
 if __name__ == "__main__":
-    environment = os.getenv("ENVIRONMENT", "").lower()
+    environment = os.getenv("ENVIRONMENT", "noenv").lower()
     logging.info("Flask App Environment: %s", environment)
 
     config = Config(environment)

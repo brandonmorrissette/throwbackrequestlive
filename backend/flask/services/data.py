@@ -41,8 +41,9 @@ class DataService:
         secrets_client = boto3.client(
             "secretsmanager", region_name=config.AWS_DEFAULT_REGION
         )
-        secret_name = f"{config.project_name}-{config.environment}-db-credentials"
-        secrets = secrets_client.get_secret_value(SecretId=secret_name)["SecretString"]
+        secrets = secrets_client.get_secret_value(
+            SecretId=f"{config.project_name}-{config.environment}-db-credentials"
+        )["SecretString"]
 
         database_url = (
             f"{secrets["engine"]}://{secrets["username"]}:{secrets["password"]}@"
