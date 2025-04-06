@@ -84,6 +84,7 @@ class RuntimeStack(Stack):
                 runtime_variables={
                     # pylint:disable=line-too-long
                     "PROJECT_NAME": args.config.project_name,
+                    "ENVIRONMENT": args.config.environment_name,
                     "REDIS_HOST": args.storage_stack.cache_construct.cluster.attr_redis_endpoint_address,
                     "REDIS_PORT": args.storage_stack.cache_construct.cluster.attr_redis_endpoint_port,
                 },
