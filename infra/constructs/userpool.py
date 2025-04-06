@@ -76,7 +76,8 @@ class UserPoolConstruct(Construct):
         ssm.StringParameter(
             self,
             "UserPoolIdParameter",
-            parameter_name=f"/{args.config.project_name}-{args.config.project_name}/user-pool-id",
+            parameter_name=f"/{args.config.project_name}-{args.config.environment_name}"
+            f"/user-pool-id",
             string_value=user_pool.user_pool_id,
         )
 
