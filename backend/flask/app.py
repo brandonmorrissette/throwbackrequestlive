@@ -48,7 +48,8 @@ def _create_app(app_config: Config) -> Flask:
         level=app_config.log_level,
         format="%(asctime)s %(name)s:%(levelname)s:%(pathname)s:%(lineno)d:%(message)s",
     )
-    flask_app.logger.debug("Config : %s", flask_app.config)
+    flask_app.logger.info("App Config : %s", app_config.__dict__)
+    flask_app.logger.debug("Flask Config : %s", flask_app.config)
 
     # JSON Provider
     flask_app.json = JSONProvider(flask_app)

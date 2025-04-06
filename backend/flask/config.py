@@ -6,7 +6,10 @@ This module contains the base configuration class and environment-specific
 configuration classes for the Flask application.
 """
 
+import json
 import os
+
+import boto3
 
 
 # pylint: disable=too-many-instance-attributes
@@ -23,21 +26,36 @@ class Config:
         jwt_header_name (str): JWT header name.
         jwt_header_type (str): JWT header type.
         aws_default_region (str): AWS region.
+        db_user (str): Database user.
+        db_password (str): Database password.
+        db_host (str): Database host.
+        db_name (str): Database name.
+        db_engine (str): Database engine.
+        db_port (str): Database port.
         redis_host (str): Redis host.
         redis_port (str): Redis port.
     """
 
+    # pylint: disable=invalid-name
     def __init__(self, environment=None, **overrides):
+        # AWS
+        self.AWS_DEFAULT_REGION = overrides.get(
+            "aws_default_region", os.getenv("AWS_DEFAULT_REGION")
+        )
 
-        self.environment = environment
+        # Boto Clients
+        secrets_client = boto3.client(
+            "secretsmanager", region_name=self.AWS_DEFAULT_REGION
+        )
 
         # App
         self.project_name = overrides.get("project_name", os.getenv("PROJECT_NAME"))
         self.debug = overrides.get("debug", bool(os.getenv("DEBUG")))
         self.log_level = overrides.get("log_level", os.getenv("LOG_LEVEL", "INFO"))
 
+        self.environment = environment or os.getenv("ENVIRONMENT", "development")
+
         # JWT
-        # pylint: disable=invalid-name
         self.JWT_SECRET_KEY = overrides.get(
             "jwt_secret_key", os.getenv("JWT_SECRET_KEY")
         )
@@ -52,9 +70,40 @@ class Config:
             "jwt_header_type", os.getenv("JWT_HEADER_TYPE", "Bearer")
         )
 
-        # AWS
-        self.AWS_DEFAULT_REGION = overrides.get(
-            "aws_default_region", os.getenv("AWS_DEFAULT_REGION")
+        # Database
+        self.db_secrets = json.loads(
+            secrets_client.get_secret_value(
+                SecretId=f"{self.project_name}-{self.environment}-db-credentials"
+            )["SecretString"]
+        )
+        self.db_username = os.getenv("DB_USER", self.db_secrets.get("username", ""))
+        self.db_username_from_os = os.getenv("DB_USER")
+        self.db_secrets_username = self.db_secrets.get("username", "")
+        self.sanity_check = os.getenv("no_key")
+        self.db_user = overrides.get(
+            "db_user", os.getenv("DB_USER", self.db_secrets.get("username", ""))
+        )
+        self.db_password = overrides.get(
+            "db_password", os.getenv("DB_PASSWORD", self.db_secrets.get("password", ""))
+        )
+        self.db_host = overrides.get(
+            "db_host", os.getenv("DB_HOST", self.db_secrets.get("host", ""))
+        )
+        self.db_name = overrides.get(
+            "db_name", os.getenv("DB_NAME", self.db_secrets.get("dbname", ""))
+        )
+        self.db_engine = overrides.get(
+            "db_engine",
+            # Was getting different behavior with postgresql and postgres
+            os.getenv(
+                "DB_ENGINE",
+                self.db_secrets.get("engine", "postgres").replace(
+                    "postgres", "postgresql"
+                ),
+            ),
+        )
+        self.db_port = overrides.get(
+            "db_port", os.getenv("DB_PORT", self.db_secrets.get("port", "5432"))
         )
 
         # Redis

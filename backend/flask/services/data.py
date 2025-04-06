@@ -2,11 +2,9 @@
 Data service module for interacting with the database.
 """
 
-import json
 import logging
 from contextlib import contextmanager
 
-import boto3
 from flask import current_app as app
 from sqlalchemy import MetaData, and_, create_engine
 from sqlalchemy.exc import SQLAlchemyError
@@ -39,20 +37,11 @@ class DataService:
         Args:
             config (Config): The configuration object.
         """
-        secrets_client = boto3.client(
-            "secretsmanager", region_name=config.AWS_DEFAULT_REGION
-        )
-        secrets = json.loads(
-            secrets_client.get_secret_value(
-                SecretId=f"{config.project_name}-{config.environment}-db-credentials"
-            )["SecretString"]
-        )
 
-        # Was getting different behavior with postgresql and postgres
         database_url = (
-            f"{secrets["engine"].replace("postgres", "postgresql")}://"
-            f"{secrets["username"]}:{secrets["password"]}@"
-            f"{secrets["host"]}:{int(secrets["port"])}/{secrets["dbname"]}"
+            f"{config.db_engine}://"
+            f"{config.db_user}:{config.db_password}@"
+            f"{config.db_host}:{int(config.db_port)}/{config.db_name}"
         )
 
         logging.debug("Connecting to database: %s", database_url)
