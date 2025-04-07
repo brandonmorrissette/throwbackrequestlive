@@ -4,9 +4,10 @@ This module defines the EntryPointBlueprint class and related functions
 """
 
 from flask import request
+from werkzeug.wrappers.response import Response
 
 from backend.flask.blueprints.blueprint import Blueprint
-from backend.flask.session.session import SessionFactory
+from backend.flask.services.entrypoint import EntryPointService
 
 
 class EntryPointBlueprint(Blueprint):
@@ -14,11 +15,11 @@ class EntryPointBlueprint(Blueprint):
     Blueprint for handling entry point related routes.
     """
 
-    _session_factory: SessionFactory
+    _service: EntryPointService
 
     def __init__(
         self,
-        session_factory: SessionFactory,
+        service: EntryPointService,
         import_name: str | None = None,
         url_prefix: str | None = None,
     ) -> None:
@@ -29,8 +30,7 @@ class EntryPointBlueprint(Blueprint):
         :param import_name: (Optional) Import name of the module
         :param url_prefix: (Optional) URL prefix for the blueprint routes
         """
-        super().__init__(import_name, url_prefix)
-        self._session_factory = session_factory
+        super().__init__(import_name, service, url_prefix)
 
     def register_routes(self) -> None:
         """
@@ -38,18 +38,17 @@ class EntryPointBlueprint(Blueprint):
         """
 
         @self.route("/entrypoint", methods=["GET"])
-        def start_session():
+        def start_session() -> Response:
             """
             Establishes session for a provided entrypoint.
             :return: JSON response with the authentication token.
             """
-            entry_point_id = request.args.get("entryPointId", "")
-            return self._session_factory.start(entry_point_id)
+            return self._service.start_session(request.args.get("entryPointId", ""))
 
         @self.route("/validate", methods=["GET"])
-        def validate():
+        def validate() -> Response:
             """ "
             Validates the session for a provided entrypoint.
             :return: Success repsonse if session is valid, otherwise error.
             """
-            return self._session_factory.validate_session()
+            return self._service.validate_session()

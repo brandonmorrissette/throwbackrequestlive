@@ -44,7 +44,7 @@ const UserManagement: AdminComponent = () => {
 
     const fetchUsersData = async () => {
         try {
-            const data = await UserService.readRows('users');
+            const data = await UserService.getRows('users');
             setUsers(data);
         } catch (error: any) {
             setFeedback('Error fetching users.');

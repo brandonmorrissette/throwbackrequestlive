@@ -6,8 +6,8 @@ const API_BASE_URL = '/api/tables';
 
 export interface IDataService {
     getTable(tableName: string): Promise<any>;
-    readRows(tableName: string): Promise<any[]>;
-    writeRows(tableName: string, rows: any[]): Promise<void>;
+    getRows(tableName: string): Promise<any[]>;
+    putRows(tableName: string, rows: any[]): Promise<void>;
 }
 
 export class DataService implements IDataService {
@@ -58,7 +58,7 @@ export class DataService implements IDataService {
      * @param {Object} [options] - Optional parameters for filtering, limiting, offsetting, and sorting.
      * @returns {Promise<any>} The table rows.
      */
-    async readRows(
+    async getRows(
         tableName: string,
         options?: {
             filters?: string[];
@@ -86,14 +86,30 @@ export class DataService implements IDataService {
     }
 
     /**
-     * Writes rows to the table.
+     * Puts rows in a table.
      * @param {string} tableName - The name of the table.
      * @param {any[]} rows - The rows to be written.
      * @returns {Promise<void>}
      */
-    async writeRows(tableName: string, rows: any[]): Promise<void> {
+    async putRows(tableName: string, rows: any[]): Promise<void> {
         await apiRequest(`${API_BASE_URL}/${tableName}/rows`, {
             method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ rows }),
+        });
+    }
+
+    /**
+     * Posts rows to a table.
+     * @param {string} tableName - The name of the table.
+     * @param {any[]} rows - The rows to be written.
+     * @returns {Promise<void>}
+     */
+    async postRows(tableName: string, rows: any[]): Promise<void> {
+        await apiRequest(`${API_BASE_URL}/${tableName}/rows`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },

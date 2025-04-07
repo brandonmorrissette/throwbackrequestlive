@@ -50,7 +50,7 @@ const DataManagement: AdminComponent = () => {
 
     const fetchRows = async (tableName: string) => {
         try {
-            const data = await DataService.readRows(tableName);
+            const data = await DataService.getRows(tableName);
             setRows(data);
         } catch (error: any) {
             console.error('Error fetching rows:', error);

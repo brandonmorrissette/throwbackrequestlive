@@ -5,6 +5,7 @@ for handling show related public routes in a Flask application.
 
 from typing import Any, Tuple
 
+from flask import current_app as app
 from flask import jsonify, request
 
 from backend.flask.blueprints.data import DataBlueprint
@@ -32,22 +33,23 @@ class ShowBlueprint(DataBlueprint):
             """
             return self._get_rows("shows", request)
 
-        @self.route("/tables/shows", methods=["POST"])
+        @self.route("/tables/shows/rows", methods=["POST"])
         @restrict_access(["superuser"])
         def insert_show() -> Tuple[Any, int]:
             """
             Insert rows into the 'shows' table.
             :return: JSON response with the result of the operation.
             """
-            data = request.get_json()
-            if not data:
+            show = next(iter(request.get_json()["rows"]), {})
+            app.logger.info(f"Show received: {show}")
+            if not show:
                 return {"message": "No data provided"}, 400
 
             entry_point_id = self._service.create_entry_point(
                 "https://www.throwbackrequestlive.com"
             )
 
-            data["entry_point_id"] = entry_point_id
+            show["entry_point_id"] = entry_point_id
 
-            self._service.insert_rows("shows", [data])
+            self._service.insert_rows("shows", [show])
             return jsonify({"success": True}), 201

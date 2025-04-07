@@ -15,4 +15,4 @@ psycopg2-binary==2.9.6
 redis==5.2.1
 python-dateutil==2.8.2
 pytest==7.0.1
-qrcode==8.1.0
+qrcode[pil]==8.1.0

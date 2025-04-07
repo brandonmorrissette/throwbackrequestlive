@@ -26,7 +26,7 @@ from backend.flask.providers.json import JSONProvider
 from backend.flask.services.auth import RequestAuthService
 from backend.flask.services.cognito import CognitoService
 from backend.flask.services.data import DataService
-from backend.flask.session.session import RequestSessionFactory
+from backend.flask.services.entrypoint import RequestEntryPointService
 
 
 def _create_app(app_config: Config) -> Flask:
@@ -48,7 +48,7 @@ def _create_app(app_config: Config) -> Flask:
         level=app_config.log_level,
         format="%(asctime)s %(name)s:%(levelname)s:%(pathname)s:%(lineno)d:%(message)s",
     )
-    flask_app.logger.info("App Config : %s", app_config.__dict__)
+    flask_app.logger.debug("App Config : %s", app_config.__dict__)
     flask_app.logger.debug("Flask Config : %s", flask_app.config)
 
     # JSON Provider
@@ -61,22 +61,18 @@ def _create_app(app_config: Config) -> Flask:
     JWTManager(flask_app)
 
     # Services
+    entry_point_service = RequestEntryPointService(app_config)
     data_service = DataService(app_config)
     auth_service = RequestAuthService(app_config)
     cognito_service = CognitoService(app_config)
 
-    # API Blueprints (Public)
+    # API Blueprints (Restricted)
     flask_app.register_blueprint(
-        EntryPointBlueprint(
-            session_factory=RequestSessionFactory(auth_service),
-            url_prefix="/api",
-        )
+        UserBlueprint(service=cognito_service, url_prefix="/api")
     )
-    flask_app.register_blueprint(
-        RequestBlueprint(service=auth_service, url_prefix="/api")
-    )
-    flask_app.register_blueprint(ShowBlueprint(service=data_service, url_prefix="/api"))
-    flask_app.register_blueprint(SongBlueprint(service=data_service, url_prefix="/api"))
+    flask_app.register_blueprint(DataBlueprint(service=data_service, url_prefix="/api"))
+
+    # API Blueprints (Public - Login)
     flask_app.register_blueprint(
         AuthBlueprint(
             service=auth_service,
@@ -84,11 +80,20 @@ def _create_app(app_config: Config) -> Flask:
         )
     )
 
-    # API Blueprints (Restricted)
+    # API Blueprints (Public)
     flask_app.register_blueprint(
-        UserBlueprint(service=cognito_service, url_prefix="/api")
+        EntryPointBlueprint(
+            service=entry_point_service,
+            url_prefix="/api",
+        )
     )
-    flask_app.register_blueprint(DataBlueprint(service=data_service, url_prefix="/api"))
+    flask_app.register_blueprint(
+        ShowBlueprint(service=entry_point_service, url_prefix="/api")
+    )
+    flask_app.register_blueprint(
+        RequestBlueprint(service=auth_service, url_prefix="/api")
+    )
+    flask_app.register_blueprint(SongBlueprint(service=data_service, url_prefix="/api"))
 
     # Render Blueprints
     flask_app.register_blueprint(RenderBlueprint())

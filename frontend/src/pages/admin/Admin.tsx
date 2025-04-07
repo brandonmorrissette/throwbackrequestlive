@@ -2,6 +2,7 @@ import jwtDecode from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DataManagement from './DataManagement';
+import ShowManagement from './ShowManagement';
 import UserManagement from './UserManagement';
 
 export interface AdminComponent extends React.FC {
@@ -38,6 +39,14 @@ const Admin: React.FC = () => {
     const renderContent = () => {
         const content = (
             <div>
+                {userGroups.some((element) =>
+                    ShowManagement.allowed_groups?.includes(element)
+                ) && (
+                    <div>
+                        <ShowManagement />
+                        <hr />
+                    </div>
+                )}
                 {userGroups.some((element) =>
                     DataManagement.allowed_groups?.includes(element)
                 ) && (

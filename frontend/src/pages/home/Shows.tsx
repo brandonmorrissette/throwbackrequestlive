@@ -71,7 +71,7 @@ const Shows: React.FC = () => {
 
                 console.log('startOfDay:', startOfDay);
                 const filters = [`start_time >= ${startOfDay}`];
-                const data = await DataService.readRows('shows', {
+                const data = await DataService.getRows('shows', {
                     filters: filters,
                 });
                 setShows(data.map((show: any) => new Show(show)));

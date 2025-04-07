@@ -50,7 +50,7 @@ const Request: React.FC = () => {
     }, [navigate, setError]);
 
     useEffect(() => {
-        const songs = DataService.readRows('songs');
+        const songs = DataService.getRows('songs');
         songs
             .then((data) => {
                 setSongs(data);
@@ -64,7 +64,7 @@ const Request: React.FC = () => {
 
     const handleRequest = async () => {
         if (selectedSong) {
-            DataService.writeRows('requests', [
+            DataService.putRows('requests', [
                 {
                     song_id: selectedSong.id,
                     show_id: showId,

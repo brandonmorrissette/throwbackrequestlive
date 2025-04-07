@@ -39,8 +39,8 @@ export class TableService {
         tableProperties: Options,
         rowData: Row[]
     ): Promise<any[]> {
-        await this.tableService.writeRows(tableProperties.name, rowData);
-        return await this.tableService.readRows(tableProperties.name);
+        await this.tableService.putRows(tableProperties.name, rowData);
+        return await this.tableService.getRows(tableProperties.name);
     }
 
     /**

@@ -65,7 +65,7 @@ class UserService implements IDataService {
      * @param {string} tableName - The name of the table.
      * @returns {Promise<any>} The user rows.
      */
-    async readRows(tableName: string): Promise<any> {
+    async getRows(tableName: string): Promise<any> {
         const data = await apiRequest(`/api/${tableName}`);
 
         const transformed = data.map((user: any) => {
@@ -94,7 +94,7 @@ class UserService implements IDataService {
      * @returns {Promise<void>}
      * @throws {Error} If the request fails.
      */
-    async writeRows(tableName: string, rows: any[]): Promise<void> {
+    async putRows(tableName: string, rows: any[]): Promise<void> {
         const response = await apiRequest(`/api/${tableName}`, {
             method: 'PUT',
             headers: {
