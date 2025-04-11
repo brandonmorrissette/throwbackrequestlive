@@ -1,7 +1,5 @@
 To Do
 
-### Post MVP
-
 # Routing
 
 -   route_53
@@ -25,7 +23,8 @@ To Do
 
 # Cognito/User concepts cleanup
 
--   Rip anything that requires boto out of this project and stand up an users project.
+-   Runtime and Cognito are tightly coupled. Somehow deploying Runtime really messes up User-DataManagement
+    -   At this point they belong in different projects. Will move user-management out to it's own project referenced using boto.
 -   Dynamic table properties for user flow (Currently hard coded)
 -   Want a much better super user creation process
     -   Current task has some assumptions in the code and is inflexible.
@@ -33,20 +32,21 @@ To Do
 
 # SQL Deployment
 
--   Externalize the tasks for deploying SQL from the storage. Think about these responsibilities, what resources are needed and whose responsibility that is. Too tightly coupled currently.
+-   Externalize the tasks for deploying SQL from the storage.
+    -   Think about these responsibilities, what resources are needed and whose responsibility that is. Too tightly coupled currently.
 
 # Data
 
 -   Consider tables and data in an ETL context for future proofing (I don't remember what this means, but I THINK it means better modeling as OOP)
--   The write flow for rows feels off. SHOULD BE WRITE TABLE AND SHOULD ADD MORE FUNCTIONALITY FOR ROWS
-    -   Most of my data is passed to table from DataManagement, which uses the table service to interact with backend
-    -   My table takes the data, and the data service. It then uses the service to write to the backend. Something about this feels weird.
-    -   Making assumption about singular primary key
--   Want to make the calls async in the backend
+-   Make a distinction between writing table and writing rows. Probably different classes?
+-   table name in get rows is f-string. I'd rather bind to the query somehow to hijack some
+    sql alchemy inject protection. Need to solve.
 
 # Table component
 
 -   Default datetime to something more user friendly. It defaults to the exact second of Now.
+-   Reconsider fancy UI datetime element. I think the OOB is actually going to be better.
+-   Proper modeling for AG Grid ColumnDefs and AG Grid in general
 
 # SSM
 
@@ -57,14 +57,6 @@ To Do
 -   Fix collapsing/transition for navbar (Bootstrap)
 -   Learn React and other front end libraries used
     -   Context
-    -   Proper modeling for AG Grid ColumnDefs and AG Grid in general
-    -   Review DateTimeCellEditor. I think I want to go back to the OOB editor.
--   additionalProps typing in DataManagement
-
-# Error handling
-
--   Want to be able to send errors to toasty from the backed.
-    -   Right now the problem seems to be I am navigating to home before the write_rows put error is received. Consider async and awaiting?
 
 # App UI
 

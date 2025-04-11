@@ -8,15 +8,12 @@ from typing import Any, Tuple
 from flask import jsonify
 
 from backend.flask.blueprints.data import DataBlueprint
-from backend.flask.services.data import DataService
 
 
 class SongBlueprint(DataBlueprint):
     """
     Blueprint for handling song related routes.
     """
-
-    _service: DataService
 
     def register_routes(self) -> None:
         """

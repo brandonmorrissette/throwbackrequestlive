@@ -80,7 +80,7 @@ class RequestBlueprint(DataBlueprint):
             """
 
             demo_entry_point_id = self._service.get_demo_entry_point_id()
-            app.logger.info("Recreating a demo request.")
+            app.logger.info(f"Recreating a demo request. {demo_entry_point_id}")
             response = make_response(
                 redirect(url_for("renderblueprint.render_request"))
             )

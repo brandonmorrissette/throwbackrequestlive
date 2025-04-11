@@ -206,9 +206,9 @@ class DataService:
             params = {}
         with self._session_scope() as session:
             if isinstance(statement, str):
-                result = session.execute(text(statement).bindparams(**params))
-            else:
-                result = session.execute(statement, params)
+                statement = text(statement)
+
+            result = session.execute(statement, params)
             return [dict(row) for row in result]
 
     def _insert(

@@ -118,8 +118,6 @@ class DataBlueprint(Blueprint):
         """
         self._service.validate_table_name(table_name)
         app.logger.debug(f"Getting rows from {table_name}")
-        rows = self._service.execute(
-            "SELECT * FROM :table_name", {"table_name": table_name}
-        )
+        rows = self._service.execute(f"SELECT * FROM {table_name}")  # nosec B608
         app.logger.debug(f"First 10 Rows from {table_name}: {rows[:10]}")
         return rows

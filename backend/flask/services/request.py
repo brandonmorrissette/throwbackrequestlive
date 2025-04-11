@@ -195,18 +195,20 @@ class RequestService(EntryPointService, DataService):
         Returns:
             str: The demo entry point ID.
         """
-        return next(
-            iter(
-                self.execute(
-                    """
-            SELECT entry_point_id
-            FROM shows
-            WHERE name = 'DEMO'
-            """,
-                    None,
-                )
-            ),
-            "",
+        return str(
+            next(
+                iter(
+                    self.execute(
+                        """
+                        SELECT entry_point_id
+                        FROM shows
+                        WHERE name = 'DEMO'
+                        """,
+                        None,
+                    )
+                ),
+                {},
+            ).get("entry_point_id", "")
         )
 
     def get_demo_qr(self) -> BytesIO:
