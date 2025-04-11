@@ -7,17 +7,6 @@
     -   Current task has some assumptions in the code and is inflexible.
 -   Only Update Cognito users when there have been actual updates
 
-# Routing
-
--   route_53
-    -   Remove hard coding. Find better way to pass or config.
--   unknown paths are not routing to main
--   Reconsider my API paths.
-    -   I am trying to create a disctinction betweeen "table" routes and "row" routes. Also feels like a bad idea to need tables at every endpoiont? Clean that up.
-        -   Table service. This handles tables at large.
-        -   Data service. Handles "pieces" of data? Considering RowService as well.
-        -   Use case specific services for handling "special" endpoints
-
 # Infra
 
 -   I have a better understanding of roles and policies now and wish to handle this with much better practice.
@@ -36,9 +25,14 @@
 # Data
 
 -   Consider tables and data in an ETL context for future proofing (I don't remember what this means, but I THINK it means better modeling as OOP)
--   Make a distinction between writing table and writing rows. Probably different classes?
+-   Make a distinction between writing table and writing rows. Probably different classes? Different blueprints?
 -   table name in get rows is f-string. I'd rather bind to the query somehow to hijack some
     sql alchemy inject protection. Need to solve.
+
+# Mobile Testing
+
+-   Make the request buttons much more phone friendly.
+-   More enticing to select.
 
 # Table component
 
@@ -46,9 +40,15 @@
 -   Reconsider fancy UI datetime element. I think the OOB is actually going to be better.
 -   Proper modeling for AG Grid ColumnDefs and AG Grid in general
 
-# SSM
+# Routing
 
--   Find a more central way of resolving ssm params in backend
+-   route_53
+    -   Remove hard coding. Find better way to pass or config.
+-   unknown paths are not routing to main
+
+# Boto
+
+-   Find a more central way of handling boto clients
 
 # Improve Front End Skills
 
