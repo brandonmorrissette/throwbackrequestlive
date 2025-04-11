@@ -1,21 +1,25 @@
 import { useEffect, useState } from 'react';
+import { Options } from '../../components/table/Options';
 import Table from '../../components/table/Table';
 import TableSelector from '../../components/table/TableSelector';
+import { useAuth } from '../../contexts/AuthContext';
 import { useError } from '../../contexts/ErrorContext';
 import { TableServiceProvider } from '../../contexts/TableServiceContext';
 import { default as DataService } from '../../services/data';
-import { AdminComponent } from './Admin';
 
 /**
  * DataManagement component that allows managing data tables.
  * @component
  */
-const DataManagement: AdminComponent = () => {
+const DataManagement: React.FC = () => {
     const [tables, setTables] = useState<string[]>([]);
     const [selectedTable, setSelectedTable] = useState<string | null>(null);
-    const [tableProperties, setTableProperties] = useState<any>({});
+    const [tableProperties, setTableProperties] = useState<Options>(
+        new Options('', [], [], [], [], [])
+    );
     const [rows, setRows] = useState<any[]>([]);
     const { setError } = useError();
+    const { token } = useAuth();
 
     useEffect(() => {
         fetchTableNames();
@@ -23,37 +27,31 @@ const DataManagement: AdminComponent = () => {
 
     useEffect(() => {
         if (selectedTable) {
-            fetchTable(selectedTable);
-            fetchRows(selectedTable);
+            fetchData(selectedTable);
         }
     }, [selectedTable]);
 
     const fetchTableNames = async () => {
         try {
-            const data = await DataService.getTableNames();
-            setTables(data);
+            setTables(await DataService.getTableNames(token));
         } catch (error: any) {
             console.error('Error fetching table names:', error);
             setError(error);
         }
     };
 
-    const fetchTable = async (tableName: string) => {
+    const fetchData = async (tableName: string) => {
         try {
-            const data = await DataService.getTable(tableName);
-            setTableProperties(data);
-        } catch (error: any) {
-            console.error('Error fetching table properties:', error);
-            setError(error);
-        }
-    };
+            const properties = await DataService.getTableProperties(
+                tableName,
+                token
+            );
+            setTableProperties(properties);
 
-    const fetchRows = async (tableName: string) => {
-        try {
-            const data = await DataService.getRows(tableName);
-            setRows(data);
+            const rows = await DataService.getRows(tableName, token);
+            setRows(rows);
         } catch (error: any) {
-            console.error('Error fetching rows:', error);
+            console.error('Error fetching table or rows:', error);
             setError(error);
         }
     };
@@ -70,7 +68,5 @@ const DataManagement: AdminComponent = () => {
         </div>
     );
 };
-
-DataManagement.allowed_groups = ['superuser'];
 
 export default DataManagement;

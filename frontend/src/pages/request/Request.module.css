@@ -10,8 +10,7 @@
     border: transparent;
     border-radius: 10px;
     background-color: var(--color-accent);
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .requestButton:hover {

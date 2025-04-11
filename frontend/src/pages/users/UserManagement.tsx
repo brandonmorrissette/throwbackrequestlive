@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import Table from '../../components/table/Table';
+import { useAuth } from '../../contexts/AuthContext';
 import { useError } from '../../contexts/ErrorContext';
 import { TableServiceProvider } from '../../contexts/TableServiceContext';
 import {
     default as UserService,
     default as userService,
 } from '../../services/user';
-import { AdminComponent } from './Admin';
 
 type User = {
     username: string;
@@ -18,11 +18,12 @@ type User = {
  * UserManagement component that displays a table of users and their details.
  * @component
  */
-const UserManagement: AdminComponent = () => {
+const UserManagement: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [table, setTable] = useState<any>({});
     const [feedback, setFeedback] = useState('');
     const { setError } = useError();
+    const { token } = useAuth();
 
     useEffect(() => {
         fetchTable();
@@ -34,7 +35,7 @@ const UserManagement: AdminComponent = () => {
 
     const fetchTable = async () => {
         try {
-            const data = await UserService.getTable('users');
+            const data = await UserService.getTableProperties('users');
             setTable(data);
         } catch (error: any) {
             setFeedback('Error fetching table properties.');
@@ -44,7 +45,7 @@ const UserManagement: AdminComponent = () => {
 
     const fetchUsersData = async () => {
         try {
-            const data = await UserService.getRows('users');
+            const data = await UserService.getRows('users', token);
             setUsers(data);
         } catch (error: any) {
             setFeedback('Error fetching users.');
@@ -63,7 +64,5 @@ const UserManagement: AdminComponent = () => {
         </div>
     );
 };
-
-UserManagement.allowed_groups = ['superuser'];
 
 export default UserManagement;

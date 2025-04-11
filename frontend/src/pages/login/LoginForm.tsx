@@ -37,9 +37,8 @@ const LoginForm: React.FC = () => {
                 setShowPasswordReset(true);
             } else if (response.success) {
                 console.log('Login successful:', response);
-                sessionStorage.setItem('auth_token', response.token);
                 setToken(response.token);
-                navigate('/admin');
+                navigate('/');
             } else {
                 throw new Error(
                     response.error ||

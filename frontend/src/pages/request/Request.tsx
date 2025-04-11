@@ -1,16 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Modal from '../../components/modal/Modal';
+import { useAuth } from '../../contexts/AuthContext';
 import { useError } from '../../contexts/ErrorContext';
+import { Song } from '../../models/song';
 import { default as AuthService } from '../../services/auth';
-import { default as DataService } from '../../services/data';
+import { default as RequestService } from '../../services/request';
 import styles from './Request.module.css';
-
-interface Song {
-    song_name: string;
-    band_name: string;
-    id: string;
-}
 
 /**
  * Request component allows users to select and request a song.
@@ -30,6 +26,7 @@ const Request: React.FC = () => {
 
     const navigate = useNavigate();
     const { setError } = useError();
+    const { token } = useAuth();
 
     useEffect(() => {
         const validate = async () => {
@@ -50,7 +47,7 @@ const Request: React.FC = () => {
     }, [navigate, setError]);
 
     useEffect(() => {
-        const songs = DataService.getRows('songs');
+        const songs = RequestService.getRows('songs', token);
         songs
             .then((data) => {
                 setSongs(data);
@@ -64,12 +61,7 @@ const Request: React.FC = () => {
 
     const handleRequest = async () => {
         if (selectedSong) {
-            DataService.putRows('requests', [
-                {
-                    song_id: selectedSong.id,
-                    show_id: showId,
-                },
-            ]);
+            RequestService.recordRequest(selectedSong, showId);
             navigate(
                 '/?songName=' + encodeURIComponent(selectedSong.song_name)
             );
@@ -107,11 +99,7 @@ const Request: React.FC = () => {
                         <strong>{selectedSong.song_name}</strong>
                     </p>
                     <div className={styles.modalActions}>
-                        <button
-                            type="button"
-                            className="btn btn-custom"
-                            onClick={handleRequest}
-                        >
+                        <button type="button" onClick={handleRequest}>
                             Confirm
                         </button>
                     </div>

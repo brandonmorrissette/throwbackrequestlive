@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
+import { useAuth } from '../../contexts/AuthContext';
+import { useError } from '../../contexts/ErrorContext';
 import { default as DataService } from '../../services/data';
-import { AdminComponent } from './Admin';
+import './ShowManagement.css';
 
 /**
- * ShowManagement component that allows managing show tables.
+ * ShowCreation component that renders the form for creating a show.
  * @component
  */
-const ShowManagement: AdminComponent = () => {
+const ShowCreation: React.FC = ({}) => {
     const [formData, setFormData] = useState({
         start_time: '',
         end_time: '',
@@ -17,6 +20,9 @@ const ShowManagement: AdminComponent = () => {
         state: '',
     });
 
+    const { token } = useAuth();
+    const { setError } = useError();
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -25,21 +31,21 @@ const ShowManagement: AdminComponent = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         console.log('Form submitted:', formData);
-        DataService.postRows('shows', [formData])
-            .then((response) => {
-                console.log('Show created successfully:', response);
+        DataService.postRows('shows', token, [formData])
+            .then(() => {
+                toast.success('Show created successfully:');
             })
             .catch((error) => {
-                console.error('Error creating show:', error);
+                setError(error);
             });
     };
 
     return (
-        <div>
-            <h1>Create a Show</h1>
+        <>
+            <h1 className="text-center">Create a Show</h1>
             <form onSubmit={handleSubmit}>
-                <label>
-                    Start Time:
+                <div className="form-group">
+                    <label>Start Time:</label>
                     <input
                         type="datetime-local"
                         name="start_time"
@@ -47,10 +53,9 @@ const ShowManagement: AdminComponent = () => {
                         onChange={handleChange}
                         required
                     />
-                </label>
-                <br />
-                <label>
-                    End Time:
+                </div>
+                <div className="form-group">
+                    <label>End Time:</label>
                     <input
                         type="datetime-local"
                         name="end_time"
@@ -58,10 +63,9 @@ const ShowManagement: AdminComponent = () => {
                         onChange={handleChange}
                         required
                     />
-                </label>
-                <br />
-                <label>
-                    Name:
+                </div>
+                <div className="form-group">
+                    <label>Name:</label>
                     <input
                         type="text"
                         name="name"
@@ -69,54 +73,49 @@ const ShowManagement: AdminComponent = () => {
                         onChange={handleChange}
                         required
                     />
-                </label>
-                <br />
-                <label>
-                    Venue:
+                </div>
+                <div className="form-group">
+                    <label>Venue:</label>
                     <input
                         type="text"
                         name="venue"
                         value={formData.venue}
                         onChange={handleChange}
                     />
-                </label>
-                <br />
-                <label>
-                    Street:
+                </div>
+                <div className="form-group">
+                    <label>Street:</label>
                     <input
                         type="text"
                         name="street"
                         value={formData.street}
                         onChange={handleChange}
                     />
-                </label>
-                <br />
-                <label>
-                    City:
+                </div>
+                <div className="form-group">
+                    <label>City:</label>
                     <input
                         type="text"
                         name="city"
                         value={formData.city}
                         onChange={handleChange}
                     />
-                </label>
-                <br />
-                <label>
-                    State:
+                </div>
+                <div className="form-group">
+                    <label>State:</label>
                     <input
                         type="text"
                         name="state"
                         value={formData.state}
                         onChange={handleChange}
                     />
-                </label>
-                <br />
-                <button type="submit">Submit</button>
+                </div>
+                <div className="form-group text-center">
+                    <button type="submit">Submit</button>
+                </div>
             </form>
-        </div>
+        </>
     );
 };
 
-ShowManagement.allowed_groups = ['superuser'];
-
-export default ShowManagement;
+export default ShowCreation;

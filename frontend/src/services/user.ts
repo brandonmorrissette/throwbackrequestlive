@@ -1,6 +1,6 @@
 import { ColDef } from '../components/table/ColDef';
 import { Options } from '../components/table/Options';
-import apiRequest from '../routing/Request';
+import apiRequest, { createBearerHeader } from '../routing/Request';
 import { IDataService } from './data';
 
 class UserService implements IDataService {
@@ -9,7 +9,7 @@ class UserService implements IDataService {
      * @param {string} tableName - The name of the table.
      * @returns {Promise<any>} The table schema.
      */
-    async getTable(tableName: string): Promise<any> {
+    async getTableProperties(tableName: string): Promise<any> {
         const columns = [
             new ColDef({
                 field: 'Username',
@@ -63,10 +63,14 @@ class UserService implements IDataService {
     /**
      * Reads user rows from the table.
      * @param {string} tableName - The name of the table.
+     * @param {string} token - The authentication token.
      * @returns {Promise<any>} The user rows.
      */
-    async getRows(tableName: string): Promise<any> {
-        const data = await apiRequest(`/api/${tableName}`);
+    async getRows(tableName: string, token: string | null): Promise<any> {
+        const data = await apiRequest(
+            `/api/${tableName}`,
+            createBearerHeader(token)
+        );
 
         const transformed = data.map((user: any) => {
             const email = user.Attributes.find(
@@ -90,15 +94,21 @@ class UserService implements IDataService {
     /**
      * Writes user rows to the table.
      * @param {string} tableName - The name of the table.
+     * @param {string} token - The authentication token.
      * @param {any[]} rows - The rows to be written.
      * @returns {Promise<void>}
      * @throws {Error} If the request fails.
      */
-    async putRows(tableName: string, rows: any[]): Promise<void> {
+    async putRows(
+        tableName: string,
+        token: string | null,
+        rows: any[]
+    ): Promise<void> {
         const response = await apiRequest(`/api/${tableName}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                ...createBearerHeader(token).headers,
             },
             body: JSON.stringify({ rows }),
         });

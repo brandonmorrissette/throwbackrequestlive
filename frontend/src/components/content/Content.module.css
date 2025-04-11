@@ -6,13 +6,11 @@
 .content {
     background-color: var(--color-background-dark) !important;
     border-radius: 20px !important;
-    padding: 10px;
+    padding: 40px;
     max-width: var(--default-width);
     margin: 20px auto;
     width: 100%;
     flex: 1;
-    margin-top: 95px;
-    margin-bottom: 70px;
 }
 
 .wide-content {

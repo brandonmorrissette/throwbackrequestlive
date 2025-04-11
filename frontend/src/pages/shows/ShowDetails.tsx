@@ -1,6 +1,6 @@
 import React from 'react';
 import Modal from '../../components/modal/Modal';
-import { Show } from './Shows';
+import { Show } from '../../models/show';
 
 interface ShowDetailProps {
     show: Show;

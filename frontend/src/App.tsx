@@ -1,5 +1,9 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
 import React, { ReactNode } from 'react';
 import {
+    Navigate,
     Route,
     BrowserRouter as Router,
     Routes,
@@ -12,10 +16,12 @@ import Footer from './components/footer/Footer';
 import Header from './components/header/Header';
 import { AuthProvider } from './contexts/AuthContext';
 import { ErrorProvider } from './contexts/ErrorContext';
-import Admin from './pages/admin/Admin';
+import DataManagement from './pages/data/DataManagement';
 import Home from './pages/home/Home';
 import Login from './pages/login/Login';
 import Request from './pages/request/Request';
+import ShowManagement from './pages/shows/ShowManagement';
+import UserManagement from './pages/users/UserManagement';
 import ProtectedRoute from './routing/ProtectedRoute';
 
 /**
@@ -24,8 +30,8 @@ import ProtectedRoute from './routing/ProtectedRoute';
  */
 const App: React.FC = () => {
     return (
-        <ErrorProvider>
-            <AuthProvider>
+        <AuthProvider>
+            <ErrorProvider>
                 <Router>
                     <div>
                         <Header />
@@ -35,13 +41,30 @@ const App: React.FC = () => {
                                 <Route path="/request" element={<Request />} />
                                 <Route path="/login" element={<Login />} />
                                 <Route
-                                    path="/admin"
+                                    path="/shows"
                                     element={
                                         <ProtectedRoute redirectTo="/login">
-                                            <Admin />
+                                            <ShowManagement />
                                         </ProtectedRoute>
                                     }
                                 />
+                                <Route
+                                    path="/data"
+                                    element={
+                                        <ProtectedRoute redirectTo="/login">
+                                            <DataManagement />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/users"
+                                    element={
+                                        <ProtectedRoute redirectTo="/login">
+                                            <UserManagement />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route path="*" element={<Navigate to="/" />} />
                             </Routes>
                         </ContentWrapper>
                         <Footer />
@@ -51,8 +74,8 @@ const App: React.FC = () => {
                         />
                     </div>
                 </Router>
-            </AuthProvider>
-        </ErrorProvider>
+            </ErrorProvider>
+        </AuthProvider>
     );
 };
 
