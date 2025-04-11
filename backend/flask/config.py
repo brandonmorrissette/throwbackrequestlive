@@ -76,10 +76,6 @@ class Config:
                 SecretId=f"{self.project_name}-{self.environment}-db-credentials"
             )["SecretString"]
         )
-        self.db_username = os.getenv("DB_USER", self.db_secrets.get("username", ""))
-        self.db_username_from_os = os.getenv("DB_USER")
-        self.db_secrets_username = self.db_secrets.get("username", "")
-        self.sanity_check = os.getenv("no_key")
         self.db_user = overrides.get(
             "db_user", os.getenv("DB_USER", self.db_secrets.get("username", ""))
         )

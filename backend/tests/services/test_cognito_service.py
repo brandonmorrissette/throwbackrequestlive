@@ -35,7 +35,7 @@ def cognito_service(config):
         mock_boto_client.return_value = MagicMock()
         mock_redis_client.return_value = MagicMock()
         mock_redis_client.return_value.keys.return_value = REDIS_KEYS
-        return CognitoService(config)
+        return CognitoService(mock_redis_client, config)
 
 
 def test_given_datetime_when_cognito_json_encoder_then_return_isoformat():

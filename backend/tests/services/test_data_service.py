@@ -6,11 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from backend.flask.config import Config
 from backend.flask.providers.sqlalchemy import SQLALchemyJSONProvider
-from backend.flask.services.data import (
-    DataService,
-    _map_filters,
-    get_json_provider_class,
-)
+from backend.flask.services.data import DataService, get_json_provider_class
 
 
 @pytest.fixture
@@ -244,34 +240,3 @@ def test_given_rows_to_update_when_write_rows_then_update_rows(
         session_scope.return_value.__enter__.return_value.execute.assert_called_with(
             table.update.return_value.where.return_value.values.return_value
         )
-
-
-COLUMN = "column"
-VALUE = "value"
-
-
-@pytest.mark.parametrize(
-    "operator, expected",
-    [
-        (">=", [COLUMN >= VALUE]),
-        ("<=", [COLUMN <= VALUE]),
-        ("=", [COLUMN == VALUE]),
-        (">", [COLUMN > VALUE]),
-        ("<", [COLUMN < VALUE]),
-        ("!=", [COLUMN != VALUE]),
-    ],
-)
-def test_given_valid_operators_when_map_filters_then_filters_mapped(operator, expected):
-    table = MagicMock()
-    setattr(table.c, COLUMN, COLUMN)
-    filter_str = f"{COLUMN} {operator} {VALUE}"
-
-    result = _map_filters([filter_str], table)
-    assert result == expected
-
-
-def test_given_invalid_operator_when_map_filters_then_raise_value_error():
-    filter_str = f"{COLUMN} invalid_operator {VALUE}"
-
-    with pytest.raises(ValueError):
-        _map_filters([filter_str], MagicMock())

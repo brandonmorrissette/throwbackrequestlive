@@ -5,7 +5,7 @@ for handling song related public routes in a Flask application.
 
 from typing import Any, Tuple
 
-from flask import request
+from flask import jsonify
 
 from backend.flask.blueprints.data import DataBlueprint
 from backend.flask.services.data import DataService
@@ -29,4 +29,4 @@ class SongBlueprint(DataBlueprint):
             Read rows from the 'songs' table.
             :return: JSON response with the rows.
             """
-            return self._get_rows("songs", request)
+            return jsonify(self._get_rows("songs")), 200

@@ -9,6 +9,7 @@ by setting the appropriate configuration.
 import logging
 import os
 
+import redis
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -23,10 +24,9 @@ from backend.flask.blueprints.song import SongBlueprint
 from backend.flask.blueprints.user import UserBlueprint
 from backend.flask.config import Config
 from backend.flask.providers.json import JSONProvider
-from backend.flask.services.auth import RequestAuthService
+from backend.flask.services.auth import AuthService
 from backend.flask.services.cognito import CognitoService
-from backend.flask.services.data import DataService
-from backend.flask.services.entrypoint import RequestEntryPointService
+from backend.flask.services.request import RequestService
 
 
 def _create_app(app_config: Config) -> Flask:
@@ -60,17 +60,27 @@ def _create_app(app_config: Config) -> Flask:
     # JWT
     JWTManager(flask_app)
 
-    # Services
-    entry_point_service = RequestEntryPointService(app_config)
-    data_service = DataService(app_config)
-    auth_service = RequestAuthService(app_config)
-    cognito_service = CognitoService(app_config)
+    # Redis
+    redis_client = redis.StrictRedis(
+        host=app_config.redis_host,
+        port=int(app_config.redis_port),
+        decode_responses=True,
+    )
 
+    flask_app.logger.debug("Instantiating services")
+    # Services
+    request_service = RequestService(redis_client, app_config)
+    cognito_service = CognitoService(redis_client, app_config)
+    auth_service = AuthService(app_config)
+
+    flask_app.logger.debug("Instantiating apis")
     # API Blueprints (Restricted)
     flask_app.register_blueprint(
         UserBlueprint(service=cognito_service, url_prefix="/api")
     )
-    flask_app.register_blueprint(DataBlueprint(service=data_service, url_prefix="/api"))
+    flask_app.register_blueprint(
+        DataBlueprint(service=request_service, url_prefix="/api")
+    )
 
     # API Blueprints (Public - Login)
     flask_app.register_blueprint(
@@ -82,18 +92,14 @@ def _create_app(app_config: Config) -> Flask:
 
     # API Blueprints (Public)
     flask_app.register_blueprint(
-        EntryPointBlueprint(
-            service=entry_point_service,
-            url_prefix="/api",
-        )
+        ShowBlueprint(service=request_service, url_prefix="/api")
     )
     flask_app.register_blueprint(
-        ShowBlueprint(service=entry_point_service, url_prefix="/api")
+        SongBlueprint(service=request_service, url_prefix="/api")
     )
-    flask_app.register_blueprint(
-        RequestBlueprint(service=auth_service, url_prefix="/api")
-    )
-    flask_app.register_blueprint(SongBlueprint(service=data_service, url_prefix="/api"))
+
+    flask_app.register_blueprint(EntryPointBlueprint(service=request_service))
+    flask_app.register_blueprint(RequestBlueprint(service=request_service))
 
     # Render Blueprints
     flask_app.register_blueprint(RenderBlueprint())

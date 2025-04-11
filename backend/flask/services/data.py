@@ -4,11 +4,13 @@ Data service module for interacting with the database.
 
 import logging
 from contextlib import contextmanager
+from typing import Any
 
 from flask import current_app as app
-from sqlalchemy import MetaData, and_, create_engine
+from sqlalchemy import MetaData, create_engine, text, tuple_
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.sql.expression import ClauseElement
 
 from backend.flask.config import Config
@@ -76,6 +78,22 @@ class DataService:
         """
         self._metadata.reflect()
 
+    def _get_primary_keys(self, table: MetaData) -> list:
+        """
+        Get the primary keys for a table.
+
+        Args:
+            table (MetaData): The SQLAlchemy table object.
+
+        Returns:
+            list: A list of primary key column names.
+        """
+        primary_keys = [col.name for col in table.primary_key.columns]
+        if not primary_keys:
+            raise ValueError(f"Table {table} has no primary key defined.")
+
+        return primary_keys
+
     def list_tables(self) -> list:
         """
         List all tables in the database.
@@ -86,7 +104,7 @@ class DataService:
         self._refresh_metadata()
         return list(self._metadata.tables.keys())
 
-    def get_table(self, table_name: str) -> dict:
+    def get_table(self, table_name: str) -> MetaData:
         """
         Get a table by name.
 
@@ -113,34 +131,8 @@ class DataService:
         Raises:
             ValueError: If the table does not exist.
         """
-        if table_name not in self._metadata.tables:
+        if not self._metadata.tables or table_name not in self._metadata.tables:
             raise ValueError(f"Table {table_name} does not exist.")
-
-    def read_rows(self, table_name: str, filters: list | None = None) -> list:
-        """
-        Read rows from a table with optional filters.
-
-        Args:
-            table_name (str): The name of the table.
-            filters (list, optional): A list of filter strings.
-
-        Returns:
-            list: A list of row dictionaries.
-        """
-        app.logger.debug("Reading rows from %s with filters: %s", table_name, filters)
-
-        table = self.get_table(table_name)
-
-        with self._session_scope() as session:
-            query = session.query(table)
-
-            if filters:
-                filters_mapped = _map_filters(filters, table)
-                app.logger.debug("Filters mapped: %s", filters_mapped)
-                query = query.filter(*filters_mapped)
-
-            app.logger.debug("Query: %s", query)
-            return [row._asdict() for row in query.all()]
 
     def insert_rows(self, table_name: str, rows: list) -> None:
         """
@@ -151,139 +143,137 @@ class DataService:
             rows (dict): A dictionary of row data.
         """
         app.logger.debug("Adding rows to %s: %s", table_name, rows)
+        if not rows:
+            app.logger.debug("No rows to insert.")
+            return
+
         table = self.get_table(table_name)
         with self._session_scope() as session:
-            session.execute(table.insert(), rows)
+            self._insert(table, rows, session)
 
-    def write_table(self, table_name: str, rows: list) -> None:
+    def write_table(self, table_name: str, rows: list[dict]) -> None:
         """
-        Write rows to a table.
-        This assumes rows are the full data set.
-        Any rows in the database that are not in the rows list will be deleted.
+        Write a table to the database, replacing existing data completely.
+        This method deletes existing rows that are not in the incoming data.
 
         Args:
             table_name (str): The name of the table.
-            rows (list): A list of row dictionaries.
+            rows (list[dict]): A list of dictionaries representing the rows to write.
         """
-        app.logger.debug("Write service invoked with %s: %s", table_name, rows)
-        table = self.get_table(table_name)
+        table = self._metadata.tables.get(table_name)
+        if table is None:
+            raise ValueError(f"Table {table_name} does not exist in metadata.")
 
-        primary_keys = [col.name for col in table.primary_key.columns]
-        if primary_keys is None:
-            raise ValueError(
-                f"Table {table_name} has no primary key defined. Unable to write rows."
-            )
+        primary_keys = self._get_primary_keys(table)
+        app.logger.debug(
+            "Writing table %s with primary keys %s", table_name, primary_keys
+        )
+
+        incoming_keys = {tuple(row.get(key) for key in primary_keys) for row in rows}
+        app.logger.debug("Incoming keys: %s", incoming_keys)
 
         with self._session_scope() as session:
-            sql_alchemy_ids = {
+            keys_to_delete = {
                 tuple(row)
-                for row in session.query(*[table.c[col] for col in primary_keys]).all()
-            }
-            front_end_ids = {
-                tuple(row[col] for col in primary_keys if col in row) for row in rows
-            }
-            app.logger.debug(
-                "SQLAlchemy IDs: %s, Front-end IDs: %s", sql_alchemy_ids, front_end_ids
+                for row in session.query(*[table.c[key] for key in primary_keys]).all()
+            } - incoming_keys
+
+            app.logger.debug("Keys to delete: %s", keys_to_delete)
+            if keys_to_delete:
+                self._delete(table, keys_to_delete, session)
+
+            self._insert(
+                table,
+                rows,
+                session,
             )
 
-            rows_to_add = [
-                row
-                for row in rows
-                if any(row.get(col) is None for col in primary_keys)
-                or tuple(row[col] for col in primary_keys) not in sql_alchemy_ids
-            ]
-            app.logger.debug("Rows to add: %s", rows_to_add)
-            if rows_to_add:
-                session.execute(table.insert(), rows_to_add)
-
-            rows_to_delete = sql_alchemy_ids - front_end_ids
-            app.logger.debug("Rows to delete: %s", rows_to_delete)
-            if rows_to_delete:
-                for key_tuple in rows_to_delete:
-                    session.execute(
-                        table.delete().where(
-                            and_(
-                                *[
-                                    table.c[col] == key
-                                    for col, key in zip(primary_keys, key_tuple)
-                                ]
-                            )
-                        )
-                    )
-
-            rows_to_update = [
-                row
-                for row in rows
-                if tuple(row.get(col) for col in primary_keys) in sql_alchemy_ids
-            ]
-            app.logger.debug("Rows to update: %s", rows_to_update)
-            for row in rows_to_update:
-                key_tuple = tuple(row[col] for col in primary_keys)
-                session.execute(
-                    table.update()
-                    .where(
-                        and_(
-                            *[
-                                table.c[col] == key
-                                for col, key in zip(primary_keys, key_tuple)
-                            ]
-                        )
-                    )
-                    .values(**row)
-                )
-
-    def execute(self, statement: ClauseElement) -> list:
+    def execute(
+        self, statement: str | ClauseElement, params: dict | None = None
+    ) -> list:
         """
-        Execute a raw SQL statement.
+        Execute a raw SQL statement or SQLAlchemy Core expression.
 
         Args:
-            statement (ClauseElement): The SQL statement to execute.
+            statement (str | ClauseElement):
+                The SQL statement or SQLAlchemy Core expression to execute.
+            params (dict, optional): Parameters to bind to the SQL statement.
+
+        Returns:
+            list: A list of dictionaries representing the query result.
         """
+        if params is None:
+            params = {}
         with self._session_scope() as session:
-            result = session.execute(statement)
+            if isinstance(statement, str):
+                result = session.execute(text(statement).bindparams(**params))
+            else:
+                result = session.execute(statement, params)
             return [dict(row) for row in result]
 
+    def _insert(
+        self,
+        table: MetaData,
+        rows: list[dict],
+        session: Session | None = None,
+    ) -> None:
+        """
+        Insert rows into a table with conflict resolution.
 
-def _map_filters(filters: list, table) -> list:
-    """
-    Maps filter strings into SQLAlchemy filter expressions.
+        Args:
+            table (MetaData): The SQLAlchemy table object.
+            rows (list[dict]): A list of dictionaries representing the rows to insert.
+            session (Session, optional):
+                An optional SQLAlchemy session.
+                If not provided, a new session will be created.
+        """
 
-    Args:
-        filters (list of str): List of filter strings like ["datetime >= 2024-12-28T00:00:00"].
-        table (SQLAlchemy Table): The SQLAlchemy table to retrieve column objects from.
+        def _execute(session):
+            primary_keys = self._get_primary_keys(table)
+            for row in rows:
+                stmt = insert(table).values(**row)
+                update_values = {
+                    col.name: row[col.name]
+                    for col in table.columns
+                    if not col.primary_key
+                }
+                if update_values:
+                    stmt = stmt.on_conflict_do_update(
+                        index_elements=primary_keys,
+                        set_=update_values,
+                    )
+                session.execute(stmt)
 
-    Returns:
-        list: List of SQLAlchemy filter expressions.
-    """
-    filter_expressions = []
+        if session is None:
+            with self._session_scope() as _session:
+                _execute(_session)
+        else:
+            _execute(session)
 
-    for filter_str in filters:
-        try:
-            column_name, operator, value = filter_str.split(maxsplit=2)
-            app.logger.debug(
-                "Column: %s, Operator: %s, Value: %s", column_name, operator, value
+    def _delete(
+        self, table: MetaData, keys: set[tuple[Any, ...]], session: Session | None
+    ) -> None:
+        """
+        Delete rows from a table.
+
+        Args:
+            table (MetaData): The SQLAlchemy table object.
+            keys (list): A list of keys to delete.
+            session (Session, optional):
+                An optional SQLAlchemy session.
+                If not provided, a new session will be created.
+        """
+
+        def _execute(session):
+            stmt = table.delete().where(
+                tuple_(*[table.c[key] for key in self._get_primary_keys(table)]).in_(
+                    keys
+                )
             )
+            session.execute(stmt)
 
-            column = getattr(table.c, column_name)
-
-            if operator == ">=":
-                filter_expression = column >= value
-            elif operator == "<=":
-                filter_expression = column <= value
-            elif operator == "=":
-                filter_expression = column == value
-            elif operator == ">":
-                filter_expression = column > value
-            elif operator == "<":
-                filter_expression = column < value
-            elif operator == "!=":
-                filter_expression = column != value
-            else:
-                raise ValueError(f"Unsupported operator: {operator}")
-
-            filter_expressions.append(filter_expression)
-
-        except ValueError as e:
-            raise ValueError(f"Invalid filter format: {filter_str}") from e
-
-    return filter_expressions
+        if session is None:
+            with self._session_scope() as _session:
+                _execute(_session)
+        else:
+            _execute(session)

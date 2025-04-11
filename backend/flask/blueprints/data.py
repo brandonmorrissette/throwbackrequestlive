@@ -7,7 +7,7 @@ import json
 from functools import wraps
 from typing import Any, Callable, Tuple
 
-from flask import Flask, Request
+from flask import Flask
 from flask import current_app as app
 from flask import jsonify, request
 
@@ -76,7 +76,9 @@ class DataBlueprint(Blueprint):
             app.logger.debug(f"Getting table {table_name}")
             self._service.validate_table_name(table_name)
             table = self._service.get_table(table_name)
-            app.logger.debug(f"Table {table_name}: {table}")
+            app.logger.debug(
+                f"Table {table_name} details: {json.dumps(table, default=str,indent=2),}"
+            )
 
             return jsonify(table), 200
 
@@ -88,7 +90,9 @@ class DataBlueprint(Blueprint):
             :param table_name: The name of the table.
             :return: JSON response with the rows.
             """
-            return self._get_rows(table_name, request)
+            app.logger.debug(f"Reading rows from {table_name}")
+            rows = self._get_rows(table_name)
+            return rows, 200
 
         @self.route("/tables/<table_name>/rows", methods=["PUT"])
         @restrict_access(["superuser"])
@@ -102,24 +106,20 @@ class DataBlueprint(Blueprint):
             rows = data.get("rows", [])
             app.logger.debug(f"Writing rows to {table_name} : {rows}")
             self._service.validate_table_name(table_name)
-            app.logger.debug(f"Table {table_name} validated")
             result = self._service.write_table(table_name, rows)
             return jsonify(result), 200
 
-    def _get_rows(self, table_name: str, _request: Request) -> Tuple[Any, int]:
+    def _get_rows(self, table_name: str) -> list:
         """
         Helper method to get rows from a table with optional filters.
         :param table_name: The name of the table.
         :param request: The Flask request object.
         :return: JSON response with the rows.
         """
-        filters = _request.args.get("filters")
-        if filters:
-            filters = json.loads(filters)
-            app.logger.debug(f"Filters: {filters}")
-
         self._service.validate_table_name(table_name)
         app.logger.debug(f"Getting rows from {table_name}")
-        rows = self._service.read_rows(table_name, filters)
-        app.logger.debug(f"First 10 Rows: {rows[:10]}")
-        return jsonify(rows), 200
+        rows = self._service.execute(
+            "SELECT * FROM :table_name", {"table_name": table_name}
+        )
+        app.logger.debug(f"First 10 Rows from {table_name}: {rows[:10]}")
+        return rows

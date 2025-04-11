@@ -1,9 +1,5 @@
 To Do
 
-# Code Quality
-
--   Code quality and testing
-
 ### Post MVP
 
 # Routing
@@ -11,6 +7,11 @@ To Do
 -   route_53
     -   Remove hard coding. Find better way to pass or config.
 -   unknown paths are not routing to main
+-   Reconsider my API paths.
+    -   I am trying to create a disctinction betweeen "table" routes and "row" routes. Also feels like a bad idea to need tables at every endpoiont? Clean that up.
+        -   Table service. This handles tables at large.
+        -   Data service. Handles "pieces" of data? Considering RowService as well.
+        -   Use case specific services for handling "special" endpoints
 
 # Infra
 
@@ -37,13 +38,13 @@ To Do
 # Data
 
 -   Consider tables and data in an ETL context for future proofing (I don't remember what this means, but I THINK it means better modeling as OOP)
--   The write flow for rows feels off.
+-   The write flow for rows feels off. SHOULD BE WRITE TABLE AND SHOULD ADD MORE FUNCTIONALITY FOR ROWS
     -   Most of my data is passed to table from DataManagement, which uses the table service to interact with backend
     -   My table takes the data, and the data service. It then uses the service to write to the backend. Something about this feels weird.
     -   Making assumption about singular primary key
 -   Want to make the calls async in the backend
 
-# Data Management
+# Table component
 
 -   Default datetime to something more user friendly. It defaults to the exact second of Now.
 
@@ -53,10 +54,11 @@ To Do
 
 # Improve Front End Skills
 
+-   Fix collapsing/transition for navbar (Bootstrap)
 -   Learn React and other front end libraries used
     -   Context
     -   Proper modeling for AG Grid ColumnDefs and AG Grid in general
-    -   Review DateTimeCellEditor
+    -   Review DateTimeCellEditor. I think I want to go back to the OOB editor.
 -   additionalProps typing in DataManagement
 
 # Error handling
@@ -71,3 +73,4 @@ To Do
 # Login
 
 -   The login, login form and password reset could benefit from some better seperation of concerns.
+-   The login form should take lessons learned from create show

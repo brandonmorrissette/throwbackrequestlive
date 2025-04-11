@@ -39,7 +39,7 @@ class CognitoService:
     """
 
     @raise_http_exception
-    def __init__(self, config: Config) -> None:
+    def __init__(self, redis_client: redis.Redis, config: Config) -> None:
         """
         Initialize the CognitoService.
 
@@ -57,11 +57,7 @@ class CognitoService:
             "cognito-idp", region_name=config.AWS_DEFAULT_REGION
         )
 
-        self._redis_client = redis.StrictRedis(
-            host=config.redis_host,
-            port=int(config.redis_port),
-            decode_responses=True,
-        )
+        self._redis_client = redis_client
 
     @raise_http_exception
     def read_rows(self) -> list:

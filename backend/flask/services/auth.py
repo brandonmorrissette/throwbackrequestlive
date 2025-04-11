@@ -2,22 +2,16 @@
 This module provides the AuthService class for handling authentication.
 """
 
-import secrets
 from datetime import datetime, timedelta, timezone
-from uuid import uuid4
 
 import boto3
 import jwt
-import redis
-from flask import current_app as app
-from sqlalchemy import select
 
 from backend.flask.config import Config
 from backend.flask.exceptions.boto import raise_http_exception
-from backend.flask.services.data import DataService
 
 
-class AuthService(DataService):
+class AuthService:
     """
     Service for handling authentication.
     """
@@ -30,8 +24,6 @@ class AuthService(DataService):
         Args:
             config (Config): The configuration object.
         """
-        super().__init__(config)
-
         self._cognito_client = boto3.client(
             "cognito-idp", region_name=config.AWS_DEFAULT_REGION
         )
@@ -50,12 +42,6 @@ class AuthService(DataService):
 
         self._jwt_secret_key = config.JWT_SECRET_KEY
         self._jwt_algorithm = "HS256"
-
-        self._redis_client = redis.StrictRedis(
-            host=config.redis_host,
-            port=int(config.redis_port),
-            decode_responses=True,
-        )
 
     @raise_http_exception
     def authenticate_user(self, username: str, password: str) -> dict:
@@ -149,62 +135,3 @@ class AuthService(DataService):
 
         token = jwt.encode(payload, self._jwt_secret_key, algorithm=self._jwt_algorithm)
         return token
-
-    def generate_uid(self) -> str:
-        """
-        Generate a unique identifier (UID) for a user.
-        Returns:
-            str: The generated UID.
-        """
-        return str(uuid4())
-
-    def generate_access_key(self) -> str:
-        """
-        Generate an access key.
-
-        Returns:
-            str: The generated access key.
-        """
-        access_key = secrets.token_urlsafe(32)
-        self._redis_client.set(access_key, access_key)
-        self._redis_client.expire(access_key, 600)
-        return access_key
-
-    def validate_access_key(self, access_key: str) -> bool:
-        """
-        Validate the access key.
-
-        Args:
-            access_key (str): The access key to validate.
-
-        Returns:
-            bool: True if valid, False otherwise.
-        """
-        return self._redis_client.exists(access_key) > 0
-
-
-class RequestAuthService(AuthService):
-    """
-    Service for handling request authentication.
-    """
-
-    def get_shows_by_entry_point_id(self, entry_point_id: str) -> list:
-        """
-        Get shows by entry point ID.
-
-        Args:
-            entry_point_id (str): The entry point ID.
-
-        Returns:
-            list: A list of shows.
-        """
-
-        shows = self.get_table("shows")
-        entrypoints = self.get_table("entrypoints")
-        statement = (
-            select(shows)
-            .join(entrypoints, shows.c.entry_point_id == entrypoints.c.id)
-            .where(entrypoints.c.id == entry_point_id)
-        )
-        app.logger.debug(f"Statement: {statement}")
-        return self.execute(statement)
