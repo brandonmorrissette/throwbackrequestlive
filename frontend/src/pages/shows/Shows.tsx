@@ -48,38 +48,36 @@ const Shows: React.FC = () => {
                     <a
                         key={index}
                         href="#"
-                        className={`list-group-item list-group-item-action ${styles['list-group-item']}`}
+                        className={`list-group-item list-group-item-action`}
                         onClick={(e) => {
                             e.preventDefault();
                             openShowDetail(show);
                         }}
                     >
                         <div
-                            className={`d-flex w-100 justify-content-between ${styles['show-title']}`}
+                            className={`d-flex w-100 justify-content-center ${styles.showTitle}`}
                         >
                             <h5
-                                className={`${styles['show-detail']} ${styles['show-name']}`}
+                                className={`${styles.showDetail} ${styles.showName}`}
                             >
                                 {show.name}
                             </h5>
                             <h5
-                                className={`${styles['show-detail']} ${styles['show-venue']}`}
+                                className={`${styles.showDetail} ${styles.showVenue}`}
                             >
                                 {show.venue}
                             </h5>
                         </div>
                         <div
-                            className={`d-flex justify-content-between ${styles['show-details']}`}
+                            className={`d-flex w-100 justify-content-center ${styles.showDetails}`}
                         >
-                            <div className={styles['show-start-time-parent']}>
-                                <span
-                                    className={`${styles['show-detail']} ${styles['show-start-time']}`}
-                                >
-                                    {show.start_time}
-                                </span>
-                            </div>
                             <span
-                                className={`${styles['show-detail']} ${styles['show-address']}`}
+                                className={`${styles.showDetail} ${styles.showStartTime}`}
+                            >
+                                {show.start_time}
+                            </span>
+                            <span
+                                className={`${styles.showDetail} ${styles.showAddress}`}
                             >
                                 {show.street && <div>{show.street}</div>}
                                 <div>

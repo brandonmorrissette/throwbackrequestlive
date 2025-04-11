@@ -1,10 +1,11 @@
 import 'chart.js/auto';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { useAuth } from '../../contexts/AuthContext';
 import { Show } from '../../models/show';
 import { Song } from '../../models/song';
 import { default as RequestService } from '../../services/request';
+import './RequestDashboard.css';
 
 const RequestDashboard: React.FC = () => {
     const [shows, setShows] = useState<Show[]>([]);
@@ -12,7 +13,9 @@ const RequestDashboard: React.FC = () => {
     const [selectedShow, setSelectedShow] = useState<Show | null>(null);
     const [songRequestCounts, setSongRequestCounts] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [syncing, setSyncing] = useState<boolean>(false);
     const { token } = useAuth();
+    const chartRef = useRef<any>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -46,6 +49,24 @@ const RequestDashboard: React.FC = () => {
         }
     };
 
+    const handleSync = async () => {
+        if (!selectedShow) return;
+        setSyncing(true);
+        try {
+            const data = await RequestService.getCountOfRequestsByShowId(
+                selectedShow.id
+            );
+            setSongRequestCounts(data);
+            if (chartRef.current) {
+                chartRef.current.chartInstance.update();
+            }
+        } catch (error) {
+            console.error('Error syncing data:', error);
+        } finally {
+            setSyncing(false);
+        }
+    };
+
     const primary_color = getComputedStyle(document.documentElement)
         .getPropertyValue('--color-primary')
         .trim();
@@ -65,7 +86,6 @@ const RequestDashboard: React.FC = () => {
         }),
         datasets: [
             {
-                label: 'Number of Requests',
                 data: songRequestCounts.map((item: any) => item.count),
                 backgroundColor: accent_color,
                 borderColor: primary_color,
@@ -127,11 +147,14 @@ const RequestDashboard: React.FC = () => {
                         </option>
                     ))}
                 </select>
+                <button id="syncButton" onClick={handleSync} disabled={syncing}>
+                    {syncing ? 'Syncing...' : 'Sync'}
+                </button>
             </div>
 
             {selectedShow && songRequestCounts.length > 0 && (
                 <div style={{ marginTop: 20 }}>
-                    <Bar data={barChartData} options={options} />
+                    <Bar ref={chartRef} data={barChartData} options={options} />
                 </div>
             )}
         </div>

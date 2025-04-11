@@ -73,7 +73,7 @@ button:hover {
 .list-group-item {
     background-color: transparent !important;
     border: 2px solid var(--color-accent-darker);
-    border-radius: 15px;
+    border-radius: 25px;
     padding: 25px;
     color: var(--color-primary);
 }

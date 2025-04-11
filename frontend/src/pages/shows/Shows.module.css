@@ -1,36 +1,35 @@
-.show-detail {
-    color: var(--color-primary);
-}
-
-.show-title {
+.showTitle {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    margin: 0 20px;
 }
 
-.show-name {
-    text-align: left;
-    font-weight: bold;
-    font-size: 1.1rem;
-}
-
-.show-venue {
-    text-align: right;
-    font-style: italic;
-    font-size: 1.1rem;
-}
-
-.show-details {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-}
-
-.show-datetime {
-    text-align: left;
-    flex: 1;
-}
-
-.show-address {
+.showName {
     text-align: right;
     flex: 1;
+    margin-right: 20px;
+}
+
+.showVenue {
+    text-align: left;
+    flex: 1;
+    margin-left: 20px;
+}
+
+.showDetails {
+    display: flex;
+    align-items: center;
+    margin: 0 20px;
+}
+
+.showStartTime {
+    text-align: right;
+    flex: 1;
+    margin-right: 20px;
+}
+
+.showAddress {
+    text-align: left;
+    flex: 1;
+    margin-left: 20px;
 }

@@ -1,13 +1,12 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-import React, { ReactNode } from 'react';
+import React from 'react';
 import {
     Navigate,
     Route,
     BrowserRouter as Router,
     Routes,
-    useLocation,
 } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -35,7 +34,7 @@ const App: React.FC = () => {
                 <Router>
                     <div>
                         <Header />
-                        <ContentWrapper>
+                        <Content>
                             <Routes>
                                 <Route path="/" element={<Home />} />
                                 <Route path="/request" element={<Request />} />
@@ -66,7 +65,7 @@ const App: React.FC = () => {
                                 />
                                 <Route path="*" element={<Navigate to="/" />} />
                             </Routes>
-                        </ContentWrapper>
+                        </Content>
                         <Footer />
                         <ToastContainer
                             position="top-center"
@@ -77,31 +76,6 @@ const App: React.FC = () => {
             </ErrorProvider>
         </AuthProvider>
     );
-};
-
-// The admin area is not expected to be mobile, hence the wider content.
-// The following code is exclusively for that
-interface ContentWrapperProps {
-    children: ReactNode;
-}
-
-/**
- * Props for the ContentWrapper component.
- * @typedef {Object} ContentWrapperProps
- * @property {ReactNode} children - The child components to be wrapped.
- */
-
-/**
- * A wrapper component that adjusts the content width based on the route.
- * @param {ContentWrapperProps} props - The props for the ContentWrapper component.
- * @returns {React.FC} The ContentWrapper component.
- */
-const ContentWrapper: React.FC<ContentWrapperProps> = ({ children }) => {
-    const location = useLocation();
-    const isAdminRoute = location.pathname === '/admin';
-    const containerClass = isAdminRoute ? 'wide-content' : 'content';
-
-    return <Content className={containerClass}>{children}</Content>;
 };
 
 export default App;

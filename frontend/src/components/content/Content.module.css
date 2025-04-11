@@ -1,18 +1,9 @@
-:root {
-    --default-width: 60vw;
-    --wide-width: 95vw;
-}
-
 .content {
     background-color: var(--color-background-dark) !important;
     border-radius: 20px !important;
-    padding: 40px;
-    max-width: var(--default-width);
+    padding: 20px;
+    max-width: 95vw;
     margin: 20px auto;
     width: 100%;
     flex: 1;
-}
-
-.wide-content {
-    max-width: var(--wide-width) !important;
 }
