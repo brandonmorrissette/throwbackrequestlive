@@ -39,10 +39,11 @@ def _create_app(app_config: Config) -> Flask:
     Returns:
         Flask: The configured Flask application.
     """
+    # App
     flask_app = Flask(__name__)
+    flask_app.config.from_object(app_config)  # pylint: disable=no-member
 
     # Logging
-    flask_app.config.from_object(app_config)  # pylint: disable=no-member
     flask_app.logger.setLevel(app_config.log_level)
     logging.basicConfig(
         level=app_config.log_level,
@@ -67,13 +68,11 @@ def _create_app(app_config: Config) -> Flask:
         decode_responses=True,
     )
 
-    flask_app.logger.debug("Instantiating services")
     # Services
     request_service = RequestService(redis_client, app_config)
     cognito_service = CognitoService(redis_client, app_config)
     auth_service = AuthService(app_config)
 
-    flask_app.logger.debug("Instantiating apis")
     # API Blueprints (Restricted)
     flask_app.register_blueprint(
         UserBlueprint(service=cognito_service, url_prefix="/api")
@@ -97,9 +96,10 @@ def _create_app(app_config: Config) -> Flask:
     flask_app.register_blueprint(
         SongBlueprint(service=request_service, url_prefix="/api")
     )
-
-    flask_app.register_blueprint(EntryPointBlueprint(service=request_service))
     flask_app.register_blueprint(RequestBlueprint(service=request_service))
+
+    # Entrypoint Blueprints (Public)
+    flask_app.register_blueprint(EntryPointBlueprint(service=request_service))
 
     # Render Blueprints
     flask_app.register_blueprint(RenderBlueprint())

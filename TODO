@@ -1,7 +1,3 @@
-# Updating Request Dashboard
-
--   Either continuous update or sync button or both.
-
 # Cognito/User concepts cleanup
 
 -   Runtime and Cognito are tightly coupled. Somehow deploying Runtime really messes up User-DataManagement

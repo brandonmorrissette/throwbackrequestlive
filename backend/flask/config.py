@@ -8,6 +8,7 @@ configuration classes for the Flask application.
 
 import json
 import os
+from typing import Dict, List, Optional, Union
 
 import boto3
 
@@ -37,9 +38,13 @@ class Config:
     """
 
     # pylint: disable=invalid-name
-    def __init__(self, environment=None, **overrides):
+    def __init__(
+        self,
+        environment: Optional[str] = None,
+        **overrides: Union[str, str | None],
+    ) -> None:
         # AWS
-        self.AWS_DEFAULT_REGION = overrides.get(
+        self.AWS_DEFAULT_REGION: Optional[str] = overrides.get(
             "aws_default_region", os.getenv("AWS_DEFAULT_REGION")
         )
 
@@ -49,59 +54,66 @@ class Config:
         )
 
         # App
-        self.project_name = overrides.get("project_name", os.getenv("PROJECT_NAME"))
-        self.debug = overrides.get("debug", bool(os.getenv("DEBUG")))
-        self.log_level = overrides.get("log_level", os.getenv("LOG_LEVEL", "INFO"))
+        self.project_name: Optional[str] = overrides.get(
+            "project_name", os.getenv("PROJECT_NAME")
+        )
+        self.debug: Optional[bool] = bool(overrides.get("debug", os.getenv("DEBUG")))
+        self.log_level: Optional[str] = overrides.get(
+            "log_level", os.getenv("LOG_LEVEL", "INFO")
+        )
 
-        self.environment = environment or os.getenv("ENVIRONMENT", "development")
+        self.environment: str = environment or os.getenv("ENVIRONMENT", "development")
 
         # JWT
-        self.JWT_SECRET_KEY = overrides.get(
+        self.JWT_SECRET_KEY: Optional[str] = overrides.get(
             "jwt_secret_key", os.getenv("JWT_SECRET_KEY")
         )
-        self.JWT_TOKEN_LOCATION = overrides.get(
-            "jwt_token_location",
-            os.getenv("JWT_TOKEN_LOCATION", "headers").split(","),
-        )
-        self.JWT_HEADER_NAME = overrides.get(
+        self.JWT_TOKEN_LOCATION: Optional[List[str]] = (
+            overrides.get("jwt_token_location", os.getenv("JWT_TOKEN_LOCATION"))
+            or "headers"
+        ).split(",")
+        self.JWT_HEADER_NAME: Optional[str] = overrides.get(
             "jwt_header_name", os.getenv("JWT_HEADER_NAME", "Authorization")
         )
-        self.JWT_HEADER_TYPE = overrides.get(
+        self.JWT_HEADER_TYPE: Optional[str] = overrides.get(
             "jwt_header_type", os.getenv("JWT_HEADER_TYPE", "Bearer")
         )
 
         # Database
-        self.db_secrets = json.loads(
+        self.db_secrets: Dict[str, str] = json.loads(
             secrets_client.get_secret_value(
                 SecretId=f"{self.project_name}-{self.environment}-db-credentials"
             )["SecretString"]
         )
-        self.db_user = overrides.get(
+        self.db_user: Optional[str] = overrides.get(
             "db_user", os.getenv("DB_USER", self.db_secrets.get("username", ""))
         )
-        self.db_password = overrides.get(
+        self.db_password: Optional[str] = overrides.get(
             "db_password", os.getenv("DB_PASSWORD", self.db_secrets.get("password", ""))
         )
-        self.db_host = overrides.get(
+        self.db_host: Optional[str] = overrides.get(
             "db_host", os.getenv("DB_HOST", self.db_secrets.get("host", ""))
         )
-        self.db_name = overrides.get(
+        self.db_name: Optional[str] = overrides.get(
             "db_name", os.getenv("DB_NAME", self.db_secrets.get("dbname", ""))
         )
-        self.db_engine = overrides.get(
+        self.db_engine: Optional[str] = overrides.get(
             "db_engine",
-            # Was getting different behavior with postgresql and postgres
             os.getenv(
                 "DB_ENGINE",
                 self.db_secrets.get("engine", "postgres").replace(
-                    "postgres", "postgresql"
+                    "postgres", "postgresql+psycopg"
                 ),
             ),
         )
-        self.db_port = overrides.get(
+        self.db_port: Optional[str] = overrides.get(
             "db_port", os.getenv("DB_PORT", self.db_secrets.get("port", "5432"))
         )
 
         # Redis
-        self.redis_host = overrides.get("redis_host", os.getenv("REDIS_HOST", "redis"))
-        self.redis_port = overrides.get("redis_port", os.getenv("REDIS_PORT", "6379"))
+        self.redis_host: Optional[str] = overrides.get(
+            "redis_host", os.getenv("REDIS_HOST", "redis")
+        )
+        self.redis_port: Optional[str] = overrides.get(
+            "redis_port", os.getenv("REDIS_PORT", "6379")
+        )

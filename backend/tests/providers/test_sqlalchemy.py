@@ -2,7 +2,7 @@
 from unittest.mock import MagicMock
 
 import pytest
-from sqlalchemy import Column, Integer, MetaData, String, Table
+from sqlalchemy import Column, Integer, MetaData, String, Table, Enum
 from sqlalchemy.schema import (
     ForeignKeyConstraint,
     PrimaryKeyConstraint,
@@ -33,6 +33,16 @@ def sample_table():
         Column("value", Integer),
         PrimaryKeyConstraint("id"),
         UniqueConstraint("name"),
+    )
+
+
+@pytest.fixture
+def sample_enum_table():
+    metadata = MetaData()
+    return Table(
+        "sample_enum_table",
+        metadata,
+        Column("status", Enum("active", "inactive", name="status_enum")),
     )
 
 
@@ -114,3 +124,11 @@ def test_given_unique_constraint_when_serializing_then_return_serialized_constra
     serialized = json_provider.default(unique_constraint)
     assert isinstance(serialized, str)
     assert "UniqueConstraint(name)" in serialized
+
+
+def test_given_enum_when_serializing_then_return_serialized_enum(
+    json_provider, sample_enum_table
+):
+    column = sample_enum_table.c.status
+    serialized = json_provider.default(column.type)
+    assert serialized == "enum"

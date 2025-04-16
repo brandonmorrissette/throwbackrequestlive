@@ -2,6 +2,8 @@
 Base blueprint module for defining common blueprint functionality.
 """
 
+from typing import Any, Optional
+
 from flask import Blueprint as FlaskBlueprint
 
 
@@ -12,14 +14,13 @@ class Blueprint(FlaskBlueprint):
 
     def __init__(
         self,
-        import_name: str | None = None,
-        service=None,
-        url_prefix=None,
+        import_name: Optional[str] = None,
+        service: Optional[Any] = None,
+        url_prefix: Optional[str] = None,
     ) -> None:
         """
         Initialize the blueprint.
 
-        :param app: Flask application
         :param import_name: Import name of the module
         :param service: Optional service for the blueprint
         :param url_prefix: URL prefix for the blueprint routes

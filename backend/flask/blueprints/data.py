@@ -5,7 +5,7 @@ for handling data-related routes in a Flask application.
 
 import json
 from functools import wraps
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Tuple, List, Dict
 
 from flask import Flask
 from flask import current_app as app
@@ -16,7 +16,7 @@ from backend.flask.decorators.auth import restrict_access
 from backend.flask.services.data import DataService, get_json_provider_class
 
 
-def override_json_provider(provider: Callable) -> Callable:
+def override_json_provider(provider: Callable[[Flask], Any]) -> Callable:
     """
     Decorator to override the JSON provider for a route.
     :param provider: The JSON provider class to use.
@@ -96,7 +96,7 @@ class DataBlueprint(Blueprint):
 
         @self.route("/tables/<table_name>/rows", methods=["PUT"])
         @restrict_access(["superuser"])
-        def write_rows(table_name: str) -> Tuple[Any, int]:
+        def write_table(table_name: str) -> Tuple[Any, int]:
             """
             Write rows to a specific table.
             :param table_name: The name of the table.
@@ -109,12 +109,11 @@ class DataBlueprint(Blueprint):
             result = self._service.write_table(table_name, rows)
             return jsonify(result), 200
 
-    def _get_rows(self, table_name: str) -> list:
+    def _get_rows(self, table_name: str) -> List[Dict[str, Any]]:
         """
         Helper method to get rows from a table with optional filters.
         :param table_name: The name of the table.
-        :param request: The Flask request object.
-        :return: JSON response with the rows.
+        :return: List[Dict[str, Any]]: A list of rows from the table.
         """
         self._service.validate_table_name(table_name)
         app.logger.debug(f"Getting rows from {table_name}")

@@ -3,6 +3,7 @@ This module provides the AuthService class for handling authentication.
 """
 
 from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Optional
 
 import boto3
 import jwt
@@ -30,21 +31,23 @@ class AuthService:
 
         ssm_client = boto3.client("ssm", region_name=config.AWS_DEFAULT_REGION)
 
-        self._client_id = ssm_client.get_parameter(
+        self._client_id: str = ssm_client.get_parameter(
             Name=f"/{config.project_name}-{config.environment}/user-pool-client-id",
             WithDecryption=True,
         )["Parameter"]["Value"]
 
-        self._user_pool_id = ssm_client.get_parameter(
+        self._user_pool_id: str = ssm_client.get_parameter(
             Name=f"/{config.project_name}-{config.environment}/user-pool-id",
             WithDecryption=True,
         )["Parameter"]["Value"]
 
-        self._jwt_secret_key = config.JWT_SECRET_KEY
-        self._jwt_algorithm = "HS256"
+        self._jwt_secret_key: str = config.JWT_SECRET_KEY
+        self._jwt_algorithm: str = "HS256"
 
     @raise_http_exception
-    def authenticate_user(self, username: str, password: str) -> dict:
+    def authenticate_user(
+        self, username: str, password: str
+    ) -> Dict[str, Optional[str]]:
         """
         Authenticate a user.
 
@@ -55,7 +58,7 @@ class AuthService:
         Returns:
             dict: A dictionary containing the JWT token and any errors.
         """
-        response = self._cognito_client.initiate_auth(
+        response: dict = self._cognito_client.initiate_auth(
             ClientId=self._client_id,
             AuthFlow="USER_PASSWORD_AUTH",
             AuthParameters={"USERNAME": username, "PASSWORD": password},
@@ -74,7 +77,9 @@ class AuthService:
         }
 
     @raise_http_exception
-    def reset_password(self, username: str, password: str, session: str) -> dict:
+    def reset_password(
+        self, username: str, password: str, session: str
+    ) -> Dict[str, str]:
         """
         Reset a user's password.
 
@@ -98,7 +103,7 @@ class AuthService:
         }
 
     @raise_http_exception
-    def get_groups_by_username(self, username: str) -> list:
+    def get_groups_by_username(self, username: str) -> List[str]:
         """
         Get the groups a user belongs to.
 
@@ -108,13 +113,13 @@ class AuthService:
         Returns:
             list: A list of group names.
         """
-        response = self._cognito_client.admin_list_groups_for_user(
+        response: dict = self._cognito_client.admin_list_groups_for_user(
             UserPoolId=self._user_pool_id, Username=username
         )
-        groups = [group["GroupName"] for group in response.get("Groups", [])]
+        groups: List[str] = [group["GroupName"] for group in response.get("Groups", [])]
         return groups
 
-    def generate_jwt(self, username: str, groups: list) -> str:
+    def generate_jwt(self, username: str, groups: List[str]) -> str:
         """
         Generate a JWT token.
 
@@ -125,7 +130,7 @@ class AuthService:
         Returns:
             str: The JWT token.
         """
-        payload = {
+        payload: dict = {
             "sub": username,
             "username": username,
             "groups": groups,
@@ -133,5 +138,7 @@ class AuthService:
             "exp": datetime.now(timezone.utc) + timedelta(hours=1),
         }
 
-        token = jwt.encode(payload, self._jwt_secret_key, algorithm=self._jwt_algorithm)
+        token: str = jwt.encode(
+            payload, self._jwt_secret_key, algorithm=self._jwt_algorithm
+        )
         return token

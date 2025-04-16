@@ -3,13 +3,16 @@ This module provides a decorator to handle boto ClientError exceptions and raise
 """
 
 import logging
+from typing import Any, Callable, TypeVar
 
 from botocore.exceptions import ClientError
 
 from backend.flask.exceptions.http import HTTPException
 
+T = TypeVar("T", bound=Callable[..., Any])
 
-def raise_http_exception(func):
+
+def raise_http_exception(func: T) -> T:
     """
     Decorator that wraps a function that make use of boto
     to catch ClientError exceptions and raise HTTPException.
@@ -21,7 +24,7 @@ def raise_http_exception(func):
         function: The wrapped function.
     """
 
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except ClientError as e:
@@ -35,4 +38,4 @@ def raise_http_exception(func):
             )
             raise exception from e
 
-    return wrapper
+    return wrapper  # type: ignore

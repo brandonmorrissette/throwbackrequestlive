@@ -4,6 +4,7 @@ Blueprint module for handling user-related routes.
 
 from typing import Any, Tuple
 
+from flask import Response
 from flask import current_app as app
 from flask import jsonify, request
 
@@ -37,7 +38,7 @@ class UserBlueprint(Blueprint):
 
         @self.route("/users", methods=["PUT"])
         @restrict_access(["superuser"])
-        def write_rows() -> Tuple[Any, int]:
+        def write_rows() -> Tuple[Response, int]:
             """
             Write user data.
             :return: JSON response with the result of the operation.
