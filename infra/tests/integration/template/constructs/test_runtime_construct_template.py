@@ -93,7 +93,10 @@ def test_jwt_secret(secrets: Mapping[str, Any]) -> None:
 
 
 def test_policy(
-    managed_policies: Mapping[str, Any], secrets: Mapping[str, Any], config: Config
+    managed_policies: Mapping[str, Any],
+    secrets: Mapping[str, Any],
+    config: Config,
+    db_credentials_arn: str,
 ) -> None:
     policy = next(
         policy
@@ -106,7 +109,10 @@ def test_policy(
     assert {
         "Action": ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
         "Effect": "Allow",
-        "Resource": {"Ref": next(key for key in secrets if "JWTSecret" in key)},
+        "Resource": [
+            {"Ref": next(key for key in secrets if "JWTSecret" in key)},
+            db_credentials_arn,
+        ],
     } in policy["Properties"]["PolicyDocument"]["Statement"]
 
     assert {
@@ -115,6 +121,16 @@ def test_policy(
         "Resource": f"arn:aws:ssm:{config.cdk_environment.region}:"
         f"{config.cdk_environment.account}:"
         f"parameter/{config.project_name}-{config.environment_name}/*",
+    } in policy["Properties"]["PolicyDocument"]["Statement"]
+
+    assert {
+        "Action": [
+            "s3:PutObject",
+            "s3:GetObject",
+            "s3:DeleteObject",
+        ],
+        "Effect": "Allow",
+        "Resource": f"arn:aws:s3:::{config.project_name}-{config.environment_name}-bucket/*",
     } in policy["Properties"]["PolicyDocument"]["Statement"]
 
 
@@ -226,15 +242,6 @@ def test_task_definition(
                         if f"{config.project_name}{config.environment_name}runtimeJWTSecret"
                         in key
                     ),
-                    None,
-                )
-            },
-        },
-        {
-            "Name": "RuntimeSecret",
-            "ValueFrom": {
-                "Ref": next(
-                    (key for key in secrets.keys() if "MockRuntimeSecret" in key),
                     None,
                 )
             },
