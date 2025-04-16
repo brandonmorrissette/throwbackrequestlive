@@ -49,10 +49,15 @@ class S3Construct(Construct):
         """
         super().__init__(scope, ConstructArgs(config, uid, prefix))
 
+        bucket_name = (
+            f"{config.project_name.lower() if config.project_name else None}"
+            f"-{config.environment_name.lower() if config.environment_name else None}-bucket"
+        )
+
         self.bucket = s3.Bucket(
             self,
             "s3-bucket",
-            bucket_name=f"{config.project_name}-{config.environment_name}-bucket",
+            bucket_name=bucket_name,
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
         )

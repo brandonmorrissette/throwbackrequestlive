@@ -85,7 +85,7 @@ def test_db_instance_creation(
 
     mocks.rds.Credentials.from_generated_secret.assert_called_once_with(
         "db_master_user",
-        secret_name=f"{config.project_name}-db-credentials",
+        secret_name=f"{config.project_name}-{config.environment_name}-db-credentials",
     )
 
 

@@ -59,7 +59,7 @@ def test_user_pool_creation(
 def test_given_user_pool_exists_when_user_pool_construct_created_then_user_pool_is_retrieved(
     config: Config,
 ):
-    user_pool_name = f"{config.project_name}-user-pool"
+    user_pool_name = f"{config.project_name}-{config.environment_name}-user-pool"
     user_pool_id = "uid"
 
     userpool = MagicMock()
@@ -131,7 +131,7 @@ def test_user_pool_client_creation(
 def test_given_unresolve_userpool_id_and_app_client_exists_when_user_pool_construct_created_then_user_pool_app_client_is_retrieved(  # pylint: disable=line-too-long
     config: Config,
 ):
-    user_pool_name = f"{config.project_name}-user-pool"
+    user_pool_name = f"{config.project_name}-{config.environment_name}-user-pool"
     user_pool_id = "uid"
     client_id = "client_id"
 

@@ -83,10 +83,14 @@ class RuntimeStack(Stack):
                 db_credentials_arn=args.storage_stack.rds_construct.db_instance.secret.secret_arn,
                 runtime_variables={
                     # pylint:disable=line-too-long
-                    "PROJECT_NAME": args.config.project_name,
-                    "ENVIRONMENT": args.config.environment_name,
-                    "REDIS_HOST": args.storage_stack.cache_construct.cluster.attr_redis_endpoint_address,
-                    "REDIS_PORT": args.storage_stack.cache_construct.cluster.attr_redis_endpoint_port,
+                    "PROJECT_NAME": str(args.config.project_name),
+                    "ENVIRONMENT": str(args.config.environment_name),
+                    "REDIS_HOST": str(
+                        args.storage_stack.cache_construct.cluster.attr_redis_endpoint_address
+                    ),
+                    "REDIS_PORT": str(
+                        args.storage_stack.cache_construct.cluster.attr_redis_endpoint_port
+                    ),
                 },
             ),
         )

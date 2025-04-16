@@ -19,7 +19,10 @@ def construct(stack: Stack, config: Config) -> UserPoolConstruct:
 def test_user_pool(user_pools: Mapping[str, Any], config: Config) -> None:
     user_pool = next(iter(user_pools.values()))
 
-    assert user_pool["Properties"]["UserPoolName"] == f"{config.project_name}-user-pool"
+    assert (
+        user_pool["Properties"]["UserPoolName"]
+        == f"{config.project_name}-{config.environment_name}-user-pool"
+    )
     assert user_pool["Properties"]["Policies"]["PasswordPolicy"] == {
         "MinimumLength": 8,
         "RequireLowercase": False,
@@ -34,7 +37,7 @@ def test_user_pool_client(user_pool_clients: Mapping[str, Any], config: Config) 
 
     assert (
         user_pool_client["Properties"]["ClientName"]
-        == f"{config.project_name}-user-pool-app-client"
+        == f"{config.project_name}-{config.environment_name}-user-pool-app-client"
     )
     assert user_pool_client["Properties"]["ExplicitAuthFlows"] == [
         "ALLOW_ADMIN_USER_PASSWORD_AUTH",

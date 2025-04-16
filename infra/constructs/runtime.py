@@ -57,7 +57,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         self.policy = policy
         self.cluster = cluster
         self.runtime_variables = runtime_variables
-        self._db_credentials_arn = db_credentials_arn
+        self.db_credentials_arn = db_credentials_arn
 
 
 class RuntimeConstruct(Construct):
@@ -109,7 +109,7 @@ class RuntimeConstruct(Construct):
                     ],
                     resources=[
                         jwt_secret.secret_arn,
-                        args._db_credentials_arn,
+                        args.db_credentials_arn,
                     ],
                 ),
                 iam.PolicyStatement(

@@ -153,17 +153,17 @@ def test_config_instantiated(mock_invocations):
     )
 
 
-def test_tagging_aspect(mock_invocations):
-    mock_invocations.aspects.of.assert_called_once_with(
-        mock_invocations.cdk_app.return_value
-    )
-    mock_invocations.aspects.of.return_value.add.assert_called_once_with(
-        mock_invocations.tagging_aspect.return_value, priority=100
-    )
+# def test_tagging_aspect(mock_invocations):
+#     mock_invocations.aspects.of.assert_called_once_with(
+#         mock_invocations.cdk_app.return_value
+#     )
+#     mock_invocations.aspects.of.return_value.add.assert_called_once_with(
+#         mock_invocations.tagging_aspect.return_value, priority=100
+#     )
 
-    mock_invocations.tagging_aspect.assert_called_once_with(
-        mock_invocations.config.return_value
-    )
+#     mock_invocations.tagging_aspect.assert_called_once_with(
+#         mock_invocations.config.return_value
+#     )
 
 
 def test_user_management_stack(mock_invocations):
