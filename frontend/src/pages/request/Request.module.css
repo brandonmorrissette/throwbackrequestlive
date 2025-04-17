@@ -6,12 +6,11 @@
     width: 100%;
     box-sizing: border-box;
     margin: 10px 0;
-    padding: 15px;
+    padding: 10px;
     border: transparent;
     border-radius: 10px;
     background-color: var(--color-accent);
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .requestButton:hover {
@@ -19,18 +18,23 @@
     transform: scale(1.02);
 }
 
-.requestButton .songDetails {
+.songDetails {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    margin: 0 10px;
     width: 100%;
 }
 
-.requestButton .songBand {
+.songBand {
+    text-align: right;
+    flex: 1;
+    margin-right: 10px;
     font-weight: bold;
-    text-align: left;
 }
 
-.requestButton .songName {
+.songName {
+    text-align: left;
+    flex: 1;
+    margin-left: 10px;
     font-style: italic;
-    text-align: right;
 }

@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Modal from '../../components/modal/Modal';
 import { TableServiceProvider } from '../../contexts/TableServiceContext';
 import { default as DataService } from '../../services/data';
-import Shows from './Shows';
+import Shows from '../shows/Shows';
 import ThankYou from './ThankYou';
 
 /**

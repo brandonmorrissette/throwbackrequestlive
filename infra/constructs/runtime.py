@@ -47,6 +47,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         certificate: acm.ICertificate,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
+        db_credentials_arn: str,
         runtime_variables: dict[str, str] | None = None,
         uid: str = "runtime",
         prefix: str = "",
@@ -56,6 +57,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         self.policy = policy
         self.cluster = cluster
         self.runtime_variables = runtime_variables
+        self.db_credentials_arn = db_credentials_arn
 
 
 class RuntimeConstruct(Construct):
@@ -105,7 +107,10 @@ class RuntimeConstruct(Construct):
                         "secretsmanager:GetSecretValue",
                         "secretsmanager:DescribeSecret",
                     ],
-                    resources=[jwt_secret.secret_arn],
+                    resources=[
+                        jwt_secret.secret_arn,
+                        args.db_credentials_arn,
+                    ],
                 ),
                 iam.PolicyStatement(
                     actions=[
@@ -168,7 +173,7 @@ class RuntimeConstruct(Construct):
                 stream_prefix=args.config.project_name, log_group=log_group
             ),
             environment=args.runtime_variables,
-            secrets={"JWT_SECRET": ecs.Secret.from_secrets_manager(jwt_secret)},
+            secrets={"JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret)},
             task_role=task_role,
         )
 

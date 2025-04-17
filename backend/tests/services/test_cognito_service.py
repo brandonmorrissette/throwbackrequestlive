@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from backend.flask.config import Config
 from backend.flask.exceptions.http import HTTPException
 from backend.flask.services.cognito import CognitoService, cognito_json_encoder
 from backend.tests.mock.errors import CLIENT_ERROR, ERROR_MESSAGE, STATUS_CODE
@@ -21,29 +20,21 @@ REDIS_KEYS = ["key"]
 
 
 @pytest.fixture
-def config():
-    mock_config = MagicMock(spec=Config)
-    mock_config.__init__()  # pylint: disable=unnecessary-dunder-call
-    return mock_config
+def cognito_service(config: MagicMock) -> CognitoService:
+    with patch("boto3.client"), patch("redis.StrictRedis") as mock_redis_client:
+        mock_redis_client = MagicMock()
+        mock_redis_client.keys.return_value = REDIS_KEYS
+        return CognitoService(mock_redis_client, config)
 
 
-@pytest.fixture
-def cognito_service(config):
-    with patch("boto3.client") as mock_boto_client, patch(
-        "redis.StrictRedis"
-    ) as mock_redis_client:
-        mock_boto_client.return_value = MagicMock()
-        mock_redis_client.return_value = MagicMock()
-        mock_redis_client.return_value.keys.return_value = REDIS_KEYS
-        return CognitoService(config)
-
-
-def test_given_datetime_when_cognito_json_encoder_then_return_isoformat():
+def test_given_datetime_when_cognito_json_encoder_then_return_isoformat() -> None:
     test_datetime = MagicMock(spec=datetime)
     assert cognito_json_encoder(test_datetime) == test_datetime.isoformat.return_value
 
 
-def test_given_unsupported_type_when_cognito_json_encoder_then_raise_type_error():
+def test_given_unsupported_type_when_cognito_json_encoder_then_raise_type_error() -> (
+    None
+):
     with pytest.raises(TypeError) as e:
         obj = MagicMock()
         cognito_json_encoder(obj)
@@ -51,8 +42,8 @@ def test_given_unsupported_type_when_cognito_json_encoder_then_raise_type_error(
 
 
 def test_given_list_users_returns_users_when_read_rows_then_users_returned(
-    cognito_service,
-):
+    cognito_service: CognitoService,
+) -> None:
     cognito_service._cognito_client.list_users.return_value = users
     cognito_service._cognito_client.admin_list_groups_for_user.return_value = groups
 
@@ -60,11 +51,13 @@ def test_given_list_users_returns_users_when_read_rows_then_users_returned(
 
     expected = users["Users"]
     for user in expected:
-        user["Groups"] = [GROUP_NAME]
+        user["Groups"] = GROUP_NAME
     assert result == expected
 
 
-def test_given_user_when_read_rows_then_set_user_in_redis(cognito_service):
+def test_given_user_when_read_rows_then_set_user_in_redis(
+    cognito_service: CognitoService,
+) -> None:
     with patch.object(cognito_service, "_persist_user") as persist_user:
         cognito_service._cognito_client.list_users.return_value = users
         cognito_service._cognito_client.admin_list_groups_for_user.return_value = groups
@@ -74,7 +67,9 @@ def test_given_user_when_read_rows_then_set_user_in_redis(cognito_service):
         persist_user.assert_called_once_with(USERNAME, USER)
 
 
-def test_given_client_error_when_read_rows_then_raise_http_exception(cognito_service):
+def test_given_client_error_when_read_rows_then_raise_http_exception(
+    cognito_service: CognitoService,
+) -> None:
     cognito_service._cognito_client.list_users.side_effect = CLIENT_ERROR
 
     with pytest.raises(HTTPException) as e:
@@ -84,8 +79,8 @@ def test_given_client_error_when_read_rows_then_raise_http_exception(cognito_ser
 
 
 def test_given_rows_without_users_in_redis_when_write_rows_then_delete_users_called(
-    cognito_service,
-):
+    cognito_service: CognitoService,
+) -> None:
     with patch.object(cognito_service, "_delete_user") as delete_user:
         cognito_service.write_rows([])
 
@@ -93,8 +88,8 @@ def test_given_rows_without_users_in_redis_when_write_rows_then_delete_users_cal
 
 
 def test_given_rows_with_users_not_in_redis_when_write_rows_then_add_rows_called(
-    cognito_service,
-):
+    cognito_service: CognitoService,
+) -> None:
     with patch.object(cognito_service, "_add_user") as add_user:
         cognito_service.write_rows([USER])
 
@@ -102,8 +97,8 @@ def test_given_rows_with_users_not_in_redis_when_write_rows_then_add_rows_called
 
 
 def test_given_rows_with_users_in_redis_when_write_rows_then_update_rows_called(
-    cognito_service,
-):
+    cognito_service: CognitoService,
+) -> None:
     with patch.object(cognito_service, "_update_user") as update_user:
         key = REDIS_KEYS[0]
         _user = {"Username": key}
@@ -112,7 +107,9 @@ def test_given_rows_with_users_in_redis_when_write_rows_then_update_rows_called(
         update_user.assert_called_once_with(key, _user)
 
 
-def test_when_generate_temp_password_then_return_secrets(cognito_service):
+def test_when_generate_temp_password_then_return_secrets(
+    cognito_service: CognitoService,
+) -> None:
     with patch("backend.flask.services.cognito.secrets") as mock_secrets:
         valid_characters = set(string.ascii_letters + string.digits + "!@#$%^&*()-_=+")
         mock_secrets.choice.side_effect = valid_characters
@@ -125,7 +122,9 @@ def test_when_generate_temp_password_then_return_secrets(cognito_service):
             assert call[0][0] in valid_characters
 
 
-def test_given_user_when_add_user_then_user_added(cognito_service):
+def test_given_user_when_add_user_then_user_added(
+    cognito_service: CognitoService,
+) -> None:
     with patch.object(cognito_service, "_persist_user") as persist_user, patch.object(
         cognito_service, "_generate_temp_password"
     ) as generate_temp_password:
@@ -144,7 +143,9 @@ def test_given_user_when_add_user_then_user_added(cognito_service):
         )
 
 
-def test_given_user_when_update_user_then_user_updated(cognito_service):
+def test_given_user_when_update_user_then_user_updated(
+    cognito_service: CognitoService,
+) -> None:
     with patch.object(cognito_service, "_persist_user") as persist_user:
         cognito_service._update_user(USERNAME, USER)
         cognito_service._cognito_client.admin_update_user_attributes.assert_called_once_with(
@@ -155,7 +156,9 @@ def test_given_user_when_update_user_then_user_updated(cognito_service):
         persist_user.assert_called_once_with(USERNAME, USER)
 
 
-def test_given_user_when_delete_user_then_user_deleted(cognito_service):
+def test_given_user_when_delete_user_then_user_deleted(
+    cognito_service: CognitoService,
+) -> None:
     with patch.object(cognito_service, "_remove_user") as remove_user:
         cognito_service._delete_user(USERNAME)
         cognito_service._cognito_client.admin_delete_user.assert_called_once_with(
@@ -166,8 +169,8 @@ def test_given_user_when_delete_user_then_user_deleted(cognito_service):
 
 
 def test_given_username_and_user_when_persist_user_then_set_user_in_redis(
-    cognito_service,
-):
+    cognito_service: CognitoService,
+) -> None:
     with patch("backend.flask.services.cognito.json") as mock_json:
         cognito_service._persist_user(USERNAME, USER)
 
@@ -177,6 +180,8 @@ def test_given_username_and_user_when_persist_user_then_set_user_in_redis(
         )
 
 
-def test_given_username_when_remove_user_then_remove_user_from_redis(cognito_service):
+def test_given_username_when_remove_user_then_remove_user_from_redis(
+    cognito_service: CognitoService,
+) -> None:
     cognito_service._remove_user(USERNAME)
     cognito_service._redis_client.delete.assert_called_once_with(USERNAME)

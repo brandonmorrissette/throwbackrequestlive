@@ -2,6 +2,8 @@
 Blueprint module for rendering static HTML files for different routes.
 """
 
+from typing import Optional
+
 from flask import Response
 from flask import current_app as app
 
@@ -44,7 +46,9 @@ class RenderBlueprint(Blueprint):
 
         @self.route("/", defaults={"path": ""})
         @self.route("/<path:path>")
-        def render_main(path: str) -> Response:  # pylint: disable=unused-argument
+        def render_main(
+            path: Optional[str] = None,  # pylint: disable=unused-argument
+        ) -> Response:
             """
             Render the main page for any other routes.
             :param path: The path of the requested route.

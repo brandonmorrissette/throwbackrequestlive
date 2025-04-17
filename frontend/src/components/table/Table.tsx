@@ -6,6 +6,8 @@ import {
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
+import { useAuth } from '../../contexts/AuthContext';
 import { useError } from '../../contexts/ErrorContext';
 import { useServices } from '../../contexts/TableServiceContext';
 import { TableService } from '../../services/table';
@@ -32,6 +34,7 @@ const Table: React.FC<{
     const [selectedRows, setSelectedRows] = useState<Row[]>([]);
     const [unsavedChanges, setUnsavedChanges] = useState(false);
     const { setError } = useError();
+    const { token } = useAuth();
 
     const tableServiceInstance = useMemo(
         () => new TableService(tableService),
@@ -121,16 +124,17 @@ const Table: React.FC<{
      */
     const saveChanges = async () => {
         try {
-            console.log('Rows to save:', rowData);
             const updatedRows = await tableServiceInstance.saveChanges(
-                options,
+                options.name,
+                token,
                 rowData
             );
             setRowData(updatedRows);
             setUnsavedChanges(false);
+            toast.success('Changes saved successfully!');
         } catch (error: any) {
-            setError(error);
             console.error('Error saving changes:', error);
+            setError(error);
         }
     };
 
@@ -152,10 +156,6 @@ const Table: React.FC<{
 
     return (
         <div>
-            <div>
-                <h2>Upload CSV</h2>
-                <input type="file" accept=".csv" onChange={handleFileUpload} />
-            </div>
             <div
                 className="ag-theme-quartz"
                 style={{
@@ -183,6 +183,14 @@ const Table: React.FC<{
                 />
             </div>
             <div className="button-group">
+                <label>
+                    Upload CSV
+                    <input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileUpload}
+                    />
+                </label>
                 <button onClick={addRow}>Add Row</button>
                 <button
                     onClick={deleteRow}
@@ -194,6 +202,7 @@ const Table: React.FC<{
                     Save Changes
                 </button>
             </div>
+            <div></div>
             {unsavedChanges}
         </div>
     );

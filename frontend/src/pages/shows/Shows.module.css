@@ -1,0 +1,35 @@
+.showTitle {
+    display: flex;
+    align-items: center;
+    margin: 0 20px;
+}
+
+.showName {
+    text-align: right;
+    flex: 1;
+    margin-right: 20px;
+}
+
+.showVenue {
+    text-align: left;
+    flex: 1;
+    margin-left: 20px;
+}
+
+.showDetails {
+    display: flex;
+    align-items: center;
+    margin: 0 20px;
+}
+
+.showStartTime {
+    text-align: right;
+    flex: 1;
+    margin-right: 20px;
+}
+
+.showAddress {
+    text-align: left;
+    flex: 1;
+    margin-left: 20px;
+}

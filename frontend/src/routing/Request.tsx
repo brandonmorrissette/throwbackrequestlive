@@ -1,7 +1,6 @@
 /**
  * Makes an API request with the given URL and options.
- * Adds an Authorization header if an auth token is present in session storage.
- * Validates the response and returns the parsed JSON data.
+ * Adds an Authorization header if an auth token is present in the AuthContext.
  *
  * @param {string} url - The URL to fetch.
  * @param {RequestInit} [options={}] - The options for the fetch request.
@@ -12,15 +11,10 @@ const apiRequest = async (
     url: string,
     options: RequestInit = {}
 ): Promise<any> => {
-    const token = sessionStorage.getItem('auth_token');
-    const headers = new Headers(options.headers || {});
-    if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-    }
-    const response = await fetch(url, { ...options, headers });
-    console.log('response:', response);
+    const response = await fetch(url, { ...options });
+    console.log('Response for URL:', url, response);
     await validate(response);
-    return response.json();
+    return await response.json();
 };
 
 export default apiRequest;
@@ -41,4 +35,14 @@ async function validate(response: Response) {
             `${response.status} - ${errorData.error || response.statusText}`
         );
     }
+}
+
+/**
+ * Creates a Bearer token header for API requests.
+ *
+ * @param {string | null} token - The authentication token.
+ * @returns {RequestInit} - The request options with the Authorization header.
+ */
+export function createBearerHeader(token: string | null): RequestInit {
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 }

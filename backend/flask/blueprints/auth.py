@@ -2,7 +2,7 @@
 This module contains the AuthBlueprint class which handles authentication-related routes.
 """
 
-from typing import Any, Tuple
+from typing import Any, Dict, Optional, Tuple, Union
 
 from flask import jsonify, request
 
@@ -20,8 +20,8 @@ class AuthBlueprint(Blueprint):
     def __init__(
         self,
         service: AuthService,
-        import_name: str | None = None,
-        url_prefix: str | None = None,
+        import_name: Optional[str] = None,
+        url_prefix: Optional[str] = None,
     ) -> None:
         """
         Initialize the AuthBlueprint.
@@ -43,11 +43,12 @@ class AuthBlueprint(Blueprint):
             Authenticate a user and return a token.
             :return: JSON response with the authentication token.
             """
-            data = request.get_json()
-            username = data.get("username")
-            password = data.get("password")
-            session = data.get("session")
-            password_reset = data.get("password_reset")
+            data: Dict[str, Union[str, None]] = request.get_json()
+            username: Optional[str] = data.get("username")
+            password: Optional[str] = data.get("password")
+            password_reset: Optional[bool] = bool(data.get("password_reset"))
+
+            session: str = str(data.get("session", ""))
 
             if not username or not password:
                 return (
@@ -61,9 +62,13 @@ class AuthBlueprint(Blueprint):
                 )
 
             if password_reset:
-                response = self._service.reset_password(username, password, session)
+                response: Dict[str, Union[str, None]] = self._service.reset_password(
+                    username, password, session
+                )
             else:
-                response = self._service.authenticate_user(username, password)
+                response: Dict[str, Union[str, None]] = self._service.authenticate_user(
+                    username, password
+                )
 
             return (
                 jsonify(

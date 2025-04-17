@@ -6,7 +6,7 @@ class AuthService {
      * @returns {Promise<any>} The response from the API.
      */
     async validateSession(): Promise<any> {
-        const response = await apiRequest('/api/validate', {
+        const response = await apiRequest('/validate', {
             method: 'GET',
             credentials: 'include',
         });

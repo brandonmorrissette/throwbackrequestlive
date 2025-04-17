@@ -1,4 +1,5 @@
 # pylint: disable=redefined-outer-name, protected-access, missing-function-docstring, missing-module-docstring
+from typing import Generator
 from unittest.mock import patch
 
 import pytest
@@ -9,19 +10,16 @@ from backend.flask.decorators.auth import restrict_access
 
 
 @pytest.fixture(scope="module")
-def app():
+def app() -> Generator[Flask, None, None]:
     app = Flask(__name__)
     yield app
 
 
-@pytest.fixture()
-def client(app):
-    return app.test_client()
-
-
-def test_given_valid_jwt_and_group_when_access_endpoint_then_access_granted(app):
+def test_given_valid_jwt_and_group_when_access_endpoint_then_access_granted(
+    app: Flask,
+) -> None:
     @restrict_access(["superuser"])
-    def mock_endpoint():
+    def mock_endpoint() -> str:
         return "Success"
 
     with app.test_request_context():
@@ -36,9 +34,11 @@ def test_given_valid_jwt_and_group_when_access_endpoint_then_access_granted(app)
             assert response == "Success"
 
 
-def test_given_invalid_jwt_when_access_endpoint_then_unauthorized_raised(app):
+def test_given_invalid_jwt_when_access_endpoint_then_unauthorized_raised(
+    app: Flask,
+) -> None:
     @restrict_access(["superuser"])
-    def mock_endpoint():
+    def mock_endpoint() -> str:
         return "Success"
 
     with app.test_request_context():
@@ -51,9 +51,11 @@ def test_given_invalid_jwt_when_access_endpoint_then_unauthorized_raised(app):
             assert exc_info.value.code == 401
 
 
-def test_given_valid_jwt_but_no_group_when_access_endpoint_then_forbidden_raised(app):
+def test_given_valid_jwt_but_no_group_when_access_endpoint_then_forbidden_raised(
+    app: Flask,
+) -> None:
     @restrict_access(["superuser"])
-    def mock_endpoint():
+    def mock_endpoint() -> str:
         return "Success"
 
     with app.test_request_context():

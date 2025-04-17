@@ -18,20 +18,22 @@ CLIENT_ERROR = ClientError(
 
 
 @raise_http_exception
-def mock_function():
+def mock_function() -> None:
     raise CLIENT_ERROR
 
 
-def test_given_function_doesnt_raise_error_when_invoked_then_return_value():
+def test_given_function_doesnt_raise_error_when_invoked_then_return_value() -> None:
     @raise_http_exception
-    def successful_mock_function():
+    def successful_mock_function() -> str:
         return "Success"
 
-    result = successful_mock_function()
+    result: str = successful_mock_function()
     assert result == "Success"
 
 
-def test_given_function_raises_client_error_when_invoked_then_http_exception_reraised():
+def test_given_function_raises_client_error_when_invoked_then_http_exception_reraised() -> (
+    None
+):
     with pytest.raises(HTTPException) as e:
         mock_function()
 

@@ -10,6 +10,5 @@ CREATE TABLE IF NOT EXISTS shows (
     city VARCHAR(255),
     state VARCHAR(255),
     entry_point_id UUID NOT NULL UNIQUE,
-    qr_code_url VARCHAR(255),
     FOREIGN KEY (entry_point_id) REFERENCES entrypoints(id)
 );
