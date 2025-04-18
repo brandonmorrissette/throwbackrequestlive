@@ -24,7 +24,7 @@ def redis_client():
 @pytest.fixture
 def mocks() -> Generator[Tuple[MagicMock,], None, None]:
     with patch("backend.flask.services.entrypoint.boto3") as mock_boto:
-        yield mock_boto,
+        yield (mock_boto,)
 
 
 @pytest.fixture
@@ -132,7 +132,7 @@ def test_given_invalid_access_token_cookie_when_validate_session_then_return_err
     with patch.object(
         service, "validate_access_key", return_value=False
     ) as mock_validate_access_key, app.test_request_context(
-        headers={"Cookie": f"accessKey=invalid_access_key"}
+        headers={"Cookie": "accessKey=invalid_access_key"}
     ):
         response = service.validate_session()
 
@@ -146,7 +146,7 @@ def test_given_invalid_access_token_cookie_when_validate_session_then_return_err
 
 
 def test_given_entry_point_id_when_redirect_then_redirect_main(
-    service: EntryPointService, app: Flask
+    service: EntryPointService
 ) -> None:
     url = "renderblueprint.render_main"
     with patch.object(

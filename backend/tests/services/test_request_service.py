@@ -1,14 +1,13 @@
 # pylint: disable=redefined-outer-name, protected-access, missing-function-docstring, missing-module-docstring
 from typing import Generator, Tuple
 from unittest.mock import MagicMock, patch
+from datetime import datetime, timedelta
 
 import pytest
 from flask import Flask
 
 from backend.flask.services.request import RequestService
 
-from datetime import datetime, timedelta
-from urllib.parse import urlparse, parse_qs
 
 ENTRYPOINT = "entrypoint"
 UID = "uid"
@@ -32,11 +31,12 @@ def app_context(app: Flask) -> Generator[None, None, None]:
 @pytest.fixture
 def mocks() -> Generator[Tuple[MagicMock,], None, None]:
     with patch("backend.flask.services.entrypoint.boto3") as mock_boto:
-        yield mock_boto,
+        yield (mock_boto,)
 
 
 @pytest.fixture
 def service(
+    # pylint: disable=unused-argument
     redis_client: MagicMock,
     config: MagicMock,
     mocks: Generator[Tuple[MagicMock], None, None],
@@ -70,7 +70,7 @@ def test_given_entry_point_id_when_get_shows_by_entry_point_id_then_shows_retrie
 
 
 def test_given_invalid_entry_point_id_when_redirect_then_redirect_to_main(
-    service: RequestService, client: Flask
+    service: RequestService
 ):
     with patch.object(
         service,
@@ -78,11 +78,12 @@ def test_given_invalid_entry_point_id_when_redirect_then_redirect_to_main(
         side_effect=ValueError("Invalid entryPointId"),
     ) as mock_validate_entry_point_id, patch(
         "backend.flask.services.request.url_for", return_value=MAIN_URL
-    ) as mock_url_for:
+    ):
         response = service.redirect("invalid_entry_point_id")
 
     assert response.status_code == 302
     assert response.location == MAIN_URL
+    mock_validate_entry_point_id.assert_called_once_with("invalid_entry_point_id")
 
 
 def test_given_duplicate_submission_when_redirect_then_handle_duplicate(
@@ -96,7 +97,7 @@ def test_given_duplicate_submission_when_redirect_then_handle_duplicate(
         "_validate_entry_point_id",
     ), patch(
         "backend.flask.services.request.url_for", return_value=MAIN_URL
-    ) as mock_url_for, patch.object(
+    ), patch.object(
         service, "_handle_duplicate_submission"
     ) as mock_handle_duplicate_submission, app.test_request_context(
         headers={"Cookie": f"uid={UID}"}
@@ -115,7 +116,7 @@ def test_given_entry_point_id_when_redirect_then_redirect_to_request_page(
         service, "_is_duplicate", return_value=False
     ), patch(
         "backend.flask.services.request.url_for", return_value=REQUEST_URL
-    ) as mock_url_for, patch.object(
+    ), patch.object(
         service, "get_shows_by_entry_point_id", return_value=shows
     ), patch.object(
         service, "set_session_cookies"
@@ -205,7 +206,7 @@ def test_given_show_end_time_before_now_when_validate_entry_point_id_then_raises
     mock_get_shows_by_entry_point_id.assert_called_once_with(ENTRYPOINT)
 
 
-def test_given_show_with_no_end_time_and_show_started_within_last_hour_when_validate_entry_point_id_then_continue(
+def test_given_show_with_no_end_time_and_show_started_within_last_hour_when_validate_entry_point_id_then_continue( # pylint: disable=line-too-long
     service: RequestService,
 ):
     with patch.object(
@@ -222,7 +223,7 @@ def test_given_show_with_no_end_time_and_show_started_within_last_hour_when_vali
     mock_get_shows_by_entry_point_id.assert_called_once_with(ENTRYPOINT)
 
 
-def test_given_show_with_no_end_time_and_show_not_started_within_last_hour_when_validate_entry_point_id_then_raises_error(
+def test_given_show_with_no_end_time_and_show_not_started_within_last_hour_when_validate_entry_point_id_then_raises_error( # pylint: disable=line-too-long
     service: RequestService,
 ):
     with patch.object(
@@ -272,6 +273,7 @@ def test_given_uid_and_duplicate_entry_point_id_when_is_duplicate_then_returns_t
         result = service._is_duplicate(UID, ENTRYPOINT)
 
     mock_execute.assert_called_once_with(
+        # pylint: disable=R0801
         """
                 SELECT 1
                 FROM submissions
@@ -355,6 +357,7 @@ def test_given_show_id_when_get_request_count_by_show_id_then_return_request_cou
         result = service.get_request_count_by_show_id(SHOW_ID)
 
     mock_execute.assert_called_once_with(
+        # pylint: disable=R0801
         """
             SELECT song_id, COUNT(id) AS count
             FROM requests

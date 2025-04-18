@@ -109,6 +109,7 @@ class RequestService(EntryPointService, DataService):
         """
         if uid:
             result = self.execute(
+                # pylint: disable=R0801
                 """
                 SELECT 1
                 FROM submissions
@@ -180,6 +181,7 @@ class RequestService(EntryPointService, DataService):
                 - request_count (int): The count of requests for the song and band.
         """
         return self.execute(
+            # pylint: disable=R0801
             """
             SELECT song_id, COUNT(id) AS count
             FROM requests
