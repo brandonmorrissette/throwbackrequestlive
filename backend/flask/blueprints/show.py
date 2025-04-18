@@ -40,12 +40,12 @@ class ShowBlueprint(DataBlueprint):
             Insert rows into the 'shows' table.
             :return: JSON response with the result of the operation.
             """
-            show = next(iter(request.get_json().get("rows")), {})
+            show = next(iter(request.get_json().get("rows", {})), None)
             app.logger.info(f"Show received: {show}")
             if not show:
                 return {"message": "No data provided"}, 400
 
-            entry_point_id = self._service.create_entry_point()
+            entry_point_id = self._service.create_entrypoint()
             show["entry_point_id"] = entry_point_id
 
             self._service.insert_rows("shows", [show])

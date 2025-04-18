@@ -79,7 +79,7 @@ class AuthService:
     @raise_http_exception
     def reset_password(
         self, username: str, password: str, session: str
-    ) -> Dict[str, str]:
+    ) -> Dict[str, str | None]:
         """
         Reset a user's password.
 

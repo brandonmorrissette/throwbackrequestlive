@@ -135,7 +135,7 @@ def test_config_when_create_app_then_flask_app_is_configured(
     )
 
 
-def test_given_config_when_create_app_then_config_is_set(
+def test_given_config_when_create_app_then_services_are_instantiated(
     config: MagicMock,
     mock_services: Dict[str, MagicMock],
     mock_external_libs: Dict[str, MagicMock],

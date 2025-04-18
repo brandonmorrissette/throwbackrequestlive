@@ -8,6 +8,7 @@ from typing import Any, Tuple
 
 from flask import current_app as app
 from flask import jsonify, make_response, redirect, request, send_file, url_for
+from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers.response import Response
 
 from backend.flask.blueprints.data import DataBlueprint
@@ -32,12 +33,17 @@ class RequestBlueprint(DataBlueprint):
             Writes a new row in the 'requests' table.
             :return: JSON response with the result of the operation.
             """
-            data = request.get_json()
-            app.logger.debug(f"Received data for writing request: {data}")
+            try:
+                data = request.get_json()
+                app.logger.debug(f"Received data for writing request: {data}")
+            except BadRequest as e:
+                app.logger.error(f"Bad request: {e}")
+                return jsonify({"error": "Invalid JSON data."}), 400
 
             if not data:
-                app.logger.error("No song request data found.")
-                return jsonify({"error": "No song request data found."}), 400
+                message = "No song request data found."
+                app.logger.error(message)
+                return jsonify({"error": message}), 400
 
             uid = request.cookies.get("uid")
             data["request_time"] = datetime.now().isoformat()
@@ -51,7 +57,7 @@ class RequestBlueprint(DataBlueprint):
                 [
                     {
                         "id": uid,
-                        "entry_point_id": request.cookies.get("entryPointId", ""),
+                        "entry_point_id": request.cookies.get("entryPointId"),
                     }
                 ],
             )
@@ -67,8 +73,9 @@ class RequestBlueprint(DataBlueprint):
             show_id = request.args.get("showId")
             app.logger.debug(f"Received show ID for request count: {show_id}")
             if not show_id:
-                app.logger.error("No show ID provided in request.")
-                return jsonify({"error": "No show ID provided."}), 400
+                message = "No show ID provided."
+                app.logger.error(message)
+                return jsonify({"error": message}), 400
 
             return self._service.get_request_count_by_show_id(show_id), 200
 
@@ -101,7 +108,8 @@ class RequestBlueprint(DataBlueprint):
                             self._service.get_shows_by_entry_point_id(
                                 demo_entry_point_id
                             )
-                        )
+                        ),
+                        {},
                     ).get("id")
                 ),
                 httponly=True,

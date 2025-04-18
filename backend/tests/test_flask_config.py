@@ -7,6 +7,7 @@ import pytest
 from backend.flask.config import Config
 
 # App
+ENVIRONMENT = MagicMock()
 PROJECT_NAME = MagicMock()
 DEBUG = False
 LOG_LEVEL = MagicMock()
@@ -60,7 +61,6 @@ def variables() -> Dict[str, Any]:
 
 # pylint: disable=invalid-name
 def test_given_no_overrides_when_config_instantiated_then_config_set_to_default(
-    boto_client: MagicMock,
     variables: Dict[str, Any],
 ) -> None:
     with patch(
@@ -72,14 +72,11 @@ def test_given_no_overrides_when_config_instantiated_then_config_set_to_default(
     # AWS
     assert config.AWS_DEFAULT_REGION == AWS_DEFAULT_REGION
 
-    boto_client.assert_called_once_with(
-        "secretsmanager", region_name=AWS_DEFAULT_REGION
-    )
-
     # App
     assert config.project_name == PROJECT_NAME
     assert config.debug == DEBUG
     assert config.log_level == LOG_LEVEL
+    assert config.environment == ENVIRONMENT
 
     # JWT
     assert config.JWT_SECRET_KEY == JWT_SECRET_KEY
@@ -150,6 +147,7 @@ def test_given_no_environment_or_overrirdes_when_get_config_then_config_set_to_d
     assert config.project_name is None
     assert config.debug is False
     assert config.log_level == "INFO"
+    assert config.environment == "local"
 
     # JWT
     assert config.JWT_SECRET_KEY is None
@@ -168,3 +166,20 @@ def test_given_no_environment_or_overrirdes_when_get_config_then_config_set_to_d
     # Redis
     assert config.redis_host == "redis"
     assert config.redis_port == "6379"
+
+
+def test_given_secret_client_when_config_instantiated_then_secrets_retrieved(
+    boto_client: MagicMock,
+    variables: Dict[str, Any],
+) -> None:
+    with patch(
+        "backend.flask.config.os.getenv",
+        lambda key, default=None: variables.get(key, default),
+    ):
+        config = Config()
+    boto_client.assert_called_once_with(
+        "secretsmanager", region_name=AWS_DEFAULT_REGION
+    )
+    boto_client.return_value.get_secret_value.assert_called_once_with(
+        SecretId=f"{config.project_name}-{config.environment}-db-credentials"
+    )

@@ -93,7 +93,7 @@ def test_when_get_table_then_endpoint_is_restricted_to_appllicable_groups(
     assert mock_restrict_access["list_tables"] == ["superuser"]
 
 
-def test_given_request_when_get_table_then_table_returned(
+def test_given_request_when_get_table_details_then_table_details_returned(
     client: FlaskClient, service: DataService
 ) -> None:
     table_data = {"data": "table_data"}
@@ -138,7 +138,7 @@ def test_when_write_table_then_endpoint_is_restricted_to_appllicable_groups(
     assert mock_restrict_access["write_table"] == ["superuser"]
 
 
-def test_given_request_with_table_name_when_write_rows_then_table_name_is_validated(
+def test_given_request_with_table_name_when_write_table_then_table_name_is_validated(
     client: FlaskClient, blueprint: DataBlueprint
 ) -> None:
     table_name = "table"

@@ -108,7 +108,7 @@ class DataService:
 
     def get_table(self, table_name: str) -> Table:
         """
-        Get a table by name.
+        Get a table details by name.
 
         Args:
             table_name (str): The name of the table.

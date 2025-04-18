@@ -1,5 +1,5 @@
 """
-This module contains the AuthBlueprint class which handles authentication-related routes.
+This module contains the AuthBlueprint class which handles authentication related routes.
 """
 
 from typing import Any, Dict, Optional, Tuple, Union
@@ -12,7 +12,7 @@ from backend.flask.services.auth import AuthService
 
 class AuthBlueprint(Blueprint):
     """
-    Blueprint for handling authentication-related routes.
+    Blueprint for handling authentication related routes.
     """
 
     _service: AuthService

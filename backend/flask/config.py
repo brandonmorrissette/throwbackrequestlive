@@ -57,12 +57,11 @@ class Config:
         self.project_name: Optional[str] = overrides.get(
             "project_name", os.getenv("PROJECT_NAME")
         )
-        self.debug: Optional[bool] = bool(overrides.get("debug", os.getenv("DEBUG")))
+        self.debug: bool = bool(overrides.get("debug", os.getenv("DEBUG")))
         self.log_level: Optional[str] = overrides.get(
             "log_level", os.getenv("LOG_LEVEL", "INFO")
         )
-
-        self.environment: str = environment or os.getenv("ENVIRONMENT", "development")
+        self.environment: str = environment or os.getenv("ENVIRONMENT", "local")
 
         # JWT
         self.JWT_SECRET_KEY: Optional[str] = overrides.get(

@@ -5,7 +5,7 @@ for handling data-related routes in a Flask application.
 
 import json
 from functools import wraps
-from typing import Any, Callable, Tuple, List, Dict
+from typing import Any, Callable, Dict, List, Tuple
 
 from flask import Flask
 from flask import current_app as app
@@ -67,7 +67,7 @@ class DataBlueprint(Blueprint):
         @self.route("/tables/<table_name>", methods=["GET"])
         @restrict_access(["superuser"])
         @override_json_provider(get_json_provider_class())
-        def get_table(table_name: str) -> Tuple[Any, int]:
+        def get_table_details(table_name: str) -> Tuple[Any, int]:
             """
             Get details of a specific table.
             :param table_name: The name of the table.

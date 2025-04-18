@@ -44,7 +44,7 @@ def _create_app(app_config: Config) -> Flask:
     flask_app.config.from_object(app_config)  # pylint: disable=no-member
 
     # Logging
-    flask_app.logger.setLevel(app_config.log_level)
+    flask_app.logger.setLevel(app_config.log_level or "INFO")
     logging.basicConfig(
         level=app_config.log_level,
         format="%(asctime)s %(name)s:%(levelname)s:%(pathname)s:%(lineno)d:%(message)s",
@@ -63,8 +63,8 @@ def _create_app(app_config: Config) -> Flask:
 
     # Redis
     redis_client = redis.StrictRedis(
-        host=app_config.redis_host,
-        port=int(app_config.redis_port),
+        host=app_config.redis_host or "localhost",
+        port=int(app_config.redis_port or 6379),
         decode_responses=True,
     )
 

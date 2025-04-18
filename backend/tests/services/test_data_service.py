@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
+from flask import Flask
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -19,9 +20,9 @@ PRIMARY_KEY_NAME = "primary_key"
 UUID = str(uuid4())
 
 
-@pytest.fixture(autouse=True, scope="module")
-def mock_app_logger() -> Generator[None, None, None]:
-    with patch("backend.flask.services.data.app", new=MagicMock()):
+@pytest.fixture(autouse=True)
+def app_context(app: Flask) -> Generator[None, None, None]:
+    with app.app_context():
         yield
 
 
@@ -81,21 +82,18 @@ def metadata(tables: Dict[str, MagicMock]) -> MagicMock:
 
 
 @pytest.fixture
-def app() -> MagicMock:
-    return MagicMock()
+def app() -> Flask:
+    return Flask(__name__)
 
 
 @pytest.fixture
 def service(
-    config: MagicMock, metadata: MagicMock, engine: Engine, sessionmaker: SessionMaker
+    # pylint:disable=unused-argument
+    config: MagicMock,
+    mock_sql_alchemy_libraries: Generator[None, None, None],
 ) -> DataService:
-    with patch("backend.flask.services.data.create_engine", return_value=engine), patch(
-        "backend.flask.services.data.sessionmaker", return_value=sessionmaker
-    ), patch("backend.flask.services.data.MetaData", return_value=metadata), patch(
-        "backend.flask.services.data.DataService._refresh_metadata"
-    ):
-        data_service = DataService(config)
-        return data_service
+    data_service = DataService(config)
+    return data_service
 
 
 def test_when_get_json_provider_class_is_called_then_return_sqlalchemy_json_provider() -> (
@@ -134,7 +132,7 @@ def test_when_refresh_metadata_then_metadata_reflect_invoked(
     with patch.object(service, "_metadata", metadata):
         service._refresh_metadata()
 
-    metadata.reflect.assert_called_once_with(bind=engine)
+    metadata.reflect.assert_called_with(bind=engine)
 
 
 def test_given_table_when_get_primary_keys_then_primary_keys_returned(

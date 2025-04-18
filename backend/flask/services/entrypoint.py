@@ -51,7 +51,7 @@ class EntryPointService(DataService, AuthService):
 
         self._redis_client = redis_client
 
-    def create_entry_point(self) -> str:
+    def create_entrypoint(self) -> str:
         """
         Create an entry point.
 
