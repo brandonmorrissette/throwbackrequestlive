@@ -146,6 +146,7 @@ class RequestService(EntryPointService, DataService):
         :return: JSON response with the duplicate submission details.
         """
         request_result = self.execute(
+            # pylint: disable=R0801
             """
             SELECT song_id
             FROM requests

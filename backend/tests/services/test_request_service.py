@@ -314,6 +314,7 @@ def test_given_uid_when_get_duplicate_submission_then_return_song(
         result = service._get_duplicate_submission(UID)
 
     mock_execute.assert_any_call(
+        # pylint: disable=R0801
         """
             SELECT song_id
             FROM requests
