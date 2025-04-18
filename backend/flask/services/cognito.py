@@ -7,6 +7,7 @@ import json
 import secrets
 import string
 from datetime import datetime
+from typing import Any, Dict, List
 
 import boto3
 import redis
@@ -15,7 +16,7 @@ from backend.flask.config import Config
 from backend.flask.exceptions.boto import raise_http_exception
 
 
-def cognito_json_encoder(obj) -> str:
+def cognito_json_encoder(obj: Any) -> str:
     """
     JSON encoder function for Cognito objects.
 
@@ -39,7 +40,7 @@ class CognitoService:
     """
 
     @raise_http_exception
-    def __init__(self, config: Config) -> None:
+    def __init__(self, redis_client: redis.Redis, config: Config) -> None:
         """
         Initialize the CognitoService.
 
@@ -49,21 +50,18 @@ class CognitoService:
         ssm_client = boto3.client("ssm", region_name=config.AWS_DEFAULT_REGION)
 
         self._user_pool_id = ssm_client.get_parameter(
-            Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
+            Name=f"/{config.project_name}-{config.environment}/user-pool-id",
+            WithDecryption=True,
         )["Parameter"]["Value"]
 
         self._cognito_client = boto3.client(
             "cognito-idp", region_name=config.AWS_DEFAULT_REGION
         )
 
-        self._redis_client = redis.StrictRedis(
-            host=config.redis_host,
-            port=int(config.redis_port),
-            decode_responses=True,
-        )
+        self._redis_client = redis_client
 
     @raise_http_exception
-    def read_rows(self) -> list:
+    def read_rows(self) -> List[Dict[str, Any]]:
         """
         Read users from Cognito.
 
@@ -89,7 +87,7 @@ class CognitoService:
         return users
 
     @raise_http_exception
-    def write_rows(self, rows: list) -> None:
+    def write_rows(self, rows: List[Dict[str, Any]]) -> None:
         """
         Write users to Cognito.
 
@@ -127,7 +125,7 @@ class CognitoService:
         return "".join(secrets.choice(characters) for _ in range(12))
 
     @raise_http_exception
-    def _add_user(self, user: dict) -> None:
+    def _add_user(self, user: Dict[str, Any]) -> None:
         """
         Add a user to Cognito.
 
@@ -146,7 +144,7 @@ class CognitoService:
         self._persist_user(user["Username"], user)
 
     @raise_http_exception
-    def _update_user(self, username: str, user: dict) -> None:
+    def _update_user(self, username: str, user: Dict[str, Any]) -> None:
         """
         Update a user in Cognito.
 
@@ -178,7 +176,7 @@ class CognitoService:
         )
         self._remove_user(username)
 
-    def _persist_user(self, username: str, user: dict) -> None:
+    def _persist_user(self, username: str, user: Dict[str, Any]) -> None:
         """
         Persist a user in Redis.
 

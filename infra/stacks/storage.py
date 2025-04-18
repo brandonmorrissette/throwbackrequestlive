@@ -11,6 +11,7 @@ from constructs import Construct
 from infra.config import Config
 from infra.constructs.cache import CacheConstruct, CacheConstructArgs
 from infra.constructs.rds import RdsConstruct, RdsConstructArgs
+from infra.constructs.s3 import S3Construct
 from infra.stacks.stack import Stack, StackArgs
 
 
@@ -63,6 +64,7 @@ class StorageStack(Stack):
         self.cache_construct = CacheConstruct(
             self, CacheConstructArgs(args.config, args.vpc)
         )
+        self.s3_construct = S3Construct(self, args.config)
 
         CfnOutput(
             self,

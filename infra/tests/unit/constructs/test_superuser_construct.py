@@ -197,6 +197,6 @@ def test_logging(
     mocks.logs.LogGroup.assert_called_once_with(
         construct,
         "superuser-container-log-group",
-        log_group_name=f"{config.project_name}-superuser-container-logs",
+        log_group_name=f"{config.project_name}-{config.environment_name}-superuser-container-logs",
         removal_policy=cdk.RemovalPolicy.DESTROY,
     )

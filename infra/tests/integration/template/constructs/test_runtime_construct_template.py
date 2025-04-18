@@ -5,7 +5,6 @@ import pytest
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_secretsmanager as secretsmanager
 
 from infra.config import Config
 from infra.constructs.runtime import RuntimeConstruct, RuntimeConstructArgs
@@ -47,15 +46,8 @@ def runtime_variables() -> dict:
 
 
 @pytest.fixture(scope="module")
-def runtime_secrets(stack: Stack) -> dict:
-    runtime_secret = secretsmanager.Secret(
-        stack,
-        "MockRuntimeSecret",
-        generate_secret_string=secretsmanager.SecretStringGenerator(
-            password_length=32, exclude_punctuation=True
-        ),
-    )
-    return {"RuntimeSecret": ecs.Secret.from_secrets_manager(runtime_secret)}
+def db_credentials_arn() -> str:
+    return "arn:aws:rds:us-east-1:123456789012:secret:mysecret"
 
 
 @pytest.fixture(scope="module")
@@ -64,16 +56,16 @@ def runtime_construct_args(  # pylint: disable=too-many-arguments, too-many-posi
     certificate: acm.Certificate,
     policy: iam.ManagedPolicy,
     cluster: ecs.Cluster,
+    db_credentials_arn: str,
     runtime_variables: dict,
-    runtime_secrets: dict,
 ) -> RuntimeConstructArgs:
     return RuntimeConstructArgs(
         config=config,
         certificate=certificate,
         policy=policy,
         cluster=cluster,
+        db_credentials_arn=db_credentials_arn,
         runtime_variables=runtime_variables,
-        runtime_secrets=runtime_secrets,
     )
 
 
@@ -101,7 +93,10 @@ def test_jwt_secret(secrets: Mapping[str, Any]) -> None:
 
 
 def test_policy(
-    managed_policies: Mapping[str, Any], secrets: Mapping[str, Any], config: Config
+    managed_policies: Mapping[str, Any],
+    secrets: Mapping[str, Any],
+    config: Config,
+    db_credentials_arn: str,
 ) -> None:
     policy = next(
         policy
@@ -114,7 +109,10 @@ def test_policy(
     assert {
         "Action": ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
         "Effect": "Allow",
-        "Resource": {"Ref": next(key for key in secrets if "JWTSecret" in key)},
+        "Resource": [
+            {"Ref": next(key for key in secrets if "JWTSecret" in key)},
+            db_credentials_arn,
+        ],
     } in policy["Properties"]["PolicyDocument"]["Statement"]
 
     assert {
@@ -122,7 +120,17 @@ def test_policy(
         "Effect": "Allow",
         "Resource": f"arn:aws:ssm:{config.cdk_environment.region}:"
         f"{config.cdk_environment.account}:"
-        f"parameter/{config.project_name}/*",
+        f"parameter/{config.project_name}-{config.environment_name}/*",
+    } in policy["Properties"]["PolicyDocument"]["Statement"]
+
+    assert {
+        "Action": [
+            "s3:PutObject",
+            "s3:GetObject",
+            "s3:DeleteObject",
+        ],
+        "Effect": "Allow",
+        "Resource": f"arn:aws:s3:::{config.project_name}-{config.environment_name}-bucket/*",
     } in policy["Properties"]["PolicyDocument"]["Statement"]
 
 
@@ -234,15 +242,6 @@ def test_task_definition(
                         if f"{config.project_name}{config.environment_name}runtimeJWTSecret"
                         in key
                     ),
-                    None,
-                )
-            },
-        },
-        {
-            "Name": "RuntimeSecret",
-            "ValueFrom": {
-                "Ref": next(
-                    (key for key in secrets.keys() if "MockRuntimeSecret" in key),
                     None,
                 )
             },

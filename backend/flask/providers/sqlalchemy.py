@@ -12,6 +12,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Enum,
     Float,
     ForeignKeyConstraint,
     Integer,
@@ -48,7 +49,7 @@ class SQLALchemyJSONProvider(JSONProvider):
                 case None:
                     return serialized
 
-                case Integer() | String() | Boolean() | Float() | DateTime():
+                case Integer() | String() | Boolean() | Float() | DateTime() | Enum():
                     logging.debug("SQL Alchemy Primitive encountered: %s", obj)
                     serialized = self._serialize_sqlalchemy_type(obj)
 
@@ -124,6 +125,8 @@ class SQLALchemyJSONProvider(JSONProvider):
         match primitive:
             case Integer():
                 serialized = int.__name__
+            case Enum():
+                serialized = "enum"
             case String():
                 serialized = str.__name__
             case Boolean():

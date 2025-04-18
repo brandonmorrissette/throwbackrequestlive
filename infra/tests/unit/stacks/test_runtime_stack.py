@@ -35,7 +35,7 @@ def mock_storage_stack():
     storage_stack = MagicMock()
     storage_stack.cache_construct.cluster.attr_redis_endpoint_address = "redis_address"
     storage_stack.cache_construct.cluster.attr_redis_endpoint_port = "redis_port"
-    storage_stack.rds_construct.db_instance.secret = "db_instance_secret"
+    storage_stack.rds_construct.db_instance.secret.secret_arn = "db_instance_secret"
     return storage_stack
 
 
@@ -45,7 +45,6 @@ class Mocks:  # pylint: disable=missing-class-docstring
     runtime_construct_args: MagicMock
     route53_construct: MagicMock
     route53_construct_args: MagicMock
-    ecs: MagicMock
 
 
 @pytest.fixture(scope="module")
@@ -65,9 +64,7 @@ def mocked_runtime_stack(  # pylint: disable=too-many-arguments, too-many-positi
         "infra.stacks.runtime.Route53Construct"
     ) as mock_route53_construct, patch(
         "infra.stacks.runtime.Route53ConstructArgs"
-    ) as mock_route53_construct_args, patch(
-        "infra.stacks.runtime.ecs"
-    ) as mock_ecs:
+    ) as mock_route53_construct_args:
         args = RuntimeStackArgs(
             config,
             user_management_stack=mock_user_management_stack,
@@ -80,7 +77,6 @@ def mocked_runtime_stack(  # pylint: disable=too-many-arguments, too-many-positi
             mock_runtime_construct_args,
             mock_route53_construct,
             mock_route53_construct_args,
-            mock_ecs,
         )
 
 
@@ -112,27 +108,13 @@ def test_runtime_construct(  # pylint: disable=too-many-arguments, too-many-posi
         certificate=mock_network_stack.cert_construct.certificate,
         policy=mock_user_management_stack.superuser_construct.policy,
         cluster=mock_compute_stack.cluster_construct.cluster,
+        db_credentials_arn=mock_storage_stack.rds_construct.db_instance.secret.secret_arn,  # pylint: disable=line-too-long
         runtime_variables={
             "PROJECT_NAME": config.project_name,
-            "DB_NAME": config.project_name,
+            "ENVIRONMENT": config.environment_name,
             "REDIS_HOST": mock_storage_stack.cache_construct.cluster.attr_redis_endpoint_address,  # pylint: disable=line-too-long
             "REDIS_PORT": mock_storage_stack.cache_construct.cluster.attr_redis_endpoint_port,
         },
-        runtime_secrets={
-            "DB_USER": mocks.ecs.Secret.from_secrets_manager.return_value,
-            "DB_PASSWORD": mocks.ecs.Secret.from_secrets_manager.return_value,
-            "DB_HOST": mocks.ecs.Secret.from_secrets_manager.return_value,
-        },
-    )
-
-    mocks.ecs.Secret.from_secrets_manager.assert_any_call(
-        mock_storage_stack.rds_construct.db_instance.secret, "username"
-    )
-    mocks.ecs.Secret.from_secrets_manager.assert_any_call(
-        mock_storage_stack.rds_construct.db_instance.secret, "password"
-    )
-    mocks.ecs.Secret.from_secrets_manager.assert_any_call(
-        mock_storage_stack.rds_construct.db_instance.secret, "host"
     )
 
 

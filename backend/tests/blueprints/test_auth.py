@@ -1,9 +1,11 @@
 # pylint: disable=redefined-outer-name, missing-function-docstring, missing-module-docstring, protected-access
 import json
+from typing import Generator
 from unittest.mock import MagicMock
 
 import pytest
 from flask import Flask
+from flask.testing import FlaskClient
 
 from backend.flask.blueprints.auth import AuthBlueprint
 from backend.flask.services.auth import AuthService
@@ -15,27 +17,20 @@ TOKEN = "token"
 
 
 @pytest.fixture()
-def app(
-    service,
-):
+def app(service: AuthService) -> Generator[Flask, None, None]:
     app = Flask(__name__)
     app.register_blueprint(AuthBlueprint(service=service))
     yield app
 
 
 @pytest.fixture()
-def service():
+def service() -> AuthService:
     return MagicMock(spec=AuthService)
 
 
-@pytest.fixture()
-def client(app):
-    return app.test_client()
-
-
 def test_given_authenticate_user_returns_no_error_when_login_then_success_response_returned(
-    client, service
-):
+    client: FlaskClient, service: AuthService
+) -> None:
     service.authenticate_user.return_value = {
         "token": TOKEN,
         "session": SESSION,
@@ -61,7 +56,9 @@ def test_given_authenticate_user_returns_no_error_when_login_then_success_respon
     assert response_data["error"] is None
 
 
-def test_given_missing_creds_when_login_then_error_returned(client):
+def test_given_missing_creds_when_login_then_error_returned(
+    client: FlaskClient,
+) -> None:
     response = client.post("/login", json={})
 
     assert response.status_code == 400
@@ -88,8 +85,8 @@ def test_given_missing_creds_when_login_then_error_returned(client):
 
 
 def test_given_password_reset_when_login_then_reset_password_called_and_returned(
-    client, service
-):
+    client: FlaskClient, service: AuthService
+) -> None:
     service.reset_password.return_value = {
         "success": True,
         "token": TOKEN,

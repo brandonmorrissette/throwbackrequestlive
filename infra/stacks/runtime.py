@@ -6,7 +6,6 @@ It creates ECS runtime constructs and Route 53 configurations
 using the provided stacks and configuration.
 """
 
-from aws_cdk import aws_ecs as ecs
 from constructs import Construct
 
 from infra.config import Config
@@ -81,24 +80,16 @@ class RuntimeStack(Stack):
                 certificate=args.network_stack.cert_construct.certificate,
                 policy=args.user_management_stack.superuser_construct.policy,
                 cluster=args.compute_stack.cluster_construct.cluster,
+                db_credentials_arn=args.storage_stack.rds_construct.db_instance.secret.secret_arn,
                 runtime_variables={
                     # pylint:disable=line-too-long
-                    "PROJECT_NAME": args.config.project_name,
-                    # I'd like to update this to not use config.project_name, but have yet to find the right solution.
-                    # The address requires a database name, which is not available in a db_instance
-                    "DB_NAME": args.config.project_name,
-                    "REDIS_HOST": args.storage_stack.cache_construct.cluster.attr_redis_endpoint_address,
-                    "REDIS_PORT": args.storage_stack.cache_construct.cluster.attr_redis_endpoint_port,
-                },
-                runtime_secrets={
-                    "DB_USER": ecs.Secret.from_secrets_manager(
-                        args.storage_stack.rds_construct.db_instance.secret, "username"
+                    "PROJECT_NAME": str(args.config.project_name),
+                    "ENVIRONMENT": str(args.config.environment_name),
+                    "REDIS_HOST": str(
+                        args.storage_stack.cache_construct.cluster.attr_redis_endpoint_address
                     ),
-                    "DB_PASSWORD": ecs.Secret.from_secrets_manager(
-                        args.storage_stack.rds_construct.db_instance.secret, "password"
-                    ),
-                    "DB_HOST": ecs.Secret.from_secrets_manager(
-                        args.storage_stack.rds_construct.db_instance.secret, "host"
+                    "REDIS_PORT": str(
+                        args.storage_stack.cache_construct.cluster.attr_redis_endpoint_port
                     ),
                 },
             ),

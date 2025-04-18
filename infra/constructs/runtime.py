@@ -47,8 +47,8 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         certificate: acm.ICertificate,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
-        runtime_variables: dict[str, str],
-        runtime_secrets: dict[str, ecs.Secret],
+        db_credentials_arn: str,
+        runtime_variables: dict[str, str] | None = None,
         uid: str = "runtime",
         prefix: str = "",
     ) -> None:
@@ -57,7 +57,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         self.policy = policy
         self.cluster = cluster
         self.runtime_variables = runtime_variables
-        self.runtime_secrets = runtime_secrets
+        self.db_credentials_arn = db_credentials_arn
 
 
 class RuntimeConstruct(Construct):
@@ -95,10 +95,6 @@ class RuntimeConstruct(Construct):
             ),
         )
 
-        args.runtime_secrets["JWT_SECRET_KEY"] = ecs.Secret.from_secrets_manager(
-            jwt_secret
-        )
-
         policy = iam.ManagedPolicy(
             self,
             "runtime-policy",
@@ -111,7 +107,10 @@ class RuntimeConstruct(Construct):
                         "secretsmanager:GetSecretValue",
                         "secretsmanager:DescribeSecret",
                     ],
-                    resources=[jwt_secret.secret_arn],
+                    resources=[
+                        jwt_secret.secret_arn,
+                        args.db_credentials_arn,
+                    ],
                 ),
                 iam.PolicyStatement(
                     actions=[
@@ -120,7 +119,18 @@ class RuntimeConstruct(Construct):
                     resources=[
                         f"arn:aws:ssm:{args.config.cdk_environment.region}:"
                         f"{args.config.cdk_environment.account}:"
-                        f"parameter/{args.config.project_name}/*"
+                        f"parameter/{args.config.project_name}-{args.config.environment_name}/*"
+                    ],
+                ),
+                iam.PolicyStatement(
+                    actions=[
+                        "s3:PutObject",
+                        "s3:GetObject",
+                        "s3:DeleteObject",
+                    ],
+                    resources=[
+                        f"arn:aws:s3:::{args.config.project_name}-"
+                        f"{args.config.environment_name}-bucket/*",
                     ],
                 ),
             ],
@@ -163,7 +173,7 @@ class RuntimeConstruct(Construct):
                 stream_prefix=args.config.project_name, log_group=log_group
             ),
             environment=args.runtime_variables,
-            secrets=args.runtime_secrets,
+            secrets={"JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret)},
             task_role=task_role,
         )
 

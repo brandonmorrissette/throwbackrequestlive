@@ -18,8 +18,8 @@ def runtime_construct_args(config: Config) -> RuntimeConstructArgs:
         certificate=MagicMock(),
         cluster=MagicMock(),
         policy=MagicMock(),
+        db_credentials_arn=MagicMock(),
         runtime_variables=MagicMock(),
-        runtime_secrets=MagicMock(),
     )
 
 
@@ -72,10 +72,7 @@ def test_default_id(
     )
 
 
-def test_jwt_secret_creation(
-    mock_runtime_construct: tuple[RuntimeConstruct, Mocks],
-    runtime_construct_args: MagicMock,
-):
+def test_jwt_secret_creation(mock_runtime_construct: tuple[RuntimeConstruct, Mocks]):
     construct, mocks = mock_runtime_construct
 
     mocks.secretsmanager.Secret.assert_called_once_with(
@@ -93,13 +90,11 @@ def test_jwt_secret_creation(
         mocks.secretsmanager.Secret.return_value
     )
 
-    runtime_construct_args.runtime_secrets.__setitem__.assert_called_once_with(
-        "JWT_SECRET_KEY", mocks.ecs.Secret.from_secrets_manager.return_value
-    )
-
 
 def test_policy_created(
-    mock_runtime_construct: tuple[RuntimeConstruct, Mocks], config: Config
+    mock_runtime_construct: tuple[RuntimeConstruct, Mocks],
+    runtime_construct_args: RuntimeConstructArgs,
+    config: Config,
 ):
     construct, mocks = mock_runtime_construct
 
@@ -110,17 +105,33 @@ def test_policy_created(
         statements=[
             mocks.iam.PolicyStatement.return_value,
             mocks.iam.PolicyStatement.return_value,
+            mocks.iam.PolicyStatement.return_value,
         ],
     )
     mocks.iam.PolicyStatement.assert_any_call(
         actions=["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
-        resources=[mocks.secretsmanager.Secret.return_value.secret_arn],
+        resources=[
+            mocks.secretsmanager.Secret.return_value.secret_arn,
+            runtime_construct_args.db_credentials_arn,
+        ],
     )
     mocks.iam.PolicyStatement.assert_any_call(
         actions=["ssm:GetParameter"],
         resources=[
             f"arn:aws:ssm:{config.cdk_environment.region}:"
-            f"{config.cdk_environment.account}:parameter/{config.project_name}/*"
+            f"{config.cdk_environment.account}:parameter/{config.project_name}-{config.environment_name}/*"  # pylint: disable=line-too-long
+        ],
+    )
+
+    mocks.iam.PolicyStatement.assert_any_call(
+        actions=[
+            "s3:PutObject",
+            "s3:GetObject",
+            "s3:DeleteObject",
+        ],
+        resources=[
+            f"arn:aws:s3:::{config.project_name}-"
+            f"{config.environment_name}-bucket/*",
         ],
     )
 
@@ -178,7 +189,7 @@ def test_task_image_creation(
         container_port=5000,
         log_driver=mocks.ecs.LogDrivers.aws_logs.return_value,
         environment=runtime_construct_args.runtime_variables,
-        secrets=runtime_construct_args.runtime_secrets,
+        secrets={"JWT_SECRET_KEY": mocks.ecs.Secret.from_secrets_manager.return_value},
         task_role=mocks.iam.Role.return_value,
     )
 

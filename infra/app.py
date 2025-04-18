@@ -20,9 +20,7 @@ Usage example:
 import os
 
 import aws_cdk as cdk
-from aws_cdk import Aspects
 
-from infra.aspects.tagging import TaggingAspect
 from infra.config import Config
 from infra.stacks.compute import ComputeStack, ComputeStackArgs
 from infra.stacks.network import NetworkStack, NetworkStackArgs
@@ -41,8 +39,6 @@ config = Config(
         region=os.getenv("AWS_REGION"),
     ),
 )
-
-Aspects.of(app).add(TaggingAspect(config), priority=100)
 
 user_management_stack = UserManagementStack(app, UserManagementStackArgs(config))
 network_stack = NetworkStack(app, NetworkStackArgs(config))

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useError } from '../../contexts/ErrorContext';
-import apiRequest from '../../routing/Request';
+import get from '../../routing/Request';
 
 interface PasswordResetProps {
     session: string;
@@ -19,12 +20,14 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ session, username }) => {
     const [loading, setLoading] = useState(false);
     const { setError } = useError();
 
+    const navigate = useNavigate();
+
     const handlePasswordReset = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            const response = await apiRequest('/api/login', {
+            const response = await get('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -36,7 +39,7 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ session, username }) => {
             });
 
             if (response.success) {
-                window.location.href = '/admin';
+                navigate('/admin');
             } else {
                 throw new Error(
                     response.error ||

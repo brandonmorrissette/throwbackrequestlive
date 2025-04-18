@@ -1,31 +1,39 @@
 import { ColDef } from '../components/table/ColDef';
 import { Options } from '../components/table/Options';
-import apiRequest from '../routing/Request';
+import apiRequest, { createBearerHeader } from '../routing/Request';
 
 const API_BASE_URL = '/api/tables';
 
 export interface IDataService {
-    getTable(tableName: string): Promise<any>;
-    readRows(tableName: string): Promise<any[]>;
-    writeRows(tableName: string, rows: any[]): Promise<void>;
+    getTableProperties(tableName: string, token: string): Promise<any>;
+    getRows(tableName: string, token: string): Promise<any[]>;
+    putRows(tableName: string, token: string, rows: any[]): Promise<void>;
 }
 
-class DataService implements IDataService {
+export class DataService implements IDataService {
     /**
      * Fetches the list of table names.
+     * @param {string} token - The authentication token.
      * @returns {Promise<string[]>} The list of table names.
      */
-    async getTableNames(): Promise<string[]> {
-        return await apiRequest(`${API_BASE_URL}`);
+    async getTableNames(token: string | null): Promise<string[]> {
+        return await apiRequest(`${API_BASE_URL}`, createBearerHeader(token));
     }
 
     /**
      * Fetches the table schema and data.
      * @param {string} tableName - The name of the table.
+     * @param {string} token - The authentication token.
      * @returns {Promise<any>} The table schema and data.
      */
-    async getTable(tableName: string): Promise<any> {
-        const table = await apiRequest(`${API_BASE_URL}/${tableName}`);
+    async getTableProperties(
+        tableName: string,
+        token: string | null
+    ): Promise<Options> {
+        const table = await apiRequest(
+            `${API_BASE_URL}/${tableName}`,
+            createBearerHeader(token)
+        );
 
         const columns: ColDef[] = table.columns.map((col: any) => {
             const columnDef: ColDef = new ColDef({
@@ -55,46 +63,54 @@ class DataService implements IDataService {
     /**
      * Reads rows from the table with optional filters, limit, offset, and sorting.
      * @param {string} tableName - The name of the table.
-     * @param {Object} [options] - Optional parameters for filtering, limiting, offsetting, and sorting.
+     * @param {string} token - The authentication token.
      * @returns {Promise<any>} The table rows.
      */
-    async readRows(
-        tableName: string,
-        options?: {
-            filters?: string[];
-            limit?: number;
-            offset?: number;
-            sort_by?: string;
-            sort_order?: 'asc' | 'desc';
-        }
-    ): Promise<any> {
-        const queryParams = new URLSearchParams();
-
-        if (options?.filters)
-            queryParams.append('filters', JSON.stringify(options.filters));
-        if (options?.limit)
-            queryParams.append('limit', JSON.stringify(options.limit));
-        if (options?.offset)
-            queryParams.append('offset', JSON.stringify(options.offset));
-        if (options?.sort_by) queryParams.append('sort_by', options.sort_by);
-        if (options?.sort_order)
-            queryParams.append('sort_order', options.sort_order);
-
+    async getRows(tableName: string, token: string | null): Promise<any> {
         return await apiRequest(
-            `${API_BASE_URL}/${tableName}/rows?${queryParams.toString()}`
+            `${API_BASE_URL}/${tableName}/rows`,
+            createBearerHeader(token)
         );
     }
 
     /**
-     * Writes rows to the table.
+     * Puts rows in a table.
      * @param {string} tableName - The name of the table.
+     * @param {string} token - The authentication token.
      * @param {any[]} rows - The rows to be written.
      * @returns {Promise<void>}
      */
-    async writeRows(tableName: string, rows: any[]): Promise<void> {
+    async putRows(
+        tableName: string,
+        token: string | null,
+        rows: any[]
+    ): Promise<void> {
         await apiRequest(`${API_BASE_URL}/${tableName}/rows`, {
             method: 'PUT',
             headers: {
+                ...createBearerHeader(token).headers,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ rows }),
+        });
+    }
+
+    /**
+     * Posts rows to a table.
+     * @param {string} tableName - The name of the table.
+     * @param {string} token - The authentication token.
+     * @param {any[]} rows - The rows to be written.
+     * @returns {Promise<void>}
+     */
+    async postRows(
+        tableName: string,
+        token: string | null,
+        rows: any[]
+    ): Promise<void> {
+        await apiRequest(`${API_BASE_URL}/${tableName}/rows`, {
+            method: 'POST',
+            headers: {
+                ...createBearerHeader(token).headers,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ rows }),

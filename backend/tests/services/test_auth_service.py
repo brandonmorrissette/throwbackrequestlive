@@ -1,5 +1,6 @@
 # pylint: disable=redefined-outer-name, protected-access, missing-function-docstring, missing-module-docstring
 from unittest.mock import MagicMock, patch
+from typing import Generator
 
 import pytest
 
@@ -10,19 +11,12 @@ from backend.tests.mock.errors import CLIENT_ERROR, ERROR_MESSAGE, STATUS_CODE
 
 
 @pytest.fixture
-def config():
-    mock_config = MagicMock(spec=Config)
-    mock_config.__init__()  # pylint: disable=unnecessary-dunder-call
-    return mock_config
-
-
-@pytest.fixture
-def auth_service(config):
+def auth_service(config: Config) -> Generator[AuthService, None, None]:
     with patch("boto3.client"):
-        return AuthService(config)
+        yield AuthService(config)
 
 
-def test_when_init_then_cognito_params_are_retrieved(config: Config):
+def test_when_init_then_cognito_params_are_retrieved(config: Config) -> None:
     with patch("boto3.client") as mock_boto:
         service = AuthService(config)
 
@@ -30,10 +24,12 @@ def test_when_init_then_cognito_params_are_retrieved(config: Config):
     mock_boto.assert_any_call("ssm", region_name=config.AWS_DEFAULT_REGION)
 
     mock_boto.return_value.get_parameter.assert_any_call(
-        Name=f"/{config.project_name}/user-pool-client-id", WithDecryption=True
+        Name=f"/{config.project_name}-{config.environment}/user-pool-client-id",
+        WithDecryption=True,
     )
     mock_boto.return_value.get_parameter.assert_any_call(
-        Name=f"/{config.project_name}/user-pool-id", WithDecryption=True
+        Name=f"/{config.project_name}-{config.environment}/user-pool-id",
+        WithDecryption=True,
     )
 
     service._client_id = mock_boto.return_value.get_parameter.return_value["Parameter"][
@@ -44,16 +40,18 @@ def test_when_init_then_cognito_params_are_retrieved(config: Config):
     ]["Value"]
 
 
-def test_given_valid_creds_when_authenticate_user_then_return_token(auth_service):
+def test_given_valid_creds_when_authenticate_user_then_return_token(
+    auth_service: AuthService,
+) -> None:
     with patch("backend.flask.services.auth.AuthService.generate_jwt") as generate_jwt:
         response = auth_service.authenticate_user("test_user", "test_password")
         assert response["token"] == generate_jwt.return_value
 
 
 def test_given_boto_client_error_raised_when_authenticate_user_then_raise_http_exception(
-    auth_service,
-):
-    auth_service._client.initiate_auth.side_effect = CLIENT_ERROR
+    auth_service: AuthService,
+) -> None:
+    auth_service._cognito_client.initiate_auth.side_effect = CLIENT_ERROR
     with pytest.raises(HTTPException) as e:
         auth_service.authenticate_user("test_user", "test_password")
         assert e.value.description == ERROR_MESSAGE
@@ -61,11 +59,11 @@ def test_given_boto_client_error_raised_when_authenticate_user_then_raise_http_e
 
 
 def test_given_new_password_required_response_when_authenticate_user_then_correct_response_returned(
-    auth_service,
-):
+    auth_service: AuthService,
+) -> None:
     with patch("backend.flask.services.auth.AuthService.generate_jwt") as generate_jwt:
         session = MagicMock()
-        auth_service._client.initiate_auth.return_value = {
+        auth_service._cognito_client.initiate_auth.return_value = {
             "ChallengeName": "NEW_PASSWORD_REQUIRED",
             "Session": session,
         }
@@ -75,7 +73,9 @@ def test_given_new_password_required_response_when_authenticate_user_then_correc
         assert response["session"] == session
 
 
-def test_given_valid_creds_when_reset_password_then_return_token(auth_service):
+def test_given_valid_creds_when_reset_password_then_return_token(
+    auth_service: AuthService,
+) -> None:
     with patch("backend.flask.services.auth.AuthService.generate_jwt") as generate_jwt:
         response = auth_service.reset_password(
             "test_user", "test_password", "test_session"
@@ -84,9 +84,9 @@ def test_given_valid_creds_when_reset_password_then_return_token(auth_service):
 
 
 def test_given_boto_client_error_raised_when_reset_password_then_raise_http_exception(
-    auth_service,
-):
-    auth_service._client.respond_to_auth_challenge.side_effect = CLIENT_ERROR
+    auth_service: AuthService,
+) -> None:
+    auth_service._cognito_client.respond_to_auth_challenge.side_effect = CLIENT_ERROR
     try:
         auth_service.reset_password("test_user", "test_password", "test_session")
     except HTTPException as e:
@@ -94,17 +94,19 @@ def test_given_boto_client_error_raised_when_reset_password_then_raise_http_exce
         assert e.code == STATUS_CODE
 
 
-def test_given_username_when_get_groups_by_username_then_return_groups(auth_service):
+def test_given_username_when_get_groups_by_username_then_return_groups(
+    auth_service: AuthService,
+) -> None:
     group_name = "test_group"
     groups = {"Groups": [{"GroupName": group_name}]}
-    auth_service._client.admin_list_groups_for_user.return_value = groups
+    auth_service._cognito_client.admin_list_groups_for_user.return_value = groups
     assert auth_service.get_groups_by_username("test_user") == [group_name]
 
 
 def test_given_boto_client_error_raised_when_get_groups_by_username_then_raise_http_exception(
-    auth_service,
-):
-    auth_service._client.respond_to_auth_challenge.side_effect = CLIENT_ERROR
+    auth_service: AuthService,
+) -> None:
+    auth_service._cognito_client.respond_to_auth_challenge.side_effect = CLIENT_ERROR
     try:
         auth_service.get_groups_by_username("test_user")
     except HTTPException as e:
@@ -112,7 +114,9 @@ def test_given_boto_client_error_raised_when_get_groups_by_username_then_raise_h
         assert e.code == STATUS_CODE
 
 
-def test_given_username_and_groups_when_generate_jwt_then_return_token(auth_service):
+def test_given_username_and_groups_when_generate_jwt_then_return_token(
+    auth_service: AuthService,
+) -> None:
     with patch("backend.flask.services.auth.jwt") as jwt, patch(
         "backend.flask.services.auth.datetime"
     ) as datetime, patch("backend.flask.services.auth.timedelta") as timedelta:

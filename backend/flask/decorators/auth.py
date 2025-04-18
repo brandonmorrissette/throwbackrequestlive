@@ -3,13 +3,14 @@ This module contains decorators for restricting access to Flask endpoints based 
 """
 
 from functools import wraps
+from typing import Any, Callable, List
 
 from flask import current_app as app
 from flask_jwt_extended import get_jwt, verify_jwt_in_request
 from werkzeug.exceptions import HTTPException
 
 
-def restrict_access(groups):
+def restrict_access(groups: List[str]) -> Callable:
     """
     Decorator to restrict access to endpoints based on user groups.
 
@@ -20,9 +21,9 @@ def restrict_access(groups):
         function: The decorated function which checks for group membership.
     """
 
-    def decorator(fn):
+    def decorator(fn: Callable) -> Callable:
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             """
             Wrapper function to verify JWT and check group membership.
 

@@ -67,14 +67,17 @@ class UserPoolConstruct(Construct):
         super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
         self._cognito_client = boto3.client("cognito-idp")
-        user_pool_name = f"{args.config.project_name}-user-pool"
+        user_pool_name = (
+            f"{args.config.project_name}-{args.config.environment_name}-user-pool"
+        )
 
         user_pool = self._get_user_pool(user_pool_name)
         self.user_pool_id = user_pool.user_pool_id
         ssm.StringParameter(
             self,
             "UserPoolIdParameter",
-            parameter_name=f"/{args.config.project_name}/user-pool-id",
+            parameter_name=f"/{args.config.project_name}-{args.config.environment_name}"
+            f"/user-pool-id",
             string_value=user_pool.user_pool_id,
         )
 
@@ -83,7 +86,7 @@ class UserPoolConstruct(Construct):
         ssm.StringParameter(
             self,
             "UserPoolClientIdParameter",
-            parameter_name=f"/{args.config.project_name}/user-pool-client-id",
+            parameter_name=f"/{args.config.project_name}-{args.config.environment_name}/user-pool-client-id",  # pylint: disable=line-too-long
             string_value=user_pool_client.user_pool_client_id,
         )
 

@@ -1,5 +1,4 @@
 import { parse } from 'papaparse';
-import { Options } from '../components/table/Options';
 import { Row } from '../components/table/Row';
 
 export class TableService {
@@ -31,16 +30,18 @@ export class TableService {
 
     /**
      * Saves changes to the table.
-     * @param {Options} tableProperties - The table properties.
+     * @param {string} table_name - The name of the table.
+     * @param {string} token - The authentication token.
      * @param {Row[]} rowData - The current row data.
      * @returns {Promise<any[]>} The updated row data from the server.
      */
     async saveChanges(
-        tableProperties: Options,
+        table_name: string,
+        token: string | null,
         rowData: Row[]
     ): Promise<any[]> {
-        await this.tableService.writeRows(tableProperties.name, rowData);
-        return await this.tableService.readRows(tableProperties.name);
+        await this.tableService.putRows(table_name, token, rowData);
+        return await this.tableService.getRows(table_name, token);
     }
 
     /**

@@ -71,20 +71,16 @@ button:hover {
  ****************************************************/
 
 .list-group-item {
-    display: flex;
-    flex-direction: column;
     background-color: transparent !important;
-    border: 2px solid rgba(247, 189, 65, 0.4);
-    border-radius: 10px;
-    margin: 10px 0;
-    padding: 15px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    justify-content: space-between;
+    border: 2px solid var(--color-accent-darker);
+    border-radius: 25px;
+    padding: 25px;
+    color: var(--color-primary);
 }
 
 .list-group-item:hover {
-    background-color: rgba(247, 189, 65, 0.1);
+    color: var(--color-primary-opacity);
+    border: 3px solid var(--color-accent-darker);
 }
 
 .form-group {
@@ -104,6 +100,7 @@ button:hover {
 .form-group input[type='email'],
 .form-group input[type='phone'],
 .form-group input[type='password'],
+.form-group input[type='datetime-local'],
 .form-group textarea {
     flex: 1;
     border: 1px solid var(--color-accent-opacity);
@@ -148,4 +145,39 @@ button:hover {
 .Toastify__progress-bar {
     background-color: var(--color-accent-darker);
     border-radius: 5px;
+}
+
+/****************************************************
+ * React-Tabs
+ ****************************************************/
+
+.react-tabs__tab--selected {
+    background-color: var(--color-accent) !important;
+    font-weight: bold;
+    color: white;
+    border: none;
+    outline: none;
+}
+
+.react-tabs__tab-list {
+    display: flex;
+    justify-content: flex-start;
+    border-bottom: 2px solid var(--color-accent-darker) !important;
+    margin-bottom: 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.react-tabs__tab {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    background-color: var(--color-accent-opacity);
+    color: white;
+    margin-right: 4px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.react-tabs__tab:hover {
+    background-color: var(--color-accent);
 }

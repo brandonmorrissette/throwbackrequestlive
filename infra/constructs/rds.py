@@ -92,7 +92,7 @@ class RdsConstruct(Construct):
             vpc=args.vpc,
             credentials=rds.Credentials.from_generated_secret(
                 "db_master_user",
-                secret_name=f"{args.config.project_name}-db-credentials",
+                secret_name=f"{args.config.project_name}-{args.config.environment_name}-db-credentials",  # pylint: disable=line-too-long
             ),
             allocated_storage=20,
             multi_az=False,
@@ -142,7 +142,7 @@ class RdsConstruct(Construct):
         log_group = logs.LogGroup(
             self,
             "sql-container-log-group",
-            log_group_name=f"/{args.config.project_name}-sql-container-logs-{self.node.id}",
+            log_group_name=f"/{args.config.project_name}-{args.config.environment_name}-sql-container-logs",  # pylint: disable=line-too-long
             removal_policy=RemovalPolicy.DESTROY,
         )
 
