@@ -160,7 +160,7 @@ def test_given_show_start_time_after_now_when_validate_entry_point_id_then_raise
         "get_shows_by_entry_point_id",
         return_value=[
             {
-                "start_time": datetime.now() + timedelta(hours=1),
+                "start_time": datetime.now() + timedelta(hours=2),
             }
         ],
     ) as mock_get_shows_by_entry_point_id:
