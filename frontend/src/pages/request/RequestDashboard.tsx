@@ -1,22 +1,39 @@
 import 'chart.js/auto';
 import React, { useEffect, useRef, useState } from 'react';
-import { Bar } from 'react-chartjs-2';
+import { BarDashboard } from '../../components/dashboard/Dashboard';
 import { useAuth } from '../../contexts/AuthContext';
 import { Show } from '../../models/show';
 import { Song } from '../../models/song';
 import { default as RequestService } from '../../services/request';
 import './RequestDashboard.css';
 
+/**
+ * RequestDashboard Component
+ *
+ * This component displays a dashboard for managing and visualizing song requests for different shows.
+ * It allows users to:
+ * - Select a show from a dropdown menu.
+ * - View a bar chart of song request counts for the selected show.
+ * - Sync the data to ensure it is up-to-date.
+ *
+ * Dependencies:
+ * - Uses the `BarDashboard` class to encapsulate the chart rendering and sync button logic.
+ * - Fetches data from the backend using `RequestService`.
+ */
 const RequestDashboard: React.FC = () => {
     const [shows, setShows] = useState<Show[]>([]);
     const [songs, setSongs] = useState<Song[]>([]);
     const [selectedShow, setSelectedShow] = useState<Show | null>(null);
     const [songRequestCounts, setSongRequestCounts] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [syncing, setSyncing] = useState<boolean>(false);
     const { token } = useAuth();
+    const [, setSyncing] = useState<boolean>(false);
     const chartRef = useRef<any>(null);
 
+    /**
+     * Fetches the list of shows and songs from the backend.
+     * Populates the `shows` and `songs` state variables.
+     */
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
@@ -34,6 +51,12 @@ const RequestDashboard: React.FC = () => {
         fetchData();
     }, []);
 
+    /**
+     * Handles the selection of a show from the dropdown.
+     * Fetches the song request counts for the selected show.
+     *
+     * @param show - The selected show object.
+     */
     const handleShowChange = async (show: Show) => {
         setSelectedShow(show);
         setLoading(true);
@@ -49,6 +72,10 @@ const RequestDashboard: React.FC = () => {
         }
     };
 
+    /**
+     * Syncs the song request counts for the currently selected show.
+     * Updates the chart data and ensures the chart is refreshed.
+     */
     const handleSync = async () => {
         if (!selectedShow) return;
         setSyncing(true);
@@ -67,19 +94,7 @@ const RequestDashboard: React.FC = () => {
         }
     };
 
-    const primary_color = getComputedStyle(document.documentElement)
-        .getPropertyValue('--color-primary')
-        .trim();
-
-    const primary_color_opacity = getComputedStyle(
-        document.documentElement
-    ).getPropertyValue('--color-primary-opacity');
-
-    const accent_color = getComputedStyle(
-        document.documentElement
-    ).getPropertyValue('--color-accent');
-
-    const barChartData = {
+    const data = {
         labels: songRequestCounts.map((item: any) => {
             const song = songs.find((s: any) => s.id === item.song_id);
             return song ? [song.band_name, song.song_name] : 'Unknown';
@@ -87,36 +102,8 @@ const RequestDashboard: React.FC = () => {
         datasets: [
             {
                 data: songRequestCounts.map((item: any) => item.count),
-                backgroundColor: accent_color,
-                borderColor: primary_color,
-                borderWidth: 1,
             },
         ],
-    };
-
-    const options = {
-        scales: {
-            x: {
-                ticks: {
-                    color: primary_color_opacity,
-                    font: {
-                        size: 18,
-                    },
-                },
-            },
-            y: {
-                ticks: {
-                    color: primary_color_opacity,
-                    stepSize: 1,
-                    beginAtZero: true,
-                },
-            },
-        },
-        plugins: {
-            legend: {
-                display: false,
-            },
-        },
     };
 
     return (
@@ -147,15 +134,14 @@ const RequestDashboard: React.FC = () => {
                         </option>
                     ))}
                 </select>
-                <button id="syncButton" onClick={handleSync} disabled={syncing}>
-                    {syncing ? 'Syncing...' : 'Sync'}
-                </button>
             </div>
 
             {selectedShow && songRequestCounts.length > 0 && (
-                <div style={{ marginTop: 20 }}>
-                    <Bar ref={chartRef} data={barChartData} options={options} />
-                </div>
+                <BarDashboard
+                    chartRef={chartRef}
+                    data={data}
+                    syncFunction={handleSync}
+                />
             )}
         </div>
     );

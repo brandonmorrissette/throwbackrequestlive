@@ -1,7 +1,6 @@
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
-import RequestDashboard from './RequestDashboard';
+import RequestDashboard from '../request/RequestDashboard';
 import ShowCreation from './ShowCreation';
-import './ShowManagement.css';
 
 /**
  * ShowManagement component that allows managing show tables.

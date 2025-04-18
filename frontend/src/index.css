@@ -150,13 +150,34 @@ button:hover {
 /****************************************************
  * React-Tabs
  ****************************************************/
-.react-tabs__tab-list {
-    border-bottom: 2px solid var(--color-accent);
-}
 
 .react-tabs__tab--selected {
-    background-color: var(--color-accent);
+    background-color: var(--color-accent) !important;
     font-weight: bold;
     color: white;
-    border: None;
+    border: none;
+    outline: none;
+}
+
+.react-tabs__tab-list {
+    display: flex;
+    justify-content: flex-start;
+    border-bottom: 2px solid var(--color-accent-darker) !important;
+    margin-bottom: 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.react-tabs__tab {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    background-color: var(--color-accent-opacity);
+    color: white;
+    margin-right: 4px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.react-tabs__tab:hover {
+    background-color: var(--color-accent);
 }

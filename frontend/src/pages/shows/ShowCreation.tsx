@@ -3,7 +3,6 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 import { useError } from '../../contexts/ErrorContext';
 import { default as DataService } from '../../services/data';
-import './ShowManagement.css';
 
 /**
  * ShowCreation component that renders the form for creating a show.

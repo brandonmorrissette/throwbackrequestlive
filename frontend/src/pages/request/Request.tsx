@@ -61,7 +61,7 @@ const Request: React.FC = () => {
 
     const handleRequest = async () => {
         if (selectedSong) {
-            RequestService.recordRequest(selectedSong, showId);
+            RequestService.putRequest(selectedSong, showId);
             navigate(
                 '/?songName=' + encodeURIComponent(selectedSong.song_name)
             );
