@@ -10,7 +10,6 @@ Usage example:
 """
 
 import boto3
-from aws_cdk import Token
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ssm as ssm
 
@@ -77,17 +76,24 @@ class UserPoolConstruct(Construct):
             self,
             "UserPoolIdParameter",
             parameter_name=f"/{args.config.project_name}-{args.config.environment_name}"
-            f"/user-pool-id",
+            "/user-pool-id",
             string_value=user_pool.user_pool_id,
         )
 
-        user_pool_client = self._get_user_pool_client(user_pool_name)
-        self.user_pool_client_id = user_pool_client.user_pool_client_id
+        app_client = user_pool.add_client(
+            "AppClient",
+            user_pool_client_name=f"{user_pool_name}-app-client",
+            auth_flows=cognito.AuthFlow(
+                admin_user_password=True,
+                user_password=True,
+            ),
+        )
         ssm.StringParameter(
             self,
             "UserPoolClientIdParameter",
-            parameter_name=f"/{args.config.project_name}-{args.config.environment_name}/user-pool-client-id",  # pylint: disable=line-too-long
-            string_value=user_pool_client.user_pool_client_id,
+            parameter_name=f"/{args.config.project_name}-{args.config.environment_name}"
+            "/user-pool-client-id",
+            string_value=app_client.user_pool_client_id,
         )
 
     def _get_user_pool(self, user_pool_name):
@@ -128,44 +134,4 @@ class UserPoolConstruct(Construct):
                 require_symbols=False,
             ),
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
-        )
-
-    def _get_user_pool_client(self, user_pool_name):
-        """
-        Retrieves the Cognito client for the user pool.
-        If the client does not exist,
-        it creates a new one.
-
-        Args:
-            user_pool_name (str): The name of the user pool.
-
-        Returns:
-            cognito.UserPoolClient: The Cognito client.
-        """
-        if not Token.is_unresolved(self.user_pool_id):
-            app_clients = self._cognito_client.list_user_pool_clients(
-                UserPoolId=self.user_pool_id, MaxResults=60
-            )
-            for client in app_clients.get("UserPoolClients", []):
-                if client["ClientName"] == user_pool_name + "-app-client":
-                    return cognito.UserPoolClient.from_user_pool_client_id(
-                        self,
-                        user_pool_name + "-app-client",
-                        user_pool_client_id=client["ClientId"],
-                    )
-
-        cfn_client = cognito.CfnUserPoolClient(
-            self,
-            f"{user_pool_name}-app-client-L1",
-            user_pool_id=self.user_pool_id,
-            client_name=f"{user_pool_name}-app-client",
-            explicit_auth_flows=[
-                "ALLOW_ADMIN_USER_PASSWORD_AUTH",
-                "ALLOW_USER_PASSWORD_AUTH",
-                "ALLOW_REFRESH_TOKEN_AUTH",
-            ],
-        )
-
-        return cognito.UserPoolClient.from_user_pool_client_id(
-            self, f"{user_pool_name}-app-client", user_pool_client_id=cfn_client.ref
         )
