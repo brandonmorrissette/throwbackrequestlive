@@ -92,7 +92,7 @@ class RequestService(EntryPointService, DataService):
 
         start_time = show.get("start_time", "")
         if (
-            not start_time
+            not (start_time - timedelta(hours=1))
             < datetime.now()
             < show.get("end_time", start_time + timedelta(hours=1))
         ):
@@ -102,7 +102,8 @@ class RequestService(EntryPointService, DataService):
     def _is_duplicate(self, uid: str, entry_point_id: str) -> bool:
         """
         Check if the submission is a duplicate.
-        :param uid: The unique identifier for the submission.
+        :param uid.
+        : The unique identifier for the submission.
         :param entry_point_id: The entry point ID for the submission.
         :return: True if the submission is a duplicate, otherwise False.
         """

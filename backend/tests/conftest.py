@@ -40,6 +40,11 @@ def mock_sql_alchemy_libraries(
         yield
 
 
+@pytest.fixture
+def redis_client():
+    return MagicMock()
+
+
 @pytest.fixture()
 def engine() -> Engine:
     return MagicMock()

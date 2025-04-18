@@ -8,11 +8,7 @@ import pytest
 
 with patch("aws_cdk.App"), patch("aws_cdk.Environment"), patch(
     "infra.config.Config"
-) as mock_config, patch("aws_cdk.Aspects"), patch(
-    "infra.aspects.tagging.TaggingAspect"
-), patch(
-    "infra.stacks.user_management.UserManagementStack"
-), patch(
+) as mock_config, patch("infra.stacks.user_management.UserManagementStack"), patch(
     "infra.stacks.network.NetworkStack"
 ), patch(
     "infra.stacks.compute.ComputeStack"
@@ -29,11 +25,7 @@ with patch("aws_cdk.App"), patch("aws_cdk.Environment"), patch(
 def test_default_project_name():
     with patch("aws_cdk.App"), patch("aws_cdk.Environment"), patch(
         "infra.config.Config"
-    ) as mock_config, patch("aws_cdk.Aspects"), patch(
-        "infra.aspects.tagging.TaggingAspect"
-    ), patch(
-        "infra.stacks.user_management.UserManagementStack"
-    ), patch(
+    ) as mock_config, patch("infra.stacks.user_management.UserManagementStack"), patch(
         "infra.stacks.network.NetworkStack"
     ), patch(
         "infra.stacks.compute.ComputeStack"
@@ -60,8 +52,6 @@ class Mocks:  # pylint: disable=missing-class-docstring, too-many-instance-attri
     cdk_env: MagicMock
     config: MagicMock
     os_get_env: MagicMock
-    aspects: MagicMock
-    tagging_aspect: MagicMock
     user_management_stack: MagicMock
     user_management_stack_args: MagicMock
     network_stack: MagicMock
@@ -81,10 +71,6 @@ def mock_invocations():  # pylint: disable=missing-function-docstring, missing-m
     ) as mock_env, patch("infra.config.Config") as mock_config, patch(
         "os.getenv"
     ) as mock_get_env, patch(
-        "aws_cdk.Aspects"
-    ) as mock_aspects, patch(
-        "infra.aspects.tagging.TaggingAspect"
-    ) as mock_tagging_aspect, patch(
         "infra.stacks.user_management.UserManagementStack"
     ) as mock_user_management_stack, patch(
         "infra.stacks.user_management.UserManagementStackArgs"
@@ -112,8 +98,6 @@ def mock_invocations():  # pylint: disable=missing-function-docstring, missing-m
         cdk_env=mock_env,
         config=mock_config,
         os_get_env=mock_get_env,
-        aspects=mock_aspects,
-        tagging_aspect=mock_tagging_aspect,
         user_management_stack=mock_user_management_stack,
         user_management_stack_args=mock_user_management_stack_args,
         network_stack=mock_network_stack,
@@ -151,19 +135,6 @@ def test_config_instantiated(mock_invocations):
         account=mock_invocations.os_get_env.return_value,
         region=mock_invocations.os_get_env.return_value,
     )
-
-
-# def test_tagging_aspect(mock_invocations):
-#     mock_invocations.aspects.of.assert_called_once_with(
-#         mock_invocations.cdk_app.return_value
-#     )
-#     mock_invocations.aspects.of.return_value.add.assert_called_once_with(
-#         mock_invocations.tagging_aspect.return_value, priority=100
-#     )
-
-#     mock_invocations.tagging_aspect.assert_called_once_with(
-#         mock_invocations.config.return_value
-#     )
 
 
 def test_user_management_stack(mock_invocations):
