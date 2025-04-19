@@ -32,18 +32,37 @@ def test_user_pool(user_pools: Mapping[str, Any], config: Config) -> None:
     }
 
 
-def test_user_pool_client(user_pool_clients: Mapping[str, Any], config: Config) -> None:
+def test_user_pool_client(
+    user_pool_clients: Mapping[str, Any], user_pools: Mapping[str, Any], config: Config
+) -> None:
     user_pool_client = next(iter(user_pool_clients.values()))
+    user_pool_id = next(iter(user_pools.keys()))
 
     assert (
         user_pool_client["Properties"]["ClientName"]
         == f"{config.project_name}-{config.environment_name}-user-pool-app-client"
     )
+    assert user_pool_client["Properties"]["AllowedOAuthFlows"] == [
+        "implicit",
+        "code",
+    ]
+    assert user_pool_client["Properties"]["AllowedOAuthFlowsUserPoolClient"] is True
+    assert user_pool_client["Properties"]["AllowedOAuthScopes"] == [
+        "profile",
+        "phone",
+        "email",
+        "openid",
+        "aws.cognito.signin.user.admin",
+    ]
     assert user_pool_client["Properties"]["ExplicitAuthFlows"] == [
-        "ALLOW_ADMIN_USER_PASSWORD_AUTH",
         "ALLOW_USER_PASSWORD_AUTH",
+        "ALLOW_ADMIN_USER_PASSWORD_AUTH",
         "ALLOW_REFRESH_TOKEN_AUTH",
     ]
+    assert user_pool_client["Properties"]["SupportedIdentityProviders"] == [
+        "COGNITO",
+    ]
+    assert user_pool_client["Properties"]["UserPoolId"]["Ref"] == user_pool_id
 
 
 def test_ssm_parameters(ssm_parameters: Mapping[str, Any], config: Config) -> None:
