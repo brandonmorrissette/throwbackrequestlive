@@ -79,8 +79,8 @@ button:hover {
 }
 
 .list-group-item:hover {
-    color: var(--color-primary-opacity);
-    border: 3px solid var(--color-accent-darker);
+    color: var(--color-accent) !important;
+    border: 3px solid var(--color-accent);
 }
 
 .form-group {
