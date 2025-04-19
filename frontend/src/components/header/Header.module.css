@@ -1,0 +1,48 @@
+:root {
+    --logo-height: 80px;
+    --logo-padding: 15px;
+}
+
+.header {
+    position: relative;
+    z-index: 0;
+}
+
+.logoContainer {
+    position: absolute;
+    top: var(--logo-padding);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    pointer-events: auto;
+}
+
+.logo {
+    height: var(--logo-height);
+    object-fit: contain;
+    display: block;
+}
+
+/****************************************
+* Bootstrap
+****************************************/
+
+.navbar {
+    background-image: url('../../assets/header.webp');
+    box-shadow: 10px 8px var(--color-box-shadow);
+    min-height: calc(var(--logo-height) + var(--logo-padding) * 2);
+    display: flex;
+    z-index: 1;
+}
+
+.header :global(.navbar-collapse.show) {
+    padding-top: 50px !important;
+}
+
+.headerNav :global(.nav-link) {
+    color: var(--color-accent-opacity) !important;
+}
+
+.headerNav :global(.nav-link:hover) {
+    color: var(--color-accent) !important;
+}

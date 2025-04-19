@@ -1,0 +1,67 @@
+# Ignore everything by default
+.*
+
+# Allow specific important files
+!.gitignore
+!.dockerignore
+!.github/
+!.pre-commit-config.yaml
+
+# Python bytecode and cache files
+*.pyc
+*.pyo
+__pycache__/
+
+# Flask-specific files
+instance/
+.env
+*.env
+
+# Flask cache, temporary, or logs
+flask_session/
+*.log
+*.sqlite3
+*.db
+
+# Node.js/React-specific files
+node_modules/
+build/
+dist/
+*.cache
+*.env.local
+*.env.development
+*.env.production
+
+# Ignore React testing snapshots
+__snapshots__/
+
+# Ignore virtual environment directories
+.venv/
+env/
+venv/
+
+# Ignore logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore AWS CDK (Cloud Development Kit) outputs
+cdk.out/
+cdk.context.json
+
+# Ignore IDE-specific files and directories
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+
+# Ignore local development and debug files
+*.bak
+*.old
+*.tmp
+*.log
+*~
+debug.log

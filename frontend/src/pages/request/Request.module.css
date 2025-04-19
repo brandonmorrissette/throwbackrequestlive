@@ -1,0 +1,40 @@
+.requestButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 10px 0;
+    padding: 10px;
+    border: transparent;
+    border-radius: 10px;
+    background-color: var(--color-accent);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.requestButton:hover {
+    background-color: var(--color-accent-darker);
+    transform: scale(1.02);
+}
+
+.songDetails {
+    display: flex;
+    align-items: center;
+    margin: 0 10px;
+    width: 100%;
+}
+
+.songBand {
+    text-align: right;
+    flex: 1;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.songName {
+    text-align: left;
+    flex: 1;
+    margin-left: 10px;
+    font-style: italic;
+}

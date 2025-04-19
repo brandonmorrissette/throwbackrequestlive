@@ -1,0 +1,9 @@
+.content {
+    background-color: var(--color-background-dark) !important;
+    border-radius: 20px !important;
+    padding: 20px;
+    max-width: 95vw;
+    margin: 20px auto;
+    width: 100%;
+    flex: 1;
+}
