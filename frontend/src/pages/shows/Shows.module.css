@@ -33,3 +33,7 @@
     flex: 1;
     margin-left: 20px;
 }
+
+.noShowsMessage {
+    color: var(--color-accent);
+}
