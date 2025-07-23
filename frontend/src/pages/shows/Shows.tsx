@@ -59,7 +59,7 @@ const Shows: React.FC = () => {
             ) : (
                 <>
                     <h2 className={styles.noShowsMessage}>
-                        Sorry! We have don't have any shows currently scheduled.
+                        Sorry! We don't have any shows currently scheduled.
                     </h2>
                     <hr />
                     <BookingForm />
