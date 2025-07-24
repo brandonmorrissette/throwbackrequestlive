@@ -26,5 +26,5 @@ def test_cfn_output(template: assertions.Template, subnets: Mapping[str, Any]) -
     subnet_id_output = template.find_outputs("subnetid")
     assert subnet_id_output
     assert subnet_id_output["subnetid"]["Value"]["Ref"] == next(
-        key for key in subnets.keys() if "privatesubnet" in key.lower()
+        key for key in subnets.keys() if "isolatedsubnet" in key.lower()
     )

@@ -7,7 +7,6 @@ from aws_cdk import assertions
 from aws_cdk import aws_ec2 as ec2
 
 from infra.config import Config
-from infra.stacks.stack import Stack, StackArgs
 from infra.stacks.storage import StorageStack, StorageStackArgs
 
 
@@ -23,11 +22,6 @@ def config() -> Config:
         "IntegrationTesting",
         cdk.Environment(account="IntegrationTestAccount", region="us-east-1"),
     )
-
-
-@pytest.fixture(scope="module")
-def vpc(app: cdk.App, config: Config) -> ec2.Vpc:
-    return ec2.Vpc(Stack(app, StackArgs(config)), "Vpc")
 
 
 @pytest.fixture(scope="module")

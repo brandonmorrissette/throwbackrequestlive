@@ -21,14 +21,14 @@ def network_stack(app: cdk.App, config: Config) -> NetworkStack:
 def compute_stack(
     app: cdk.App, config: Config, network_stack: NetworkStack
 ) -> ComputeStack:
-    return ComputeStack(app, ComputeStackArgs(config, network_stack.vpc_constrcut.vpc))
+    return ComputeStack(app, ComputeStackArgs(config, network_stack.vpc_construct.vpc))
 
 
 @pytest.fixture(scope="module")
 def storage_stack(
     app: cdk.App, config: Config, network_stack: NetworkStack
 ) -> StorageStack:
-    return StorageStack(app, StorageStackArgs(config, network_stack.vpc_constrcut.vpc))
+    return StorageStack(app, StorageStackArgs(config, network_stack.vpc_construct.vpc))
 
 
 @pytest.fixture(scope="module")

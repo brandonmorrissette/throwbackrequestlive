@@ -44,12 +44,12 @@ user_management_stack = UserManagementStack(app, UserManagementStackArgs(config)
 network_stack = NetworkStack(app, NetworkStackArgs(config))
 
 compute_stack = ComputeStack(
-    app, ComputeStackArgs(config, vpc=network_stack.vpc_constrcut.vpc)
+    app, ComputeStackArgs(config, vpc=network_stack.vpc_construct.vpc)
 )
 compute_stack.add_dependency(network_stack)
 
 storage_stack = StorageStack(
-    app, StorageStackArgs(config, vpc=network_stack.vpc_constrcut.vpc)
+    app, StorageStackArgs(config, vpc=network_stack.vpc_construct.vpc)
 )
 storage_stack.add_dependency(network_stack)
 

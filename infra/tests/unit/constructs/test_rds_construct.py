@@ -74,6 +74,7 @@ def test_db_instance_creation(
         engine=ANY,
         instance_type=ANY,
         vpc=vpc,
+        vpc_subnets=mocks.ec2.SubnetSelection.return_value,
         credentials=ANY,
         allocated_storage=ANY,
         multi_az=ANY,
@@ -81,6 +82,10 @@ def test_db_instance_creation(
         backup_retention=mocks.duration.days(7),
         security_groups=[mocks.ec2.SecurityGroup.return_value],
         instance_identifier=ANY,
+    )
+
+    mocks.ecs.SubnetSelection.assert_called_once_with(
+        subnet_type=ec2.SubnetType.PRIVATE_ISOLATED
     )
 
     mocks.rds.Credentials.from_generated_secret.assert_called_once_with(

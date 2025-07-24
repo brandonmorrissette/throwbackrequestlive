@@ -45,8 +45,8 @@ def stack(app: cdk.App, config: Config):
 @pytest.fixture(scope="module")
 def subnet():
     return ec2.SubnetConfiguration(
-        name="PrivateSubnet",
-        subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        name="IsolatedSubnet",
+        subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
         cidr_mask=24,
     )
 

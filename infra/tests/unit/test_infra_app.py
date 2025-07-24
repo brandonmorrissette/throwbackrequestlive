@@ -161,7 +161,7 @@ def test_network_stack(mock_invocations):
 def test_compute_stack(mock_invocations):
     mock_invocations.compute_stack_args.assert_called_once_with(
         mock_invocations.config.return_value,
-        vpc=mock_invocations.network_stack.return_value.vpc_constrcut.vpc,
+        vpc=mock_invocations.network_stack.return_value.vpc_construct.vpc,
     )
     mock_invocations.compute_stack.assert_called_once_with(
         mock_invocations.cdk_app.return_value,
@@ -175,7 +175,7 @@ def test_compute_stack(mock_invocations):
 def test_storage_stack(mock_invocations):
     mock_invocations.storage_stack_args.assert_called_once_with(
         mock_invocations.config.return_value,
-        vpc=mock_invocations.network_stack.return_value.vpc_constrcut.vpc,
+        vpc=mock_invocations.network_stack.return_value.vpc_construct.vpc,
     )
     mock_invocations.storage_stack.assert_called_once_with(
         mock_invocations.cdk_app.return_value,

@@ -56,13 +56,13 @@ class NetworkStack(Stack):
         """
         super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
-        self.vpc_constrcut = VpcConstruct(self, VpcConstructArgs(args.config))
+        self.vpc_construct = VpcConstruct(self, VpcConstructArgs(args.config))
         self.cert_construct = CertConstruct(self, CertConstructArgs(args.config))
 
         CfnOutput(
             self,
             "subnetid",
-            value=self.vpc_constrcut.vpc.select_subnets(
-                subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT
+            value=self.vpc_construct.vpc.select_subnets(
+                subnet_type=ec2.SubnetType.PRIVATE_ISOLATED
             ).subnet_ids[0],
         )

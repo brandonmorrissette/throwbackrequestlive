@@ -1,5 +1,5 @@
 # pylint: disable=missing-function-docstring, missing-module-docstring, redefined-outer-name, unused-variable
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
 
@@ -30,5 +30,53 @@ def test_vpc_creation(mock_vpc_construct: tuple[VpcConstruct, MagicMock]):
     mock_ec2.Vpc.assert_called_once_with(
         construct,
         ANY,
-        max_azs=2,
+        max_azs=1,
+        nat_gateways=0,
+        subnet_configuration=[
+            mock_ec2.SubnetConfiguration.return_value,
+            mock_ec2.SubnetConfiguration.return_value,
+        ],
+    )
+
+    mock_ec2.SubnetConfiguration.assert_has_calls(
+        [
+            call(name="public", subnet_type=mock_ec2.SubnetType.PUBLIC, cidr_mask=24),
+            call(
+                name="isolated",
+                subnet_type=mock_ec2.SubnetType.PRIVATE_ISOLATED,
+                cidr_mask=24,
+            ),
+        ]
+    )
+
+
+def test_endpoints_added(mock_vpc_construct: tuple[VpcConstruct, MagicMock]):
+    _, mock_ec2 = mock_vpc_construct
+
+    mock_ec2.Vpc.return_value.add_gateway_endpoint.assert_has_calls(
+        [
+            call("S3Endpoint", service=mock_ec2.GatewayVpcEndpointAwsService.S3),
+        ]
+    )
+
+    mock_ec2.Vpc.return_value.add_interface_endpoint.assert_has_calls(
+        [
+            call("EcrEndpoint", service=mock_ec2.InterfaceVpcEndpointAwsService.ECR),
+            call(
+                "EcrDockerEndpoint",
+                service=mock_ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
+            ),
+            call(
+                "SecretsManagerEndpoint",
+                service=mock_ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+            ),
+            call(
+                "SsmEndpoint",
+                service=mock_ec2.InterfaceVpcEndpointAwsService.SSM,
+            ),
+            call(
+                "CloudWatchLogsEndpoint",
+                service=mock_ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
+            ),
+        ]
     )
