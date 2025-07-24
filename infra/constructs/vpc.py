@@ -65,7 +65,7 @@ class VpcConstruct(Construct):
         self.vpc = ec2.Vpc(
             self,
             f"{args.config.project_name}-{args.config.environment_name}-vpc",
-            max_azs=1,
+            max_azs=2,
             nat_gateways=0,
             subnet_configuration=[
                 ec2.SubnetConfiguration(
