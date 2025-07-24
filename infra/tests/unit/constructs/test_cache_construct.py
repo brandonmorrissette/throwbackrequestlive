@@ -57,7 +57,7 @@ def test_subnet_group_creation(
         cache_construct,
         "RedisSubnetGroup",
         description="Subnet group for Redis",
-        subnet_ids=[subnet.subnet_id for subnet in vpc.private_subnets],
+        subnet_ids=[subnet.subnet_id for subnet in vpc.isolated_subnets],
     )
 
 

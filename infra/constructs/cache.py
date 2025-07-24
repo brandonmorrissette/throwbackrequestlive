@@ -71,7 +71,7 @@ class CacheConstruct(Construct):
         subnet_group = elasticache.CfnSubnetGroup(
             self,
             "RedisSubnetGroup",
-            subnet_ids=[subnet.subnet_id for subnet in args.vpc.private_subnets],
+            subnet_ids=[subnet.subnet_id for subnet in args.vpc.isolated_subnets],
             description="Subnet group for Redis",
         )
 
