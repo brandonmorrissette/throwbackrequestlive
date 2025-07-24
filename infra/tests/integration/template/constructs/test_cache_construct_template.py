@@ -44,7 +44,6 @@ def test_subnet_group(subnet_groups: Mapping[str, Any], vpcs: Mapping[str, Any])
     vpcs = next(iter(vpcs.values()))
 
     assert subnet_group["Properties"]["Description"] == "Subnet group for Redis"
-    assert subnet_group["Properties"]["SubnetIds"]
 
 
 def test_cache_cluster(

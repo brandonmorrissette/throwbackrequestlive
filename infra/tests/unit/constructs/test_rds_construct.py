@@ -84,8 +84,8 @@ def test_db_instance_creation(
         instance_identifier=ANY,
     )
 
-    mocks.ecs.SubnetSelection.assert_called_once_with(
-        subnet_type=ec2.SubnetType.PRIVATE_ISOLATED
+    mocks.ec2.SubnetSelection.assert_called_once_with(
+        subnet_type=mocks.ec2.SubnetType.PRIVATE_ISOLATED
     )
 
     mocks.rds.Credentials.from_generated_secret.assert_called_once_with(
