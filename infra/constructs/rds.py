@@ -157,9 +157,21 @@ class RdsConstruct(Construct):
             command=[
                 "sh",
                 "-c",
-                'for file in /schema/*.sql; do echo "Running $file"; '
-                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/"
-                "throwbackrequestlive -f $file; done",
+                'echo "Running entrypoints.sql"; '
+                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
+                "-f /schema/entrypoints.sql; "
+                'echo "Running shows.sql"; '
+                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
+                "-f /schema/shows.sql; "
+                'echo "Running songs.sql"; '
+                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
+                "-f /schema/songs.sql; "
+                'echo "Running requests.sql"; '
+                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
+                "-f /schema/requests.sql; "
+                'echo "Running submissions.sql"; '
+                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
+                "-f /schema/submissions.sql;",
             ],
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="sql-deployment",
