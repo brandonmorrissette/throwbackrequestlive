@@ -46,23 +46,23 @@ network_stack = NetworkStack(app, NetworkStackArgs(config))
 compute_stack = ComputeStack(
     app, ComputeStackArgs(config, vpc=network_stack.vpc_construct.vpc)
 )
-compute_stack.add_dependency(network_stack)
 
 storage_stack = StorageStack(
     app, StorageStackArgs(config, vpc=network_stack.vpc_construct.vpc)
 )
-storage_stack.add_dependency(network_stack)
 
 runtime_stack = RuntimeStack(
     app,
     RuntimeStackArgs(
-        config, user_management_stack, network_stack, compute_stack, storage_stack
+        config=config,
+        certificate=network_stack.cert_construct.certificate,
+        hosted_zone=network_stack.cert_construct.hosted_zone,
+        policy=user_management_stack.superuser_construct.policy,
+        cluster=compute_stack.cluster_construct.cluster,
+        db_credentials_arn=storage_stack.rds_construct.db_instance.secret.secret_arn,
+        cache_cluster=storage_stack.cache_construct.cluster,
+        load_balancer=network_stack.load_balancer_construct.load_balancer,
     ),
 )
-
-runtime_stack.add_dependency(user_management_stack)
-runtime_stack.add_dependency(network_stack)
-runtime_stack.add_dependency(compute_stack)
-runtime_stack.add_dependency(storage_stack)
 
 app.synth()

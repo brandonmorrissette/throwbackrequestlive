@@ -65,16 +65,25 @@ class VpcConstruct(Construct):
         self.vpc = ec2.Vpc(
             self,
             f"{args.config.project_name}-{args.config.environment_name}-vpc",
-            max_azs=1,
-            nat_gateways=0,
+            max_azs=2,
+            nat_gateways=1,
+            nat_gateway_provider=ec2.NatProvider.instance_v2(
+                instance_type=ec2.InstanceType("t4g.nano"),
+                default_allowed_traffic=ec2.NatTrafficDirection.OUTBOUND_ONLY,
+            ),
+            ip_protocol=ec2.IpProtocol.DUAL_STACK,
             subnet_configuration=[
                 ec2.SubnetConfiguration(
-                    name="public", subnet_type=ec2.SubnetType.PUBLIC, cidr_mask=24
+                    name="public",
+                    subnet_type=ec2.SubnetType.PUBLIC,
+                    cidr_mask=24,
+                    ipv6_assign_address_on_creation=True,
                 ),
                 ec2.SubnetConfiguration(
                     name="isolated",
                     subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
                     cidr_mask=24,
+                    ipv6_assign_address_on_creation=True,
                 ),
             ],
         )

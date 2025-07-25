@@ -3,19 +3,21 @@ This module defines the RuntimeStack class,
 which sets up the runtime environment for the application.
 
 It creates ECS runtime constructs and Route 53 configurations
-using the provided stacks and configuration.
+using the provided AWS resources and configuration.
 """
 
+from aws_cdk import aws_certificatemanager as acm
+from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_elasticache as elasticache
+from aws_cdk import aws_elasticloadbalancingv2 as elbv2
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_route53 as route53
 from constructs import Construct
 
 from infra.config import Config
 from infra.constructs.route_53 import Route53Construct, Route53ConstructArgs
 from infra.constructs.runtime import RuntimeConstruct, RuntimeConstructArgs
-from infra.stacks.compute import ComputeStack
-from infra.stacks.network import NetworkStack
 from infra.stacks.stack import Stack, StackArgs
-from infra.stacks.storage import StorageStack
-from infra.stacks.user_management import UserManagementStack
 
 
 class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
@@ -24,10 +26,12 @@ class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
 
     Attributes:
         config (Config): Configuration object.
-        user_management_stack (UserManagementStack): The user management stack.
-        network_stack (NetworkStack): The network stack.
-        compute_stack (ComputeStack): The compute stack.
-        storage_stack (StorageStack): The storage stack.
+        certificate (acm.ICertificate): The ACM certificate for the load balancer.
+        hosted_zone (route53.IHostedZone): The Route 53 hosted zone.
+        policy (iam.ManagedPolicy): The IAM managed policy for the task role.
+        cluster (ecs.Cluster): The ECS cluster.
+        db_credentials_arn (str): The ARN of the database credentials secret.
+        cache_cluster (elasticache.CfnCacheCluster): The cache cluster.
         uid (str): The ID of the stack.
             Defaults to "runtime".
         prefix (str): The prefix for the stack name.
@@ -37,18 +41,24 @@ class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
     def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         config: Config,
-        user_management_stack: UserManagementStack,
-        network_stack: NetworkStack,
-        compute_stack: ComputeStack,
-        storage_stack: StorageStack,
+        certificate: acm.ICertificate,
+        hosted_zone: route53.IHostedZone,
+        policy: iam.ManagedPolicy,
+        cluster: ecs.Cluster,
+        db_credentials_arn: str,
+        cache_cluster: elasticache.CfnCacheCluster,
+        load_balancer: elbv2.IApplicationLoadBalancer,
         uid: str = "runtime",
         prefix: str = "",
     ) -> None:
         super().__init__(config, uid, prefix)
-        self.user_management_stack = user_management_stack
-        self.network_stack = network_stack
-        self.compute_stack = compute_stack
-        self.storage_stack = storage_stack
+        self.certificate = certificate
+        self.hosted_zone = hosted_zone
+        self.policy = policy
+        self.cluster = cluster
+        self.load_balancer = load_balancer
+        self.db_credentials_arn = db_credentials_arn
+        self.cache_cluster = cache_cluster
 
 
 class RuntimeStack(Stack):
@@ -73,24 +83,21 @@ class RuntimeStack(Stack):
         """
         super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
-        runtime_construct = RuntimeConstruct(
+        RuntimeConstruct(
             self,
             RuntimeConstructArgs(
                 config=args.config,
-                certificate=args.network_stack.cert_construct.certificate,
-                policy=args.user_management_stack.superuser_construct.policy,
-                cluster=args.compute_stack.cluster_construct.cluster,
-                db_credentials_arn=args.storage_stack.rds_construct.db_instance.secret.secret_arn,
+                certificate=args.certificate,
+                policy=args.policy,
+                cluster=args.cluster,
+                load_balancer=args.load_balancer,
+                db_credentials_arn=args.db_credentials_arn,
                 runtime_variables={
                     # pylint:disable=line-too-long
                     "PROJECT_NAME": str(args.config.project_name),
                     "ENVIRONMENT": str(args.config.environment_name),
-                    "REDIS_HOST": str(
-                        args.storage_stack.cache_construct.cluster.attr_redis_endpoint_address
-                    ),
-                    "REDIS_PORT": str(
-                        args.storage_stack.cache_construct.cluster.attr_redis_endpoint_port
-                    ),
+                    "REDIS_HOST": str(args.cache_cluster.attr_redis_endpoint_address),
+                    "REDIS_PORT": str(args.cache_cluster.attr_redis_endpoint_port),
                 },
             ),
         )
@@ -99,7 +106,7 @@ class RuntimeStack(Stack):
             self,
             Route53ConstructArgs(
                 args.config,
-                hosted_zone=args.network_stack.cert_construct.hosted_zone,
-                load_balancer=runtime_construct.runtime_service.load_balancer,
+                hosted_zone=args.hosted_zone,
+                load_balancer=args.load_balancer,
             ),
         )
