@@ -85,3 +85,19 @@ class Route53Construct(Construct):
             zone=args.hosted_zone,
             target=target,
         )
+
+        route53.AaaaRecord(
+            self,
+            "AliasRecordAAAA",
+            record_name=None,
+            zone=args.hosted_zone,
+            target=target,
+        )
+
+        route53.AaaaRecord(
+            self,
+            "AliasRecordAAAA-www",
+            record_name="www",
+            zone=args.hosted_zone,
+            target=target,
+        )

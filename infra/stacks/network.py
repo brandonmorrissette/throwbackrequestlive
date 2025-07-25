@@ -10,6 +10,10 @@ from constructs import Construct
 
 from infra.config import Config
 from infra.constructs.cert import CertConstruct, CertConstructArgs
+from infra.constructs.load_balancer import (
+    LoadBalancerConstruct,
+    LoadBalancerConstructArgs,
+)
 from infra.constructs.vpc import VpcConstruct, VpcConstructArgs
 from infra.stacks.stack import Stack, StackArgs
 
@@ -57,6 +61,12 @@ class NetworkStack(Stack):
         super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
         self.vpc_construct = VpcConstruct(self, VpcConstructArgs(args.config))
+        self.load_balancer_construct = LoadBalancerConstruct(
+            self,
+            LoadBalancerConstructArgs(
+                args.config, self.vpc_construct.vpc, args.uid, args.prefix
+            ),
+        )
         self.cert_construct = CertConstruct(self, CertConstructArgs(args.config))
 
         CfnOutput(

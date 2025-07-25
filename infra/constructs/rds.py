@@ -97,10 +97,9 @@ class RdsConstruct(Construct):
                 "db_master_user",
                 secret_name=f"{args.config.project_name}-{args.config.environment_name}-db-credentials",  # pylint: disable=line-too-long
             ),
-            allocated_storage=20,
             multi_az=False,
             publicly_accessible=False,
-            backup_retention=Duration.days(7),
+            backup_retention=Duration.days(1),
             security_groups=[self.security_group],
             instance_identifier=f"{args.config.project_name}-rds-instance",
         )

@@ -9,6 +9,7 @@ using the provided AWS resources and configuration.
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_elasticache as elasticache
+from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_route53 as route53
 from constructs import Construct
@@ -46,6 +47,7 @@ class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
         cluster: ecs.Cluster,
         db_credentials_arn: str,
         cache_cluster: elasticache.CfnCacheCluster,
+        load_balancer: elbv2.IApplicationLoadBalancer,
         uid: str = "runtime",
         prefix: str = "",
     ) -> None:
@@ -54,6 +56,7 @@ class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
         self.hosted_zone = hosted_zone
         self.policy = policy
         self.cluster = cluster
+        self.load_balancer = load_balancer
         self.db_credentials_arn = db_credentials_arn
         self.cache_cluster = cache_cluster
 
@@ -80,13 +83,14 @@ class RuntimeStack(Stack):
         """
         super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
-        runtime_construct = RuntimeConstruct(
+        RuntimeConstruct(
             self,
             RuntimeConstructArgs(
                 config=args.config,
                 certificate=args.certificate,
                 policy=args.policy,
                 cluster=args.cluster,
+                load_balancer=args.load_balancer,
                 db_credentials_arn=args.db_credentials_arn,
                 runtime_variables={
                     # pylint:disable=line-too-long
@@ -103,6 +107,6 @@ class RuntimeStack(Stack):
             Route53ConstructArgs(
                 args.config,
                 hosted_zone=args.hosted_zone,
-                load_balancer=runtime_construct.runtime_service.load_balancer,
+                load_balancer=args.load_balancer,
             ),
         )

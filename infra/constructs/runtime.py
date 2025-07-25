@@ -15,6 +15,7 @@ from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
+from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs
 from aws_cdk import aws_secretsmanager as secretsmanager
@@ -47,6 +48,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         certificate: acm.ICertificate,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
+        load_balancer: elbv2.IApplicationLoadBalancer,
         db_credentials_arn: str,
         runtime_variables: dict[str, str] | None = None,
         uid: str = "runtime",
@@ -56,6 +58,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         self.certificate = certificate
         self.policy = policy
         self.cluster = cluster
+        self.load_balancer = load_balancer
         self.runtime_variables = runtime_variables
         self.db_credentials_arn = db_credentials_arn
 
@@ -185,10 +188,11 @@ class RuntimeConstruct(Construct):
             memory_limit_mib=512,
             desired_count=1,
             task_image_options=task_image,
-            public_load_balancer=True,
             certificate=args.certificate,
             redirect_http=True,
             health_check_grace_period=Duration.minutes(5),
+            load_balancer=args.load_balancer,
+            ip_address_type=elbv2.IpAddressType.DUAL_STACK_WITHOUT_PUBLIC_IPV4,
         )
 
         self.runtime_service.target_group.configure_health_check(
