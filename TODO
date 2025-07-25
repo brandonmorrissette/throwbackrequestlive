@@ -1,3 +1,7 @@
+# Booking
+
+-   Send Message launches email client. Try to send without doing that.
+
 # Cognito/User concepts cleanup
 
 -   Runtime and Cognito are tightly coupled. Somehow deploying Runtime really messes up User-DataManagement
@@ -44,9 +48,8 @@
 
 -   route_53
     -   Remove hard coding. Find better way to pass or config.
--   unknown paths are not routing to main
 -   Testing
-    - Better pattern for testing url for
+    -   Better pattern for testing url for
 
 # Boto
 

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useError } from '../../contexts/ErrorContext';
+import PasswordReset from '../../pages/login/PasswordReset';
 import apiRequest from '../../routing/Request';
-import PasswordReset from './PasswordReset';
 
 /**
  * LoginForm component that handles user login and password reset.

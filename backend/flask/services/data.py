@@ -162,10 +162,7 @@ class DataService:
             table_name (str): The name of the table.
             rows (List[Dict[str, Any]]): A list of dictionaries representing the rows to write.
         """
-        table = self._metadata.tables.get(table_name)
-        if table is None:
-            raise ValueError(f"Table {table_name} does not exist in metadata.")
-
+        table = self.get_table(table_name)
         primary_key_columns = self._get_primary_key_columns(table)
         app.logger.debug(
             "Writing table %s with primary key columns %s",
@@ -173,8 +170,13 @@ class DataService:
             primary_key_columns,
         )
 
+        incoming_rows_with_keys = [
+            row for row in rows if all(key in row for key in primary_key_columns)
+        ]
+
         incoming_keys = {
-            tuple(UUID(row.get(key)) for key in primary_key_columns) for row in rows
+            tuple(UUID(row.get(key)) for key in primary_key_columns)
+            for row in incoming_rows_with_keys
         }
         app.logger.debug("Incoming keys: %s", incoming_keys)
 

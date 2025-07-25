@@ -12,6 +12,7 @@ Usage example:
 
 from aws_cdk import Duration, RemovalPolicy
 from aws_cdk import aws_certificatemanager as acm
+from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
@@ -184,15 +185,13 @@ class RuntimeConstruct(Construct):
             self,
             "runtime-service",
             cluster=args.cluster,
-            cpu=256,
-            memory_limit_mib=512,
             desired_count=1,
             task_image_options=task_image,
             certificate=args.certificate,
             redirect_http=True,
             health_check_grace_period=Duration.minutes(5),
             load_balancer=args.load_balancer,
-            ip_address_type=elbv2.IpAddressType.DUAL_STACK_WITHOUT_PUBLIC_IPV4,
+            ip_address_type=elbv2.IpAddressType.DUAL_STACK,
         )
 
         self.runtime_service.target_group.configure_health_check(

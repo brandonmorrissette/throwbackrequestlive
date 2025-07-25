@@ -72,20 +72,6 @@ class VpcConstruct(Construct):
                 default_allowed_traffic=ec2.NatTrafficDirection.OUTBOUND_ONLY,
             ),
             ip_protocol=ec2.IpProtocol.DUAL_STACK,
-            subnet_configuration=[
-                ec2.SubnetConfiguration(
-                    name="public",
-                    subnet_type=ec2.SubnetType.PUBLIC,
-                    cidr_mask=24,
-                    ipv6_assign_address_on_creation=True,
-                ),
-                ec2.SubnetConfiguration(
-                    name="isolated",
-                    subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
-                    cidr_mask=24,
-                    ipv6_assign_address_on_creation=True,
-                ),
-            ],
         )
 
         self.vpc.add_gateway_endpoint(

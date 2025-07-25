@@ -91,7 +91,7 @@ class RdsConstruct(Construct):
             ),
             vpc=args.vpc,
             vpc_subnets=ec2.SubnetSelection(
-                subnet_type=ec2.SubnetType.PRIVATE_ISOLATED
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT
             ),
             credentials=rds.Credentials.from_generated_secret(
                 "db_master_user",

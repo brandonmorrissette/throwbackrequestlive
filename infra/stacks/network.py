@@ -73,6 +73,6 @@ class NetworkStack(Stack):
             self,
             "subnetid",
             value=self.vpc_construct.vpc.select_subnets(
-                subnet_type=ec2.SubnetType.PRIVATE_ISOLATED
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT
             ).subnet_ids[0],
         )
