@@ -79,7 +79,7 @@ def test_db_instance_creation(
         allocated_storage=ANY,
         multi_az=ANY,
         publicly_accessible=False,
-        backup_retention=mocks.duration.days(7),
+        backup_retention=mocks.duration.days(1),
         security_groups=[mocks.ec2.SecurityGroup.return_value],
         instance_identifier=ANY,
     )
