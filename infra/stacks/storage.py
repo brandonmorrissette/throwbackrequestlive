@@ -33,13 +33,11 @@ class StorageStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
         self,
         config: Config,
         vpc: ec2.Vpc,
-        load_balancer: elbv2.IApplicationLoadBalancer,
         uid: str = "storage",
         prefix: str = "",
     ) -> None:
         super().__init__(config, uid, prefix)
         self.vpc = vpc
-        self.load_balancer = load_balancer
 
 
 class StorageStack(Stack):

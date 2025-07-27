@@ -35,7 +35,6 @@ class S3Construct(Construct):
         self,
         scope: Stack,
         config: Config,
-        load_balancer: elbv2.IApplicationLoadBalancer,
         uid: str = "s3",
         prefix: str = "",
     ) -> None:
@@ -63,49 +62,6 @@ class S3Construct(Construct):
             bucket_name=bucket_name,
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
-        )
-
-        self.bucket.add_to_resource_policy(
-            iam.PolicyStatement(
-                actions=["s3:PutObject"],
-                resources=[self.bucket.bucket_arn + "/*"],
-                principals=[iam.ServicePrincipal("delivery.logs.amazonaws.com")],
-            )
-        )
-
-        self.bucket.add_to_resource_policy(
-            iam.PolicyStatement(
-                actions=["s3:GetBucketAcl"],
-                principals=[
-                    iam.ServicePrincipal(
-                        "logdelivery.elasticloadbalancing.amazonaws.com"
-                    )
-                ],
-                resources=[self.bucket.bucket_arn],
-            )
-        )
-
-        self.bucket.add_to_resource_policy(
-            iam.PolicyStatement(
-                actions=["s3:PutObject"],
-                principals=[
-                    iam.ServicePrincipal(
-                        "logdelivery.elasticloadbalancing.amazonaws.com"
-                    )
-                ],
-                resources=[
-                    self.bucket.arn_for_objects(
-                        f"{prefix}AWSLogs/{config.cdk_environment.account}/*"
-                    )
-                ],
-                conditions={
-                    "StringEquals": {"s3:x-amz-acl": "bucket-owner-full-control"}
-                },
-            )
-        )
-
-        load_balancer.log_access_logs(
-            self.bucket,
         )
 
         ssm.StringParameter(

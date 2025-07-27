@@ -52,7 +52,6 @@ storage_stack = StorageStack(
     StorageStackArgs(
         config,
         vpc=network_stack.vpc_construct.vpc,
-        load_balancer=network_stack.load_balancer_construct.load_balancer,
     ),
 )
 
