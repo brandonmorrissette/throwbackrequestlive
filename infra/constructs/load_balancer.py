@@ -57,7 +57,7 @@ class LoadBalancerConstruct(Construct):
 
         self.load_balancer = elbv2.ApplicationLoadBalancer(
             self,
-            f"{args.config.project_name}-{args.config.cdk_environment}-alb",
+            f"{args.config.project_name}-{args.config.environment_name}-alb",
             vpc=args.vpc,
             internet_facing=True,
             ip_address_type=elbv2.IpAddressType.DUAL_STACK,

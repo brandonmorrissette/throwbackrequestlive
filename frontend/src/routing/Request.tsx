@@ -11,7 +11,7 @@ const apiRequest = async (
     url: string,
     options: RequestInit = {}
 ): Promise<any> => {
-    console.log('Making API request to:', url, 'with options:', options);
+    console.log('Making API request to:', url);
     const response = await fetch(url, { ...options });
     console.log('Response for URL:', url, response);
     await validate(response);

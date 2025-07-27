@@ -6,6 +6,7 @@ It creates RDS and Cache constructs using the provided VPC and configuration.
 
 from aws_cdk import CfnOutput
 from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from constructs import Construct
 
 from infra.config import Config
@@ -32,11 +33,13 @@ class StorageStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
         self,
         config: Config,
         vpc: ec2.Vpc,
+        load_balancer: elbv2.IApplicationLoadBalancer,
         uid: str = "storage",
         prefix: str = "",
     ) -> None:
         super().__init__(config, uid, prefix)
         self.vpc = vpc
+        self.load_balancer = load_balancer
 
 
 class StorageStack(Stack):
@@ -64,7 +67,11 @@ class StorageStack(Stack):
         self.cache_construct = CacheConstruct(
             self, CacheConstructArgs(args.config, args.vpc)
         )
-        self.s3_construct = S3Construct(self, args.config)
+        self.s3_construct = S3Construct(
+            self,
+            args.config,
+            load_balancer=args.load_balancer,
+        )
 
         CfnOutput(
             self,

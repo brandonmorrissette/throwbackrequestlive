@@ -48,13 +48,20 @@ compute_stack = ComputeStack(
 )
 
 storage_stack = StorageStack(
-    app, StorageStackArgs(config, vpc=network_stack.vpc_construct.vpc)
+    app,
+    StorageStackArgs(
+        config,
+        vpc=network_stack.vpc_construct.vpc,
+        load_balancer=network_stack.load_balancer_construct.load_balancer,
+    ),
 )
+
 
 runtime_stack = RuntimeStack(
     app,
     RuntimeStackArgs(
         config=config,
+        vpc=network_stack.vpc_construct.vpc,
         certificate=network_stack.cert_construct.certificate,
         hosted_zone=network_stack.cert_construct.hosted_zone,
         policy=user_management_stack.superuser_construct.policy,

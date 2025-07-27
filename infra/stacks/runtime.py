@@ -7,6 +7,7 @@ using the provided AWS resources and configuration.
 """
 
 from aws_cdk import aws_certificatemanager as acm
+from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_elasticache as elasticache
 from aws_cdk import aws_elasticloadbalancingv2 as elbv2
@@ -26,6 +27,7 @@ class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
 
     Attributes:
         config (Config): Configuration object.
+        vpc (ec2.IVpc): The VPC where the runtime constructs will be deployed.
         certificate (acm.ICertificate): The ACM certificate for the load balancer.
         hosted_zone (route53.IHostedZone): The Route 53 hosted zone.
         policy (iam.ManagedPolicy): The IAM managed policy for the task role.
@@ -41,6 +43,7 @@ class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
     def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         config: Config,
+        vpc: ec2.IVpc,
         certificate: acm.ICertificate,
         hosted_zone: route53.IHostedZone,
         policy: iam.ManagedPolicy,
@@ -52,6 +55,7 @@ class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
         prefix: str = "",
     ) -> None:
         super().__init__(config, uid, prefix)
+        self.vpc = vpc
         self.certificate = certificate
         self.hosted_zone = hosted_zone
         self.policy = policy
@@ -87,6 +91,7 @@ class RuntimeStack(Stack):
             self,
             RuntimeConstructArgs(
                 config=args.config,
+                vpc=args.vpc,
                 certificate=args.certificate,
                 policy=args.policy,
                 cluster=args.cluster,

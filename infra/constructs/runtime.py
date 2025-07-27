@@ -12,7 +12,7 @@ Usage example:
 
 from aws_cdk import Duration, RemovalPolicy
 from aws_cdk import aws_certificatemanager as acm
-from aws_cdk import aws_ecr as ecr
+from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
@@ -32,9 +32,11 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
 
     Attributes:
         config: Configuration object.
+        vpc (ec2.IVpc): The VPC where the runtime constructs will be deployed.
         certificate (acm.Certificate): The ACM certificate for the load balancer.
         policy (iam.ManagedPolicy): The IAM managed policy for the task role.
         cluster (ecs.Cluster): The ECS cluster.
+        load_balancer (elbv2.IApplicationLoadBalancer): The load balancer.
         runtime_variables (dict): The environment variables for the ECS task.
         runtime_secrets (dict): The secrets for the ECS task.
         uid: Unique identifier for the resource.
@@ -46,6 +48,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
     def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         config: Config,
+        vpc: ec2.IVpc,
         certificate: acm.ICertificate,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
@@ -56,6 +59,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         prefix: str = "",
     ) -> None:
         super().__init__(config, uid, prefix)
+        self.vpc = vpc
         self.certificate = certificate
         self.policy = policy
         self.cluster = cluster
@@ -140,6 +144,19 @@ class RuntimeConstruct(Construct):
             ],
         )
 
+        security_group = ec2.SecurityGroup(
+            self,
+            f"{args.config.project_name}-{args.config.environment_name}-runtime-sg",
+            vpc=args.vpc,
+            allow_all_outbound=True,
+        )
+
+        security_group.add_ingress_rule(
+            peer=args.load_balancer.connections.security_groups[0],
+            connection=ec2.Port.tcp(80),
+            description="Allow HTTP traffic from the load balancer",
+        )
+
         task_role = iam.Role(
             self,
             "RuntimeTaskRole",
@@ -192,6 +209,7 @@ class RuntimeConstruct(Construct):
             health_check_grace_period=Duration.minutes(5),
             load_balancer=args.load_balancer,
             ip_address_type=elbv2.IpAddressType.DUAL_STACK,
+            security_groups=[security_group],
         )
 
         self.runtime_service.target_group.configure_health_check(
