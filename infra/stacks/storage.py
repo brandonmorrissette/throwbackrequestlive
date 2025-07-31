@@ -68,7 +68,6 @@ class StorageStack(Stack):
         self.s3_construct = S3Construct(
             self,
             args.config,
-            load_balancer=args.load_balancer,
         )
 
         CfnOutput(
