@@ -10,10 +10,7 @@ Usage example:
     superuser_construct = SuperUserConstruct(scope, config, user_pool_id)
 """
 
-from aws_cdk import RemovalPolicy
-from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_logs as logs
 from aws_cdk.aws_cognito import CfnUserPoolGroup
 
 from infra.config import Config

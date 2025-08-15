@@ -15,6 +15,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs as logs
 
 from infra.config import Config
+from infra.constructs import superuser
 from infra.constructs.construct import Construct, ConstructArgs
 from infra.stacks.stack import Stack
 
@@ -80,7 +81,7 @@ class SuperUserConstruct(Construct):
             f"{args.config.environment_name}-cognito-policy",
             statements=[
                 iam.PolicyStatement(
-                    actions=PERMITTED_ACTIONS,
+                    actions=superuser.PERMITTED_ACTIONS,
                     resources=[
                         user_pool_resource_arn,
                     ],
