@@ -34,7 +34,7 @@ jobs:
                     --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=DISABLED}" \
                     --overrides '{
                         "containerOverrides": [{
-                            "name": "superuser-container",
+                            "name": "superuser-deployment-container",
                             "environment": [
                                 {"name": "PROJECT_NAME", "value": "'${{ github.event.repository.name }}'"},
                                 {"name": "SUPERUSER_EMAIL", "value": "'${{ vars.SUPERUSER_EMAIL }}'"}
