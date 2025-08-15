@@ -1,8 +1,8 @@
 """
-This module contains the SqlTaskConstruct class, which sets up the SQL task for the ECS cluster.
+This module contains the SqlDeploymentConstruct class, which sets up the SQL deployment for the rds.
 
 Classes:
-    SqlTaskConstruct: A construct that sets up the SQL task.
+    SqlDeploymentConstruct: A construct that sets up the SQL deployment.
 
 Usage example:
     sql_task_construct = SqlTaskConstruct(scope, config, vpc)
@@ -19,13 +19,15 @@ from infra.constructs.construct import Construct, ConstructArgs
 from infra.stacks.stack import Stack
 
 
-class SqlTaskConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-methods
+class SqlDeploymentConstructArgs(
+    ConstructArgs
+):  # pylint: disable=too-few-public-methods
     """
-    Arguments for the SqlTaskConstruct.
+    Arguments for the SqlDeploymentConstruct.
 
     Attributes:
         config (Config): Configuration object.
-        vpc (ec2.Vpc): The VPC in which to create the ECS cluster.
+        db_instance (rds.IDatabaseInstance): The RDS database instance.
         uid (str): The ID of the construct.
             Default is "cluster".
         prefix (str): The prefix for the construct ID.
@@ -36,16 +38,16 @@ class SqlTaskConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         self,
         config: Config,
         db_instance: rds.IDatabaseInstance,
-        uid: str = "sql-task",
+        uid: str = "sql-deployment",
         prefix: str = "",
     ):
         super().__init__(config, uid, prefix)
         self.db_instance = db_instance
 
 
-class SqlTaskConstruct(Construct):
+class SqlDeploymentConstruct(Construct):
     """
-    A construct that sets up the SQL task.
+    A construct that sets up the SQL deployment.
 
     Attributes:
         db_instance: The RDS database instance.
@@ -57,7 +59,7 @@ class SqlTaskConstruct(Construct):
     def __init__(
         self,
         scope: Stack,
-        args: SqlTaskConstructArgs,
+        args: SqlDeploymentConstructArgs,
     ) -> None:
         """
         Initializes the SqlTaskConstruct with the given parameters.

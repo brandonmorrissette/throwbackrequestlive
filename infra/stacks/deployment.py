@@ -12,8 +12,11 @@ from aws_cdk import aws_rds as rds
 from constructs import Construct
 
 from infra.config import Config
-from infra.deployment.sql.constructs.task import SqlTaskConstruct, SqlTaskConstructArgs
-from infra.deployment.superuser.constructs.task import (
+from infra.deployment.sql.construct import (
+    SqlDeploymentConstruct,
+    SqlDeploymentConstructArgs,
+)
+from infra.deployment.superuser.construct import (
     SuperUserConstruct,
     SuperUserConstructArgs,
 )
@@ -105,9 +108,9 @@ class DeploymentStack(Stack):
         )
 
         # Deployment Task Constructs
-        sql_task_construct = SqlTaskConstruct(
+        sql_task_construct = SqlDeploymentConstruct(
             self,
-            SqlTaskConstructArgs(
+            SqlDeploymentConstructArgs(
                 config=args.config,
                 db_instance=args.db_instance,
             ),

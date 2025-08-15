@@ -37,7 +37,7 @@ class SuperUserConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-m
         self,
         config: Config,
         user_pool_id: str,
-        uid: str = "superuser-task",
+        uid: str = "superuser-deployment",
         prefix: str = "",
     ):
         super().__init__(config, uid, prefix)
@@ -46,7 +46,7 @@ class SuperUserConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-m
 
 class SuperUserConstruct(Construct):
     """
-    A construct that sets up the superuser task.
+    A construct that sets up the superuser deployment.
 
     Attributes:
         db_instance: The RDS database instance.
@@ -76,9 +76,9 @@ class SuperUserConstruct(Construct):
 
         policy = iam.ManagedPolicy(
             self,
-            "cognito-policy",
+            "superuser-deployment-policy",
             managed_policy_name=f"{args.config.project_name}-"
-            f"{args.config.environment_name}-cognito-policy",
+            f"{args.config.environment_name}-superuser-deployment-policy",
             statements=[
                 iam.PolicyStatement(
                     actions=superuser.PERMITTED_ACTIONS,
@@ -91,9 +91,9 @@ class SuperUserConstruct(Construct):
 
         task_role = iam.Role(
             self,
-            "SuperuserTaskRole",
+            "superuser-deployment-task-role",
             role_name=f"{args.config.project_name}-"
-            f"{args.config.environment_name}-superuser-task-role",
+            f"{args.config.environment_name}-superuser-deployment-task-role",
             assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             managed_policies=[policy],
             inline_policies={
@@ -112,7 +112,7 @@ class SuperUserConstruct(Construct):
 
         self.task_definition = ecs.FargateTaskDefinition(
             self,
-            "superuser-task-definition",
+            "superuser-deployment-task-definition",
             memory_limit_mib=512,
             cpu=256,
             task_role=task_role,
@@ -120,13 +120,13 @@ class SuperUserConstruct(Construct):
 
         log_group = logs.LogGroup(
             self,
-            "superuser-container-log-group",
+            "superuser-deployment-container-log-group",
             log_group_name=f"{args.config.project_name}-{args.config.environment_name}-superuser-container-logs",  # pylint: disable=line-too-long
             removal_policy=RemovalPolicy.DESTROY,
         )
 
         self.task_definition.add_container(
-            "superuser-container",
+            "superuser-deployment-container",
             image=ecs.ContainerImage.from_asset("infra/deployment/superuser"),
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="superuser-creation", log_group=log_group
