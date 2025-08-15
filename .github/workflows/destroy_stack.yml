@@ -55,10 +55,10 @@ jobs:
             - name: CDK Bootstrap (if needed)
               run: cdk bootstrap || echo "Bootstrap already complete"
 
-            - name: Deploy Stack
+            - name: Destroy Stack
               run: |
                   export PYTHONPATH="$(pwd):$PYTHONPATH"
-                  cdk destroy ${{ github.event.repository.name }}-${{ env.ENVIRONMENT_NAME }}-${{ inputs.stack-name }}
+                  cdk destroy ${{ github.event.repository.name }}-${{ env.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py" --require-approval never
 
               env:
                   PROJECT_NAME: ${{ github.event.repository.name }}
