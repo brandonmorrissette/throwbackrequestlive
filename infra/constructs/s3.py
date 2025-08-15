@@ -10,8 +10,6 @@ Usage example:
 """
 
 from aws_cdk import RemovalPolicy
-from aws_cdk import aws_elasticloadbalancingv2 as elbv2
-from aws_cdk import aws_iam as iam
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_ssm as ssm
 

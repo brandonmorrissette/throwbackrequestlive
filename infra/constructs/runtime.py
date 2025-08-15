@@ -153,8 +153,14 @@ class RuntimeConstruct(Construct):
 
         security_group.add_ingress_rule(
             peer=args.load_balancer.connections.security_groups[0],
-            connection=ec2.Port.tcp(80),
+            connection=ec2.Port.tcp(5000),
             description="Allow HTTP traffic from the load balancer",
+        )
+
+        security_group.add_egress_rule(
+            peer=ec2.Peer.ipv4(args.vpc.vpc_cidr_block),
+            connection=ec2.Port.tcp(5432),
+            description="Allow ECS to access RDS",
         )
 
         task_role = iam.Role(
@@ -208,8 +214,9 @@ class RuntimeConstruct(Construct):
             redirect_http=True,
             health_check_grace_period=Duration.minutes(5),
             load_balancer=args.load_balancer,
-            ip_address_type=elbv2.IpAddressType.DUAL_STACK,
+            ip_address_type=elbv2.IpAddressType.IPV4,
             security_groups=[security_group],
+            assign_public_ip=True,
         )
 
         self.runtime_service.target_group.configure_health_check(

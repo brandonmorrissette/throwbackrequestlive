@@ -8,6 +8,7 @@ Classes:
 """
 
 from aws_cdk import RemovalPolicy
+from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
@@ -25,6 +26,7 @@ class LoadBalancerConstructArgs(ConstructArgs):
     Attributes:
         config (Config): The configuration object.
         vpc (ec2.IVpc): The VPC where the ALB will be deployed.
+        certificate (acm.Certificate): The ACM certificate for HTTPS.
         uid (str): A unique identifier for the construct.
         prefix (str): A prefix for resource names.
     """
@@ -33,11 +35,13 @@ class LoadBalancerConstructArgs(ConstructArgs):
         self,
         config: Config,
         vpc: ec2.IVpc,
+        certificate: acm.Certificate,
         uid: str = "load-balancer",
         prefix: str = "",
     ) -> None:
         super().__init__(config, uid, prefix)
         self.vpc = vpc
+        self.certificate = certificate
 
 
 class LoadBalancerConstruct(Construct):
@@ -60,15 +64,16 @@ class LoadBalancerConstruct(Construct):
 
         log_bucket = s3.Bucket(
             self,
-            f"{args.config.project_name}-{args.config.environment_name}-alb-logs",
-            encryption=s3.BucketEncryption.S3_MANAGED,
+            "alb-log-bucket",
+            bucket_name=f"{args.config.project_name}-{args.config.environment_name}-load-balancer-log-bucket",
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             removal_policy=RemovalPolicy.RETAIN,
         )
 
         log_bucket.add_to_resource_policy(
             iam.PolicyStatement(
-                principals=[iam.ServicePrincipal("logging.elb.amazonaws.com")],
+                effect=iam.Effect.ALLOW,
+                principals=[iam.ServicePrincipal("logdelivery.elb.amazonaws.com")],
                 actions=["s3:PutObject"],
                 resources=[
                     f"{log_bucket.bucket_arn}/AWSLogs/{args.config.cdk_environment.account}/*"
@@ -84,10 +89,10 @@ class LoadBalancerConstruct(Construct):
             f"{args.config.project_name}-{args.config.environment_name}-alb",
             vpc=args.vpc,
             internet_facing=True,
-            ip_address_type=elbv2.IpAddressType.DUAL_STACK,
+            ip_address_type=elbv2.IpAddressType.IPV4,
         )
 
         self.load_balancer.log_access_logs(
             log_bucket,
-            prefix=f"{args.config.project_name}/{args.config.environment_name}/load-balancer/",
+            prefix="streams",
         )

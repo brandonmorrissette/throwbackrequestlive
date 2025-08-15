@@ -59,7 +59,7 @@ class Config:
         )
         self.debug: bool = bool(overrides.get("debug", os.getenv("DEBUG")))
         self.log_level: Optional[str] = overrides.get(
-            "log_level", os.getenv("LOG_LEVEL", "INFO")
+            "log_level", os.getenv("LOG_LEVEL", "DEBUG")
         )
         self.environment: str = environment or os.getenv("ENVIRONMENT", "local")
 

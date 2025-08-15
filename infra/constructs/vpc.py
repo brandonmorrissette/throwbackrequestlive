@@ -66,33 +66,18 @@ class VpcConstruct(Construct):
             self,
             f"{args.config.project_name}-{args.config.environment_name}-vpc",
             max_azs=2,
-            nat_gateways=1,
-            nat_gateway_provider=ec2.NatProvider.instance_v2(
-                instance_type=ec2.InstanceType("t4g.nano"),
-                default_allowed_traffic=ec2.NatTrafficDirection.OUTBOUND_ONLY,
-            ),
-            ip_protocol=ec2.IpProtocol.DUAL_STACK,
+            nat_gateways=0,
+            subnet_configuration=[
+                ec2.SubnetConfiguration(
+                    name="public",
+                    subnet_type=ec2.SubnetType.PUBLIC,
+                    cidr_mask=24,
+                )
+            ],
+            ip_protocol=ec2.IpProtocol.IPV4_ONLY,
         )
 
         self.vpc.add_gateway_endpoint(
             "S3Endpoint",
             service=ec2.GatewayVpcEndpointAwsService.S3,
-        )
-        self.vpc.add_interface_endpoint(
-            "EcrEndpoint", service=ec2.InterfaceVpcEndpointAwsService.ECR
-        )
-
-        self.vpc.add_interface_endpoint(
-            "EcrDockerEndpoint", service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER
-        )
-        self.vpc.add_interface_endpoint(
-            "SecretsManagerEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-        )
-        self.vpc.add_interface_endpoint(
-            "SsmEndpoint", service=ec2.InterfaceVpcEndpointAwsService.SSM
-        )
-        self.vpc.add_interface_endpoint(
-            "CloudWatchLogsEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
         )

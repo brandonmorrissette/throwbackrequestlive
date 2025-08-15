@@ -4,7 +4,7 @@ This module contains the AuthBlueprint class which handles authentication relate
 
 from typing import Any, Dict, Optional, Tuple, Union
 
-from flask import jsonify, request
+from flask import current_app, jsonify, request
 
 from backend.flask.blueprints.blueprint import Blueprint
 from backend.flask.services.auth import AuthService
@@ -43,6 +43,7 @@ class AuthBlueprint(Blueprint):
             Authenticate a user and return a token.
             :return: JSON response with the authentication token.
             """
+            current_app.logger.info("Login request received")
             data: Dict[str, Union[str, None]] = request.get_json()
             username: Optional[str] = data.get("username")
             password: Optional[str] = data.get("password")
