@@ -4,8 +4,6 @@ This module defines the NetworkStack class, which sets up the network resources 
 It creates VPC and Certificate constructs using the provided configuration.
 """
 
-from aws_cdk import CfnOutput
-from aws_cdk import aws_ec2 as ec2
 from constructs import Construct
 
 from infra.config import Config
@@ -71,12 +69,4 @@ class NetworkStack(Stack):
                 args.uid,
                 args.prefix,
             ),
-        )
-
-        CfnOutput(
-            self,
-            "subnetid",
-            value=self.vpc_construct.vpc.select_subnets(
-                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
-            ).subnet_ids[0],
         )

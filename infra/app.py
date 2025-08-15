@@ -23,6 +23,7 @@ import aws_cdk as cdk
 
 from infra.config import Config
 from infra.stacks.compute import ComputeStack, ComputeStackArgs
+from infra.stacks.deployment import DeploymentStack, DeploymentStackArgs
 from infra.stacks.network import NetworkStack, NetworkStackArgs
 from infra.stacks.runtime import RuntimeStack, RuntimeStackArgs
 from infra.stacks.storage import StorageStack, StorageStackArgs
@@ -68,6 +69,19 @@ runtime_stack = RuntimeStack(
         db_credentials_arn=storage_stack.rds_construct.db_instance.secret.secret_arn,
         cache_cluster=storage_stack.cache_construct.cluster,
         load_balancer=network_stack.load_balancer_construct.load_balancer,
+    ),
+)
+
+deployment_stack = DeploymentStack(
+    app,
+    DeploymentStackArgs(
+        config=config,
+        vpc=network_stack.vpc_construct.vpc,
+        security_group=storage_stack.rds_construct.security_group,
+        cluster=compute_stack.cluster_construct.cluster,
+        db_instance=storage_stack.rds_construct.db_instance,
+        user_pool_id=user_management_stack.user_pool_construct.user_pool_id,
+        subnet=network_stack.vpc_construct.private_subnets[0],
     ),
 )
 

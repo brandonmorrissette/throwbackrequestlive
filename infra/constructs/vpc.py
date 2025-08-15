@@ -82,32 +82,10 @@ class VpcConstruct(Construct):
             ip_protocol=ec2.IpProtocol.IPV4_ONLY,
         )
 
-        self.vpc.add_gateway_endpoint(
-            "S3Endpoint",
-            service=ec2.GatewayVpcEndpointAwsService.S3,
-        )
+        self.private_subnets = self.vpc.select_subnets(
+            subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+        ).subnets
 
-        self.vpc.add_interface_endpoint(
-            "EcrEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.ECR,
-        )
-
-        self.vpc.add_interface_endpoint(
-            "SsmEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.SSM,
-        )
-
-        self.vpc.add_interface_endpoint(
-            "EcrDockerEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
-        )
-
-        self.vpc.add_interface_endpoint(
-            "SecretsManagerEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-        )
-
-        self.vpc.add_interface_endpoint(
-            "CloudWatchLogsEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
-        )
+        self.public_subnets = self.vpc.select_subnets(
+            subnet_type=ec2.SubnetType.PUBLIC
+        ).subnets

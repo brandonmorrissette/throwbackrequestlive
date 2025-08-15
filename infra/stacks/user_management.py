@@ -5,7 +5,6 @@ which sets up the user management resources for the application.
 It creates User Pool and Superuser constructs using the provided configuration.
 """
 
-from aws_cdk import CfnOutput
 from constructs import Construct
 
 from infra.config import Config
@@ -62,10 +61,4 @@ class UserManagementStack(Stack):
         self.superuser_construct = SuperUserConstruct(
             self,
             SuperUserConstructArgs(args.config, self.user_pool_construct.user_pool_id),
-        )
-
-        CfnOutput(
-            self,
-            "superusertaskdefinitionarn",
-            value=self.superuser_construct.user_creation_task_def_arn,
         )

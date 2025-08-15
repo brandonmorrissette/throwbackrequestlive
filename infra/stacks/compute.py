@@ -6,7 +6,6 @@ It creates an ECS cluster using the provided VPC and configuration.
 
 from dataclasses import dataclass
 
-from aws_cdk import CfnOutput
 from aws_cdk import aws_ec2 as ec2
 from constructs import Construct
 
@@ -63,8 +62,4 @@ class ComputeStack(Stack):
 
         self.cluster_construct = ClusterConstruct(
             self, ClusterConstructArgs(args.config, args.vpc)
-        )
-
-        CfnOutput(
-            self, "ecsclustername", value=self.cluster_construct.cluster.cluster_name
         )

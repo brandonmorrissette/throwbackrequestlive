@@ -62,6 +62,18 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
             AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
 
+    deploy-deployment-stack:
+        needs: [deploy-runtime-stack]
+        name: Deploy Deployment Stack
+        uses: ./.github/workflows/deploy_stack.yml
+        with:
+            stack-name: deployment
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
+
     deploy-sql-files:
         name: Deploy SQL Files
         needs: [deploy-storage-stack]
@@ -79,3 +91,15 @@ jobs:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    destroy-deployment-stack:
+        name: Destroy Deployment Stack
+        needs: [deploy-deployment-stack, deploy-sql-files, deploy-superuser]
+        uses: ./.github/workflows/destroy_stack.yml
+        with:
+            stack-name: deployment
+        secrets:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}

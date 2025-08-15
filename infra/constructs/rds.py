@@ -10,11 +10,8 @@ Usage example:
     rds_construct = RdsConstruct(scope, vpc, config)
 """
 
-from aws_cdk import Duration, RemovalPolicy
+from aws_cdk import Duration
 from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_ecs as ecs
-from aws_cdk import aws_iam as iam
-from aws_cdk import aws_logs as logs
 from aws_cdk import aws_rds as rds
 
 from infra.config import Config
@@ -100,89 +97,4 @@ class RdsConstruct(Construct):
             backup_retention=Duration.days(1),
             security_groups=[self.security_group],
             instance_identifier=f"{args.config.project_name}-rds-instance",
-        )
-
-        policy = iam.ManagedPolicy(
-            self,
-            "sql-task-policy",
-            managed_policy_name=f"{args.config.project_name}-"
-            f"{args.config.environment_name}-sql-task-policy",
-            # pylint: disable=R0801
-            statements=[
-                iam.PolicyStatement(
-                    actions=[
-                        "secretsmanager:GetSecretValue",
-                        "secretsmanager:DescribeSecret",
-                    ],
-                    resources=[self.db_instance.secret.secret_arn],
-                ),
-                iam.PolicyStatement(
-                    actions=["rds-db:connect"],
-                    resources=[self.db_instance.instance_arn],
-                ),
-            ],
-        )
-
-        task_role = iam.Role(
-            self,
-            "sql-task-role",
-            role_name=f"{args.config.project_name}-{args.config.environment_name}-sql-task-role",
-            assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
-            managed_policies=[policy],
-        )
-
-        self.task_definition = ecs.FargateTaskDefinition(
-            self,
-            "sql-task-definition",
-            memory_limit_mib=512,
-            cpu=256,
-            task_role=task_role,
-        )
-
-        log_group = logs.LogGroup(
-            self,
-            "sql-container-log-group",
-            log_group_name=f"/{args.config.project_name}-{args.config.environment_name}-sql-container-logs",  # pylint: disable=line-too-long
-            removal_policy=RemovalPolicy.DESTROY,
-        )
-
-        self.task_definition.add_container(
-            "sql-container",
-            image=ecs.ContainerImage.from_asset(
-                "infra", file="setup/deploy_sql/Dockerfile"
-            ),
-            command=[
-                "sh",
-                "-c",
-                'echo "Running entrypoints.sql"; '
-                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
-                "-f /schema/entrypoints.sql; "
-                'echo "Running shows.sql"; '
-                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
-                "-f /schema/shows.sql; "
-                'echo "Running songs.sql"; '
-                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
-                "-f /schema/songs.sql; "
-                'echo "Running requests.sql"; '
-                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
-                "-f /schema/requests.sql; "
-                'echo "Running submissions.sql"; '
-                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
-                "-f /schema/submissions.sql;",
-            ],
-            logging=ecs.LogDrivers.aws_logs(
-                stream_prefix="sql-deployment",
-                log_group=log_group,
-            ),
-            secrets={
-                "DB_USER": ecs.Secret.from_secrets_manager(
-                    self.db_instance.secret, field="username"
-                ),
-                "DB_PASSWORD": ecs.Secret.from_secrets_manager(
-                    self.db_instance.secret, field="password"
-                ),
-            },
-            environment={
-                "DB_HOST": self.db_instance.db_instance_endpoint_address,
-            },
         )
