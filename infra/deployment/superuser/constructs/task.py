@@ -127,7 +127,7 @@ class SuperUserConstruct(Construct):
 
         self.task_definition.add_container(
             "superuser-container",
-            image=ecs.ContainerImage.from_asset("infra/deployment/superuser/create"),
+            image=ecs.ContainerImage.from_asset("infra/deployment/superuser"),
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="superuser-creation", log_group=log_group
             ),
