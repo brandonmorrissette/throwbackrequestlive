@@ -36,7 +36,7 @@ class SuperUserConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-m
         self,
         config: Config,
         user_pool_id: str,
-        uid: str = "sql-task",
+        uid: str = "superuser-task",
         prefix: str = "",
     ):
         super().__init__(config, uid, prefix)
