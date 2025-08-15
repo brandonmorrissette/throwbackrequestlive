@@ -72,7 +72,12 @@ class VpcConstruct(Construct):
                     name="public",
                     subnet_type=ec2.SubnetType.PUBLIC,
                     cidr_mask=24,
-                )
+                ),
+                ec2.SubnetConfiguration(
+                    name="private",
+                    subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS,
+                    cidr_mask=24,
+                ),
             ],
             ip_protocol=ec2.IpProtocol.IPV4_ONLY,
         )
@@ -80,4 +85,29 @@ class VpcConstruct(Construct):
         self.vpc.add_gateway_endpoint(
             "S3Endpoint",
             service=ec2.GatewayVpcEndpointAwsService.S3,
+        )
+
+        self.vpc.add_interface_endpoint(
+            "EcrEndpoint",
+            service=ec2.InterfaceVpcEndpointAwsService.ECR,
+        )
+
+        self.vpc.add_interface_endpoint(
+            "SsmEndpoint",
+            service=ec2.InterfaceVpcEndpointAwsService.SSM,
+        )
+
+        self.vpc.add_interface_endpoint(
+            "EcrDockerEndpoint",
+            service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
+        )
+
+        self.vpc.add_interface_endpoint(
+            "SecretsManagerEndpoint",
+            service=ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+        )
+
+        self.vpc.add_interface_endpoint(
+            "CloudWatchLogsEndpoint",
+            service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
         )
