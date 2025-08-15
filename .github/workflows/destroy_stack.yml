@@ -22,8 +22,8 @@ on:
                 type: string
 
 jobs:
-    deploy-stack:
-        name: Deploy Stack
+    destroy-stack:
+        name: Destroy Stack
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -58,7 +58,7 @@ jobs:
             - name: Destroy Stack
               run: |
                   export PYTHONPATH="$(pwd):$PYTHONPATH"
-                  cdk destroy ${{ github.event.repository.name }}-${{ env.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py" --require-approval never
+                  yes | cdk destroy ${{ github.event.repository.name }}-${{ env.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py"
 
               env:
                   PROJECT_NAME: ${{ github.event.repository.name }}
