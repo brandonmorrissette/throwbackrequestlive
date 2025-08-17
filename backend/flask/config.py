@@ -57,7 +57,7 @@ class Config:
         self.project_name: Optional[str] = overrides.get(
             "project_name", os.getenv("PROJECT_NAME")
         )
-        self.debug: bool = bool(overrides.get("debug", os.getenv("DEBUG")))
+        self.debug: bool = bool(overrides.get("debug", os.getenv("INFO")))
         self.log_level: Optional[str] = overrides.get(
             "log_level", os.getenv("LOG_LEVEL", "DEBUG")
         )
