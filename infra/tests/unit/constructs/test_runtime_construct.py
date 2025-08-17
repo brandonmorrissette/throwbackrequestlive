@@ -15,16 +15,18 @@ from infra.stacks.stack import Stack
 def runtime_construct_args(config: Config) -> RuntimeConstructArgs:
     return RuntimeConstructArgs(
         config=config,
+        vpc=MagicMock(),
         certificate=MagicMock(),
-        cluster=MagicMock(),
         policy=MagicMock(),
-        db_credentials_arn=MagicMock(),
+        cluster=MagicMock(),
+        load_balancer=MagicMock(),
+        db_instance=MagicMock(),
         runtime_variables=MagicMock(),
     )
 
 
 @dataclass
-class Mocks:  # pylint: disable=missing-class-docstring
+class Mocks:  # pylint: disable=missing-class-docstring, too-many-instance-attributes
     secretsmanager: MagicMock
     iam: MagicMock
     ecs: MagicMock
@@ -32,6 +34,8 @@ class Mocks:  # pylint: disable=missing-class-docstring
     logs: MagicMock
     duration: MagicMock
     ecr_assets: MagicMock
+    ec2: MagicMock
+    elbv2: MagicMock
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +50,11 @@ def mock_runtime_construct(stack: Stack, runtime_construct_args: MagicMock):
         "infra.constructs.runtime.Duration"
     ) as mock_duration, patch(
         "infra.constructs.runtime.ecr_assets"
-    ) as mock_ecr_assets:
+    ) as mock_ecr_assets, patch(
+        "infra.constructs.runtime.ec2"
+    ) as mock_ec2, patch(
+        "infra.constructs.runtime.elbv2"
+    ) as mock_elbv2:
 
         yield RuntimeConstruct(stack, runtime_construct_args), Mocks(
             mock_secretsmanager,
@@ -56,6 +64,8 @@ def mock_runtime_construct(stack: Stack, runtime_construct_args: MagicMock):
             mock_logs,
             mock_duration,
             mock_ecr_assets,
+            mock_ec2,
+            mock_elbv2,
         )
 
 
@@ -112,7 +122,7 @@ def test_policy_created(
         actions=["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
         resources=[
             mocks.secretsmanager.Secret.return_value.secret_arn,
-            runtime_construct_args.db_credentials_arn,
+            runtime_construct_args.db_instance.secret.secret_arn,
         ],
     )
     mocks.iam.PolicyStatement.assert_any_call(
@@ -202,16 +212,17 @@ def test_runtime_service_creation(
 
     mocks.ecs_patterns.ApplicationLoadBalancedFargateService.assert_called_once_with(
         construct,
-        ANY,
+        "runtime-service",
         cluster=runtime_construct_args.cluster,
-        cpu=ANY,
-        memory_limit_mib=ANY,
-        desired_count=ANY,
+        desired_count=1,
         task_image_options=mocks.ecs_patterns.ApplicationLoadBalancedTaskImageOptions.return_value,
-        public_load_balancer=True,
         certificate=runtime_construct_args.certificate,
         redirect_http=True,
         health_check_grace_period=mocks.duration.minutes.return_value,
+        load_balancer=runtime_construct_args.load_balancer,
+        ip_address_type=mocks.elbv2.IpAddressType.IPV4,
+        security_groups=[mocks.ec2.SecurityGroup.return_value],
+        assign_public_ip=True,
     )
 
 

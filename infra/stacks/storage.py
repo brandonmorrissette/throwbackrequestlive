@@ -4,7 +4,6 @@ This module defines the StorageStack class, which sets up the storage resources 
 It creates RDS and Cache constructs using the provided VPC and configuration.
 """
 
-from aws_cdk import CfnOutput
 from aws_cdk import aws_ec2 as ec2
 from constructs import Construct
 
@@ -17,7 +16,7 @@ from infra.stacks.stack import Stack, StackArgs
 
 class StorageStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
     """
-    A class that defines properties for the StorageStack class.
+    A class that defines args for the StorageStack class.
 
     Attributes:
         config (Config): Configuration object.
@@ -64,16 +63,11 @@ class StorageStack(Stack):
         self.cache_construct = CacheConstruct(
             self, CacheConstructArgs(args.config, args.vpc)
         )
-        self.s3_construct = S3Construct(self, args.config)
-
-        CfnOutput(
+        self.s3_construct = S3Construct(
             self,
-            "securitygroupid",
-            value=self.rds_construct.security_group.security_group_id,
+            args.config,
         )
-
-        CfnOutput(
-            self,
-            "sqltaskdefinitionarn",
-            value=self.rds_construct.task_definition.task_definition_arn,
+        args.vpc.add_gateway_endpoint(
+            "S3Endpoint",
+            service=ec2.GatewayVpcEndpointAwsService.S3,
         )

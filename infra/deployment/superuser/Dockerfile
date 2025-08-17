@@ -7,7 +7,7 @@ RUN pip install boto3 botocore
 WORKDIR /app
 
 # Copy the script into the container
-COPY create_superuser.py /app/create_superuser.py
+COPY create.py /app/create.py
 
 # Set the default command
-CMD ["python3", "/app/create_superuser.py"]
+CMD ["python3", "/app/create.py"]

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useError } from '../../contexts/ErrorContext';
 import { default as DataService } from '../../services/data';
 
-import BookingForm from '../../components/BookingForm';
+import BookingForm from '../../components/form/BookingForm';
 import { Show } from '../../models/show';
 import { default as ShowService } from '../../services/show';
 import ShowDetail from './ShowDetails';

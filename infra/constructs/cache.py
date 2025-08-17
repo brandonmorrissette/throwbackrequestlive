@@ -60,7 +60,7 @@ class CacheConstruct(Construct):
         """
         super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
-        security_group = ec2.SecurityGroup(self, "RedisSG", vpc=args.vpc)
+        security_group = ec2.SecurityGroup(self, "redis-security-group", vpc=args.vpc)
 
         security_group.add_ingress_rule(
             ec2.Peer.ipv4(args.vpc.vpc_cidr_block),
@@ -70,16 +70,17 @@ class CacheConstruct(Construct):
 
         subnet_group = elasticache.CfnSubnetGroup(
             self,
-            "RedisSubnetGroup",
-            subnet_ids=[subnet.subnet_id for subnet in args.vpc.private_subnets],
+            "redis-subnet-group",
+            subnet_ids=[subnet.subnet_id for subnet in args.vpc.public_subnets],
             description="Subnet group for Redis",
         )
 
         self.cluster = elasticache.CfnCacheCluster(
             self,
-            "RedisCluster",
+            "redis-cluster",
             cache_node_type="cache.t2.micro",
             engine="redis",
+            engine_version="6.2",
             num_cache_nodes=1,
             vpc_security_group_ids=[security_group.security_group_id],
             cache_subnet_group_name=subnet_group.ref,

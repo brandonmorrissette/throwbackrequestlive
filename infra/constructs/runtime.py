@@ -12,11 +12,14 @@ Usage example:
 
 from aws_cdk import Duration, RemovalPolicy
 from aws_cdk import aws_certificatemanager as acm
+from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr_assets as ecr_assets
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
+from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs
+from aws_cdk import aws_rds as rds
 from aws_cdk import aws_secretsmanager as secretsmanager
 
 from infra.config import Config
@@ -30,11 +33,13 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
 
     Attributes:
         config: Configuration object.
+        vpc (ec2.IVpc): The VPC where the runtime constructs will be deployed.
         certificate (acm.Certificate): The ACM certificate for the load balancer.
         policy (iam.ManagedPolicy): The IAM managed policy for the task role.
         cluster (ecs.Cluster): The ECS cluster.
+        load_balancer (elbv2.IApplicationLoadBalancer): The load balancer.
+        db_instance (rds.IDatabaseInstance): The RDS database instance.
         runtime_variables (dict): The environment variables for the ECS task.
-        runtime_secrets (dict): The secrets for the ECS task.
         uid: Unique identifier for the resource.
             Defaults to runtime.
         prefix: Prefix for resource names.
@@ -44,20 +49,24 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
     def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         config: Config,
+        vpc: ec2.IVpc,
         certificate: acm.ICertificate,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
-        db_credentials_arn: str,
+        load_balancer: elbv2.IApplicationLoadBalancer,
+        db_instance: rds.IDatabaseInstance,
         runtime_variables: dict[str, str] | None = None,
         uid: str = "runtime",
         prefix: str = "",
     ) -> None:
         super().__init__(config, uid, prefix)
+        self.vpc = vpc
         self.certificate = certificate
         self.policy = policy
         self.cluster = cluster
+        self.load_balancer = load_balancer
         self.runtime_variables = runtime_variables
-        self.db_credentials_arn = db_credentials_arn
+        self.db_instance = db_instance
 
 
 class RuntimeConstruct(Construct):
@@ -109,7 +118,7 @@ class RuntimeConstruct(Construct):
                     ],
                     resources=[
                         jwt_secret.secret_arn,
-                        args.db_credentials_arn,
+                        args.db_instance.secret.secret_arn,
                     ],
                 ),
                 iam.PolicyStatement(
@@ -134,6 +143,25 @@ class RuntimeConstruct(Construct):
                     ],
                 ),
             ],
+        )
+
+        security_group = ec2.SecurityGroup(
+            self,
+            f"{args.config.project_name}-{args.config.environment_name}-runtime-sg",
+            vpc=args.vpc,
+            allow_all_outbound=True,
+        )
+
+        security_group.add_ingress_rule(
+            peer=args.load_balancer.connections.security_groups[0],
+            connection=ec2.Port.tcp(5000),
+            description="Allow HTTP traffic from the load balancer",
+        )
+
+        security_group.add_egress_rule(
+            peer=ec2.Peer.ipv4(args.vpc.vpc_cidr_block),
+            connection=ec2.Port.tcp(5432),
+            description="Allow ECS to access RDS",
         )
 
         task_role = iam.Role(
@@ -181,14 +209,15 @@ class RuntimeConstruct(Construct):
             self,
             "runtime-service",
             cluster=args.cluster,
-            cpu=256,
-            memory_limit_mib=512,
             desired_count=1,
             task_image_options=task_image,
-            public_load_balancer=True,
             certificate=args.certificate,
             redirect_http=True,
             health_check_grace_period=Duration.minutes(5),
+            load_balancer=args.load_balancer,
+            ip_address_type=elbv2.IpAddressType.IPV4,
+            security_groups=[security_group],
+            assign_public_ip=True,
         )
 
         self.runtime_service.target_group.configure_health_check(

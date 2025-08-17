@@ -10,10 +10,7 @@ Usage example:
     superuser_construct = SuperUserConstruct(scope, config, user_pool_id)
 """
 
-from aws_cdk import RemovalPolicy
-from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_logs as logs
 from aws_cdk.aws_cognito import CfnUserPoolGroup
 
 from infra.config import Config
@@ -124,52 +121,4 @@ class SuperUserConstruct(Construct):
             user_pool_id=args.user_pool_id,
             description="Superuser group with elevated permissions",
             role_arn=role.role_arn,
-        )
-
-        task_role = iam.Role(
-            self,
-            "SuperuserTaskRole",
-            role_name=f"{args.config.project_name}-"
-            f"{args.config.environment_name}-superuser-task-role",
-            assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
-            managed_policies=[self.policy],
-            inline_policies={
-                "SuperuserPolicy": iam.PolicyDocument(
-                    statements=[
-                        iam.PolicyStatement(
-                            actions=[
-                                "cognito-idp:ListUserPools",
-                            ],
-                            resources=["*"],
-                        ),
-                    ]
-                )
-            },
-        )
-
-        user_creation_task_definition = ecs.FargateTaskDefinition(
-            self,
-            "superuser-task-definition",
-            memory_limit_mib=512,
-            cpu=256,
-            task_role=task_role,
-        )
-
-        log_group = logs.LogGroup(
-            self,
-            "superuser-container-log-group",
-            log_group_name=f"{args.config.project_name}-{args.config.environment_name}-superuser-container-logs",  # pylint: disable=line-too-long
-            removal_policy=RemovalPolicy.DESTROY,
-        )
-
-        user_creation_task_definition.add_container(
-            "superuser-container",
-            image=ecs.ContainerImage.from_asset("infra/setup/create_superuser"),
-            logging=ecs.LogDrivers.aws_logs(
-                stream_prefix="superuser-creation", log_group=log_group
-            ),
-        )
-
-        self.user_creation_task_def_arn = (
-            user_creation_task_definition.task_definition_arn
         )

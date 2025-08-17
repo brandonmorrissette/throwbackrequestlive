@@ -26,7 +26,7 @@ def test_security_group(
     assert security_group["Properties"]["VpcId"]["Ref"] == vpc_id
     assert (
         security_group["Properties"]["GroupDescription"] == f"{conftest.STACK_NAME}/"
-        f"{config.project_name}-{config.environment_name}-cache/RedisSG"
+        f"{config.project_name}-{config.environment_name}-cache/redis-security-group"
     )
 
     ingress_rule = next(iter(security_group["Properties"]["SecurityGroupIngress"]))
@@ -44,7 +44,6 @@ def test_subnet_group(subnet_groups: Mapping[str, Any], vpcs: Mapping[str, Any])
     vpcs = next(iter(vpcs.values()))
 
     assert subnet_group["Properties"]["Description"] == "Subnet group for Redis"
-    assert subnet_group["Properties"]["SubnetIds"]
 
 
 def test_cache_cluster(

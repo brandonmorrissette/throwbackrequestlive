@@ -2,7 +2,6 @@
 from dataclasses import dataclass
 from unittest.mock import ANY, MagicMock, patch
 
-import aws_cdk as cdk
 import pytest
 
 from infra.config import Config
@@ -25,28 +24,18 @@ def user_pool_resource_arn(config: Config, user_pool_id: str):
 class Mocks:  # pylint: disable=missing-class-docstring
     iam: MagicMock
     user_pool_group: MagicMock
-    ecs: MagicMock
-    ecs_patterns: MagicMock
-    logs: MagicMock
 
 
 @pytest.fixture(scope="module")
 def mock_superuser_construct(config: Config, stack: Stack, user_pool_id: str):
     with patch("infra.constructs.superuser.iam") as mock_iam, patch(
         "infra.constructs.superuser.CfnUserPoolGroup"
-    ) as mock_user_pool_group, patch(
-        "infra.constructs.superuser.ecs"
-    ) as mock_ecs, patch(
-        "infra.constructs.superuser.logs"
-    ) as mock_logs:
+    ) as mock_user_pool_group:
         yield SuperUserConstruct(
             stack, SuperUserConstructArgs(config, user_pool_id)
         ), Mocks(
             iam=mock_iam,
             user_pool_group=mock_user_pool_group,
-            ecs=mock_ecs,
-            ecs_patterns=MagicMock(),
-            logs=mock_logs,
         )
 
 
@@ -129,74 +118,4 @@ def test_user_pool_group_creation(
         user_pool_id=user_pool_id,
         description="Superuser group with elevated permissions",
         role_arn=mocks.iam.Role.return_value.role_arn,
-    )
-
-
-def test_task_role_creation(
-    mock_superuser_construct: tuple[SuperUserConstruct, Mocks],
-):
-    construct, mocks = mock_superuser_construct
-
-    mocks.iam.PolicyStatement.assert_any_call(
-        actions=["cognito-idp:ListUserPools"],
-        resources=["*"],
-    )
-
-    mocks.iam.ServicePrincipal.assert_any_call("ecs-tasks.amazonaws.com")
-
-    mocks.iam.Role.assert_any_call(
-        construct,
-        ANY,
-        role_name=ANY,
-        assumed_by=mocks.iam.ServicePrincipal.return_value,
-        managed_policies=[mocks.iam.ManagedPolicy.return_value],
-        inline_policies={
-            "SuperuserPolicy": mocks.iam.PolicyDocument.return_value,
-        },
-    )
-
-
-def test_task_definition_creation(
-    mock_superuser_construct: tuple[SuperUserConstruct, Mocks],
-):
-    construct, mocks = mock_superuser_construct
-
-    mocks.ecs.FargateTaskDefinition.assert_called_once_with(
-        construct,
-        "superuser-task-definition",
-        memory_limit_mib=512,
-        cpu=256,
-        task_role=mocks.iam.Role.return_value,
-    )
-
-
-def test_container_added(mock_superuser_construct: tuple[SuperUserConstruct, Mocks]):
-    _, mocks = mock_superuser_construct
-
-    mocks.ecs.FargateTaskDefinition.return_value.add_container.assert_called_once_with(
-        ANY,
-        image=mocks.ecs.ContainerImage.from_asset.return_value,
-        logging=mocks.ecs.LogDrivers.aws_logs.return_value,
-    )
-
-    mocks.ecs.ContainerImage.from_asset.assert_called_once_with(
-        "infra/setup/create_superuser"
-    )
-
-
-def test_logging(
-    mock_superuser_construct: tuple[SuperUserConstruct, Mocks], config: Config
-):
-    construct, mocks = mock_superuser_construct
-
-    mocks.ecs.LogDrivers.aws_logs.assert_called_once_with(
-        stream_prefix="superuser-creation",
-        log_group=mocks.logs.LogGroup.return_value,
-    )
-
-    mocks.logs.LogGroup.assert_called_once_with(
-        construct,
-        "superuser-container-log-group",
-        log_group_name=f"{config.project_name}-{config.environment_name}-superuser-container-logs",
-        removal_policy=cdk.RemovalPolicy.DESTROY,
     )

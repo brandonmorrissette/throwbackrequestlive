@@ -1,6 +1,6 @@
 // src/pages/Admin.tsx
 import React from 'react';
-import LoginForm from './LoginForm';
+import LoginForm from '../../components/form/LoginForm';
 
 /**
  * Login component that renders the LoginForm.

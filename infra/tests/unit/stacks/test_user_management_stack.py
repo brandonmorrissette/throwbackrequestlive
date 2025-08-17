@@ -20,7 +20,6 @@ class Mocks:  # pylint: disable=missing-class-docstring
     user_pool_construct_args: MagicMock
     superuser_construct: MagicMock
     superuser_construct_args: MagicMock
-    cfn_output: MagicMock
 
 
 @pytest.fixture(scope="module")
@@ -35,15 +34,12 @@ def mocked_user_management_stack(
         "infra.stacks.user_management.SuperUserConstruct"
     ) as mock_superuser_construct, patch(
         "infra.stacks.user_management.SuperUserConstructArgs"
-    ) as mock_superuser_construct_args, patch(
-        "infra.stacks.user_management.CfnOutput"
-    ) as mock_cfn_output:
+    ) as mock_superuser_construct_args:
         return UserManagementStack(app, args), Mocks(
             mock_user_pool_construct,
             mock_user_pool_construct_args,
             mock_superuser_construct,
             mock_superuser_construct_args,
-            mock_cfn_output,
         )
 
 
@@ -81,16 +77,4 @@ def test_superuser_construct(
     )
     mocks.superuser_construct.assert_called_once_with(
         stack, mocks.superuser_construct_args.return_value
-    )
-
-
-def test_cfn_output(
-    mocked_user_management_stack: tuple[UserManagementStack, Mocks],
-):
-    stack, mocks = mocked_user_management_stack
-
-    mocks.cfn_output.assert_called_once_with(
-        stack,
-        "superusertaskdefinitionarn",
-        value=mocks.superuser_construct.return_value.user_creation_task_def_arn,
     )

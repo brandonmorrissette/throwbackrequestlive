@@ -39,7 +39,9 @@ def test_security_group_creation(
 ):
     cache_construct, mock_ec2, _ = mock_cache_construct
 
-    mock_ec2.SecurityGroup.assert_called_once_with(cache_construct, "RedisSG", vpc=vpc)
+    mock_ec2.SecurityGroup.assert_called_once_with(
+        cache_construct, "redis-security-group", vpc=vpc
+    )
 
     mock_ec2.SecurityGroup.return_value.add_ingress_rule.assert_called_once_with(
         mock_ec2.Peer.ipv4(vpc.vpc_cidr_block),
@@ -55,9 +57,9 @@ def test_subnet_group_creation(
 
     mock_elasticache.CfnSubnetGroup.assert_called_once_with(
         cache_construct,
-        "RedisSubnetGroup",
+        "redis-subnet-group",
         description="Subnet group for Redis",
-        subnet_ids=[subnet.subnet_id for subnet in vpc.private_subnets],
+        subnet_ids=[subnet.subnet_id for subnet in vpc.public_subnets],
     )
 
 
@@ -67,10 +69,12 @@ def test_cache_cluster_creation(
     cache_construct, mock_ec2, mock_elasticache = mock_cache_construct
 
     mock_elasticache.CfnCacheCluster.assert_called_once_with(
+        # pylint: disable=duplicate-code
         cache_construct,
-        "RedisCluster",
+        "redis-cluster",
         cache_node_type="cache.t2.micro",
         engine="redis",
+        engine_version="6.2",
         num_cache_nodes=1,
         vpc_security_group_ids=[mock_ec2.SecurityGroup.return_value.security_group_id],
         cache_subnet_group_name=mock_elasticache.CfnSubnetGroup.return_value.ref,

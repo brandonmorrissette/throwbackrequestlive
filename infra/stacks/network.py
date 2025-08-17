@@ -4,12 +4,14 @@ This module defines the NetworkStack class, which sets up the network resources 
 It creates VPC and Certificate constructs using the provided configuration.
 """
 
-from aws_cdk import CfnOutput
-from aws_cdk import aws_ec2 as ec2
 from constructs import Construct
 
 from infra.config import Config
 from infra.constructs.cert import CertConstruct, CertConstructArgs
+from infra.constructs.load_balancer import (
+    LoadBalancerConstruct,
+    LoadBalancerConstructArgs,
+)
 from infra.constructs.vpc import VpcConstruct, VpcConstructArgs
 from infra.stacks.stack import Stack, StackArgs
 
@@ -56,13 +58,15 @@ class NetworkStack(Stack):
         """
         super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
-        self.vpc_constrcut = VpcConstruct(self, VpcConstructArgs(args.config))
+        self.vpc_construct = VpcConstruct(self, VpcConstructArgs(args.config))
         self.cert_construct = CertConstruct(self, CertConstructArgs(args.config))
-
-        CfnOutput(
+        self.load_balancer_construct = LoadBalancerConstruct(
             self,
-            "subnetid",
-            value=self.vpc_constrcut.vpc.select_subnets(
-                subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT
-            ).subnet_ids[0],
+            LoadBalancerConstructArgs(
+                args.config,
+                self.vpc_construct.vpc,
+                self.cert_construct.certificate,
+                args.uid,
+                args.prefix,
+            ),
         )

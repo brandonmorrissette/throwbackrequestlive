@@ -1,6 +1,6 @@
 # pylint: disable=missing-function-docstring, missing-module-docstring, redefined-outer-name, unused-variable
 from dataclasses import dataclass
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 import aws_cdk as cdk
 import pytest
@@ -15,7 +15,8 @@ class Mocks:  # pylint: disable=missing-class-docstring
     vpc_construct_args: MagicMock
     cert_construct: MagicMock
     cert_construct_args: MagicMock
-    cfn_output: MagicMock
+    load_balancer_construct: MagicMock
+    load_balancer_construct_args: MagicMock
 
 
 @pytest.fixture(scope="module")
@@ -27,14 +28,17 @@ def mocked_network_stack(app: cdk.App, config: Config):
     ) as mock_cert_construct, patch(
         "infra.stacks.network.CertConstructArgs"
     ) as mock_cert_construct_args, patch(
-        "infra.stacks.network.CfnOutput"
-    ) as mock_cfn_output:
+        "infra.stacks.network.LoadBalancerConstruct"
+    ) as mock_load_balancer_construct, patch(
+        "infra.stacks.network.LoadBalancerConstructArgs"
+    ) as mock_load_balancer_construct_args:
         yield NetworkStack(app, NetworkStackArgs(config)), Mocks(
             mock_vpc_construct,
             mock_vpc_construct_args,
             mock_cert_construct,
             mock_cert_construct_args,
-            mock_cfn_output,
+            mock_load_balancer_construct,
+            mock_load_balancer_construct_args,
         )
 
 
@@ -70,15 +74,19 @@ def test_cert_construct(
     )
 
 
-def test_cfn_output(
+def test_load_balancer_construct(
     mocked_network_stack: tuple[NetworkStack, Mocks],
+    config: Config,
 ):
     stack, mocks = mocked_network_stack
 
-    mocks.cfn_output.assert_called_once_with(
-        stack,
-        "subnetid",
-        value=mocks.vpc_construct.return_value.vpc.select_subnets.return_value.subnet_ids[
-            0
-        ],
+    mocks.load_balancer_construct_args.assert_called_once_with(
+        config,
+        mocks.vpc_construct.return_value.vpc,
+        mocks.cert_construct.return_value.certificate,
+        ANY,
+        ANY,
+    )
+    mocks.load_balancer_construct.assert_called_once_with(
+        stack, mocks.load_balancer_construct_args.return_value
     )

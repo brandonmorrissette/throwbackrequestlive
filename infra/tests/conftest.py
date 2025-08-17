@@ -5,15 +5,21 @@ import aws_cdk as cdk
 import pytest
 from aws_cdk import Stack as AwsCdkStack
 from aws_cdk import assertions
+from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_elasticache as elasticache
+from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
+from aws_cdk import aws_rds as rds
+from aws_cdk import aws_route53 as route53
 
 from infra.config import Config
 from infra.stacks.stack import Stack, StackArgs
 
-PROJECT_NAME = "UnitTestProject"
-ENVIRONMENT_NAME = "UnitTestEnv"
-STACK_NAME = "TestStack"
+PROJECT_NAME = "unit-test-project"
+ENVIRONMENT_NAME = "unit-test-env"
+STACK_NAME = "test-stack"
 ACCOUNT = "unittest"
 REGION = "us-east-1"
 
@@ -45,8 +51,8 @@ def stack(app: cdk.App, config: Config):
 @pytest.fixture(scope="module")
 def subnet():
     return ec2.SubnetConfiguration(
-        name="PrivateSubnet",
-        subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        name="IsolatedSubnet",
+        subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
         cidr_mask=24,
     )
 
@@ -94,6 +100,80 @@ def ecs_task_role():
     }
 
 
+@pytest.fixture(scope="module")
+def certificate(stack: Stack) -> acm.Certificate:
+    return acm.Certificate(stack, "MockCertificate", domain_name="example.com")
+
+
+@pytest.fixture(scope="module")
+def policy_statement() -> iam.PolicyStatement:
+    return iam.PolicyStatement(
+        effect=iam.Effect.ALLOW,
+        actions=["s3:GetObject"],
+        resources=["arn:aws:s3:::mybucket/*"],
+    )
+
+
+@pytest.fixture(scope="module")
+def policy(stack: Stack, policy_statement: iam.PolicyStatement) -> iam.ManagedPolicy:
+    return iam.ManagedPolicy(
+        stack,
+        "MockPolicy",
+        statements=[policy_statement],
+        managed_policy_name="MockPolicy",
+    )
+
+
+@pytest.fixture(scope="module")
+def db_instance(stack: Stack, vpc: ec2.IVpc) -> rds.IDatabaseInstance:
+    return rds.DatabaseInstance(
+        stack,
+        "TestDBInstance",
+        database_name="testdb",
+        engine=rds.DatabaseInstanceEngine.postgres(
+            version=rds.PostgresEngineVersion.VER_16_4
+        ),
+        instance_type=ec2.InstanceType.of(
+            ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO
+        ),
+        vpc=vpc,
+        vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+        publicly_accessible=True,
+    )
+
+
+@pytest.fixture(scope="module")
+def cluster(stack: Stack) -> ecs.Cluster:
+    return ecs.Cluster(stack, "MockCluster")
+
+
+@pytest.fixture(scope="module")
+def hosted_zone(stack: Stack) -> route53.HostedZone:
+    return route53.HostedZone(stack, "MockHostedZone", zone_name="example.com")
+
+
+@pytest.fixture(scope="module")
+def cache_cluster(stack: Stack) -> elasticache.CfnCacheCluster:
+    return elasticache.CfnCacheCluster(
+        stack,
+        "TestCacheCluster",
+        cache_node_type="cache.t3.micro",
+        engine="redis",
+        num_cache_nodes=1,
+    )
+
+
+@pytest.fixture(scope="module")
+def load_balancer(stack: Stack, vpc: ec2.IVpc) -> elbv2.IApplicationLoadBalancer:
+    return elbv2.ApplicationLoadBalancer(
+        stack,
+        "TestLoadBalancer",
+        vpc=vpc,
+        internet_facing=True,
+    )
+
+
+# Template fixtures
 @pytest.fixture(scope="module")
 def template(stack: Stack):
     return assertions.Template.from_stack(stack)

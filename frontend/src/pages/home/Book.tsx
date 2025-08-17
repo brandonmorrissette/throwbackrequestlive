@@ -1,5 +1,5 @@
 import React from 'react';
-import BookingForm from '../../components/BookingForm';
+import BookingForm from '../../components/form/BookingForm';
 import Modal from '../../components/modal/Modal';
 
 interface BookProps {

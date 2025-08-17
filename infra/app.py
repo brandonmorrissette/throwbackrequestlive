@@ -23,6 +23,7 @@ import aws_cdk as cdk
 
 from infra.config import Config
 from infra.stacks.compute import ComputeStack, ComputeStackArgs
+from infra.stacks.deployment import DeploymentStack, DeploymentStackArgs
 from infra.stacks.network import NetworkStack, NetworkStackArgs
 from infra.stacks.runtime import RuntimeStack, RuntimeStackArgs
 from infra.stacks.storage import StorageStack, StorageStackArgs
@@ -44,25 +45,44 @@ user_management_stack = UserManagementStack(app, UserManagementStackArgs(config)
 network_stack = NetworkStack(app, NetworkStackArgs(config))
 
 compute_stack = ComputeStack(
-    app, ComputeStackArgs(config, vpc=network_stack.vpc_constrcut.vpc)
+    app, ComputeStackArgs(config, vpc=network_stack.vpc_construct.vpc)
 )
-compute_stack.add_dependency(network_stack)
 
 storage_stack = StorageStack(
-    app, StorageStackArgs(config, vpc=network_stack.vpc_constrcut.vpc)
+    app,
+    StorageStackArgs(
+        config,
+        vpc=network_stack.vpc_construct.vpc,
+    ),
 )
-storage_stack.add_dependency(network_stack)
+
 
 runtime_stack = RuntimeStack(
     app,
     RuntimeStackArgs(
-        config, user_management_stack, network_stack, compute_stack, storage_stack
+        config=config,
+        vpc=network_stack.vpc_construct.vpc,
+        certificate=network_stack.cert_construct.certificate,
+        hosted_zone=network_stack.cert_construct.hosted_zone,
+        policy=user_management_stack.superuser_construct.policy,
+        cluster=compute_stack.cluster_construct.cluster,
+        db_instance=storage_stack.rds_construct.db_instance,
+        cache_cluster=storage_stack.cache_construct.cluster,
+        load_balancer=network_stack.load_balancer_construct.load_balancer,
     ),
 )
 
-runtime_stack.add_dependency(user_management_stack)
-runtime_stack.add_dependency(network_stack)
-runtime_stack.add_dependency(compute_stack)
-runtime_stack.add_dependency(storage_stack)
+deployment_stack = DeploymentStack(
+    app,
+    DeploymentStackArgs(
+        config=config,
+        vpc=network_stack.vpc_construct.vpc,
+        security_group=storage_stack.rds_construct.security_group,
+        cluster=compute_stack.cluster_construct.cluster,
+        db_instance=storage_stack.rds_construct.db_instance,
+        user_pool_id=user_management_stack.user_pool_construct.user_pool_id,
+        subnet=network_stack.vpc_construct.private_subnets[0],
+    ),
+)
 
 app.synth()
