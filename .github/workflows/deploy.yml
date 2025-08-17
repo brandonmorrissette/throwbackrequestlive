@@ -64,6 +64,7 @@ jobs:
 
     deploy-deployment-stack:
         name: Deploy Deployment Stack
+        needs: [deploy-storage-stack, deploy-user-management-stack]
         uses: ./.github/workflows/deploy_stack.yml
         with:
             stack-name: deployment

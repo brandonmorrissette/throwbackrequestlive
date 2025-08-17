@@ -5,7 +5,7 @@ Classes:
     SqlDeploymentConstruct: A construct that sets up the SQL deployment.
 
 Usage example:
-    sql_task_construct = SqlTaskConstruct(scope, config, vpc)
+    sql_task_construct = SqlTaskConstruct(scope, config)
 """
 
 from aws_cdk import RemovalPolicy
