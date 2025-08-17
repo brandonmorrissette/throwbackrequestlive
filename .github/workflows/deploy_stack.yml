@@ -67,5 +67,5 @@ jobs:
                   cdk deploy ${{ github.event.repository.name }}-${{ inputs.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py" --require-approval never
               env:
                   PROJECT_NAME: ${{ github.event.repository.name }}
-                  ENVIRONMENT_NAME: ${{ inputs.ENVIRONMENT_NAME }}
+                  ENVIRONMENT_NAME: 'production'
                   AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
