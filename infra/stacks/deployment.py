@@ -5,7 +5,7 @@ which sets up the resources needed only during deployment of the application.
 These resources will be destroyed after the deployment is complete.
 """
 
-from aws_cdk import CfnOutput
+from aws_cdk import CfnOutput, RemovalPolicy
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_rds as rds
@@ -76,36 +76,30 @@ class DeploymentStack(Stack):
     ) -> None:
         super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
-        # Vpc Endpoints for deployment
-        args.vpc.add_gateway_endpoint(
-            "S3Endpoint",
-            service=ec2.GatewayVpcEndpointAwsService.S3,
-        )
-
         args.vpc.add_interface_endpoint(
             "EcrEndpoint",
             service=ec2.InterfaceVpcEndpointAwsService.ECR,
-        )
+        ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         args.vpc.add_interface_endpoint(
             "SsmEndpoint",
             service=ec2.InterfaceVpcEndpointAwsService.SSM,
-        )
+        ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         args.vpc.add_interface_endpoint(
             "EcrDockerEndpoint",
             service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
-        )
+        ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         args.vpc.add_interface_endpoint(
             "SecretsManagerEndpoint",
             service=ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-        )
+        ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         args.vpc.add_interface_endpoint(
             "CloudWatchLogsEndpoint",
             service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
-        )
+        ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         # Deployment Task Constructs
         sql_task_construct = SqlDeploymentConstruct(

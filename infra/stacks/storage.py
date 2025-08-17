@@ -67,3 +67,7 @@ class StorageStack(Stack):
             self,
             args.config,
         )
+        args.vpc.add_gateway_endpoint(
+            "S3Endpoint",
+            service=ec2.GatewayVpcEndpointAwsService.S3,
+        )
