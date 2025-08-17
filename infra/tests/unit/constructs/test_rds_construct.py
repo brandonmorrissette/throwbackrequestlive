@@ -16,19 +16,16 @@ class Mocks:  # pylint: disable=missing-class-docstring
     ec2: MagicMock
     rds: MagicMock
     duration: MagicMock
-    _lambda: MagicMock
 
 
 @pytest.fixture(scope="module")
 def mock_rds_construct(vpc: ec2.Vpc, config: Config, stack: Stack):
     with patch("infra.constructs.rds.ec2") as mock_ec2, patch(
         "infra.constructs.rds.rds"
-    ) as mock_rds, patch("infra.constructs.rds.Duration") as mock_duration, patch(
-        "infra.constructs.rds._lambda"
-    ) as mock_lambda:
+    ) as mock_rds, patch("infra.constructs.rds.Duration") as mock_duration:
 
         yield RdsConstruct(stack, RdsConstructArgs(config, vpc)), Mocks(
-            mock_ec2, mock_rds, mock_duration, mock_lambda
+            mock_ec2, mock_rds, mock_duration
         )
 
 

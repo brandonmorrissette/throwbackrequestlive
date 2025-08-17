@@ -12,9 +12,7 @@ Usage example:
 
 from aws_cdk import Duration
 from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_iam as iam
 from aws_cdk import aws_rds as rds
-from aws_cdk import aws_ssm as ssm
 
 from infra.config import Config
 from infra.constructs.construct import Construct, ConstructArgs

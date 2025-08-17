@@ -26,6 +26,7 @@ from infra.stacks.compute import ComputeStack, ComputeStackArgs
 from infra.stacks.deployment import DeploymentStack, DeploymentStackArgs
 from infra.stacks.network import NetworkStack, NetworkStackArgs
 from infra.stacks.runtime import RuntimeStack, RuntimeStackArgs
+from infra.stacks.show import ShowStack, ShowStackArgs
 from infra.stacks.storage import StorageStack, StorageStackArgs
 from infra.stacks.user_management import UserManagementStack, UserManagementStackArgs
 
@@ -56,6 +57,13 @@ storage_stack = StorageStack(
     ),
 )
 
+show_stack = ShowStack(
+    app,
+    ShowStackArgs(
+        config=config,
+        vpc=network_stack.vpc_construct.vpc,
+    ),
+)
 
 runtime_stack = RuntimeStack(
     app,
@@ -67,7 +75,7 @@ runtime_stack = RuntimeStack(
         policy=user_management_stack.superuser_construct.policy,
         cluster=compute_stack.cluster_construct.cluster,
         db_instance=storage_stack.rds_construct.db_instance,
-        cache_cluster=storage_stack.cache_construct.cluster,
+        cache_cluster=show_stack.cache_construct.cluster,
         load_balancer=network_stack.load_balancer_construct.load_balancer,
     ),
 )
