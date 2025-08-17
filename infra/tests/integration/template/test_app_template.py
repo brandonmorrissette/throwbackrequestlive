@@ -6,8 +6,8 @@ import os
 import aws_cdk as cdk
 import pytest
 
-PROJECT_NAME = "AppTemplateTest"
-ENVIRONMENT_NAME = "IntegrationTesting"
+PROJECT_NAME = "template-integration"
+ENVIRONMENT_NAME = "integration-test"
 
 
 @pytest.fixture(scope="module")
@@ -51,22 +51,6 @@ def test_expected_stacks_exist(stacks):
     assert expected_stack_ids.issubset(
         stack_ids
     ), f"Missing stacks: {expected_stack_ids - stack_ids}"
-
-
-def test_compute_stack_dependencies(stacks):
-    compute_stack = _get_stack_by_name(
-        stacks, f"{PROJECT_NAME}-{ENVIRONMENT_NAME}-compute"
-    )
-
-    dependency_ids = {dep.node.id for dep in compute_stack.dependencies}
-    expected_dependencies = {
-        f"{PROJECT_NAME}-{ENVIRONMENT_NAME}-network",
-    }
-
-    assert expected_dependencies.issubset(dependency_ids), (
-        "ComputeStack dependencies incorrect. Expected:"
-        f"{expected_dependencies}, Found: {dependency_ids}"
-    )
 
 
 def test_storage_stack_dependencies(stacks):

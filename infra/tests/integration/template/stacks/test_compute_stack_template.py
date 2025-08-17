@@ -17,11 +17,3 @@ def stack(app: cdk.App, config: Config, vpc: ec2.Vpc) -> ComputeStack:
 
 def test_cluster(clusters: Mapping[str, Any]) -> None:
     assert len(clusters) == 1
-
-
-def test_cfn_output(template: assertions.Template, clusters: Mapping[str, Any]) -> None:
-    cluster_name_output = template.find_outputs("ecsclustername")
-    assert cluster_name_output
-    assert cluster_name_output["ecsclustername"]["Value"] == {
-        "Ref": next(iter(clusters.keys()))
-    }

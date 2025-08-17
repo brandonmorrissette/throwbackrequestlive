@@ -1,5 +1,5 @@
 # pylint: disable=missing-function-docstring, missing-module-docstring, redefined-outer-name, unused-variable
-from unittest.mock import ANY, MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -24,59 +24,47 @@ def test_default_id(mock_vpc_construct: tuple[VpcConstruct, MagicMock], config: 
     assert construct.node.id == f"{config.project_name}-{config.environment_name}-vpc"
 
 
-def test_vpc_creation(mock_vpc_construct: tuple[VpcConstruct, MagicMock]):
+def test_vpc_creation(
+    config: Config, mock_vpc_construct: tuple[VpcConstruct, MagicMock]
+):
     construct, mock_ec2 = mock_vpc_construct
 
     mock_ec2.Vpc.assert_called_once_with(
         construct,
-        ANY,
-        max_azs=1,
+        f"{config.project_name}-{config.environment_name}-vpc",
+        max_azs=2,
         nat_gateways=0,
         subnet_configuration=[
             mock_ec2.SubnetConfiguration.return_value,
             mock_ec2.SubnetConfiguration.return_value,
         ],
-    )
-
-    mock_ec2.SubnetConfiguration.assert_has_calls(
-        [
-            call(name="public", subnet_type=mock_ec2.SubnetType.PUBLIC, cidr_mask=24),
-            call(
-                name="isolated",
-                subnet_type=mock_ec2.SubnetType.PRIVATE_ISOLATED,
-                cidr_mask=24,
-            ),
-        ]
+        ip_protocol=mock_ec2.IpProtocol.IPV4_ONLY,
     )
 
 
-def test_endpoints_added(mock_vpc_construct: tuple[VpcConstruct, MagicMock]):
-    _, mock_ec2 = mock_vpc_construct
+def test_private_subnets(mock_vpc_construct: tuple[VpcConstruct, MagicMock]):
+    construct, mock_ec2 = mock_vpc_construct
 
-    mock_ec2.Vpc.return_value.add_gateway_endpoint.assert_has_calls(
-        [
-            call("S3Endpoint", service=mock_ec2.GatewayVpcEndpointAwsService.S3),
-        ]
+    mock_ec2.SubnetConfiguration.assert_any_call(
+        name="private",
+        subnet_type=mock_ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        cidr_mask=24,
+    )
+    assert (
+        construct.private_subnets
+        == mock_ec2.Vpc.return_value.select_subnets.return_value.subnets
     )
 
-    mock_ec2.Vpc.return_value.add_interface_endpoint.assert_has_calls(
-        [
-            call("EcrEndpoint", service=mock_ec2.InterfaceVpcEndpointAwsService.ECR),
-            call(
-                "EcrDockerEndpoint",
-                service=mock_ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
-            ),
-            call(
-                "SecretsManagerEndpoint",
-                service=mock_ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-            ),
-            call(
-                "SsmEndpoint",
-                service=mock_ec2.InterfaceVpcEndpointAwsService.SSM,
-            ),
-            call(
-                "CloudWatchLogsEndpoint",
-                service=mock_ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
-            ),
-        ]
+
+def test_public_subnets(mock_vpc_construct: tuple[VpcConstruct, MagicMock]):
+    construct, mock_ec2 = mock_vpc_construct
+
+    mock_ec2.SubnetConfiguration.assert_any_call(
+        name="public",
+        subnet_type=mock_ec2.SubnetType.PUBLIC,
+        cidr_mask=24,
+    )
+    assert (
+        construct.public_subnets
+        == mock_ec2.Vpc.return_value.select_subnets.return_value.subnets
     )

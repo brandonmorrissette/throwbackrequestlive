@@ -25,16 +25,3 @@ def test_super_user_construct(
     assert (
         "superuser" in user_groups[next(iter(user_groups))]["Properties"]["GroupName"]
     )
-
-
-def test_cfn_output(
-    template: assertions.Template,
-    task_definitions: Mapping[str, Any],
-) -> None:
-    superuser_task_definition_output = template.find_outputs(
-        "superusertaskdefinitionarn"
-    )
-    assert superuser_task_definition_output
-    assert superuser_task_definition_output["superusertaskdefinitionarn"]["Value"][
-        "Ref"
-    ] == next((key for key in task_definitions.keys()), None)

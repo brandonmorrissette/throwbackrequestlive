@@ -12,6 +12,7 @@ from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_elasticache as elasticache
 from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
+from aws_cdk import aws_rds as rds
 from aws_cdk import aws_route53 as route53
 from constructs import Construct
 
@@ -21,7 +22,9 @@ from infra.constructs.runtime import RuntimeConstruct, RuntimeConstructArgs
 from infra.stacks.stack import Stack, StackArgs
 
 
-class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
+class RuntimeStackArgs(  # pylint: disable=too-few-public-methods, too-many-instance-attributes
+    StackArgs
+):
     """
     A class that defines properties for the RuntimeStack class.
 
@@ -32,7 +35,7 @@ class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
         hosted_zone (route53.IHostedZone): The Route 53 hosted zone.
         policy (iam.ManagedPolicy): The IAM managed policy for the task role.
         cluster (ecs.Cluster): The ECS cluster.
-        db_credentials_arn (str): The ARN of the database credentials secret.
+        db_instance (rds.IDatabaseInstance): The database instance.
         cache_cluster (elasticache.CfnCacheCluster): The cache cluster.
         uid (str): The ID of the stack.
             Defaults to "runtime".
@@ -48,7 +51,7 @@ class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
         hosted_zone: route53.IHostedZone,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
-        db_credentials_arn: str,
+        db_instance: rds.IDatabaseInstance,
         cache_cluster: elasticache.CfnCacheCluster,
         load_balancer: elbv2.IApplicationLoadBalancer,
         uid: str = "runtime",
@@ -61,7 +64,7 @@ class RuntimeStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
         self.policy = policy
         self.cluster = cluster
         self.load_balancer = load_balancer
-        self.db_credentials_arn = db_credentials_arn
+        self.db_instance = db_instance
         self.cache_cluster = cache_cluster
 
 
@@ -96,7 +99,7 @@ class RuntimeStack(Stack):
                 policy=args.policy,
                 cluster=args.cluster,
                 load_balancer=args.load_balancer,
-                db_credentials_arn=args.db_credentials_arn,
+                db_instance=args.db_instance,
                 runtime_variables={
                     # pylint:disable=line-too-long
                     "PROJECT_NAME": str(args.config.project_name),

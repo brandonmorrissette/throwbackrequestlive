@@ -35,21 +35,3 @@ def test_db_instance(db_instances: Mapping[str, Any]) -> None:
 
 def test_cache_cluster(cache_clusters: Mapping[str, Any]) -> None:
     assert len(cache_clusters) == 1
-
-
-def test_cfn_output(
-    template: assertions.Template,
-    security_groups: Mapping[str, Any],
-    task_definitions: Mapping[str, Any],
-) -> None:
-    security_group_output = template.find_outputs("securitygroupid")
-    assert security_group_output
-    assert security_group_output["securitygroupid"]["Value"]["Fn::GetAtt"] == [
-        next((key for key in security_groups.keys()), None),
-        "GroupId",
-    ]
-
-    sql_task_definition_output = template.find_outputs("sqltaskdefinitionarn")
-    assert sql_task_definition_output["sqltaskdefinitionarn"]["Value"]["Ref"] == next(
-        (key for key in task_definitions.keys()), None
-    )

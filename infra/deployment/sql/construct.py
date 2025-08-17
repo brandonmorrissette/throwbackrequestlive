@@ -102,6 +102,7 @@ class SqlDeploymentConstruct(Construct):
         self.task_definition = ecs.FargateTaskDefinition(
             self,
             "sql-task-definition",
+            # pylint: disable=duplicate-code
             memory_limit_mib=512,
             cpu=256,
             task_role=task_role,

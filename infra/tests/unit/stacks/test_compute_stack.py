@@ -16,51 +16,40 @@ def compute_stack_args(config: Config, vpc: MagicMock):
 @pytest.fixture(scope="module")
 def mocked_compute_stack(
     app: cdk.App, compute_stack_args: ComputeStackArgs
-) -> tuple[ComputeStack, MagicMock, MagicMock, MagicMock]:
+) -> tuple[ComputeStack, MagicMock, MagicMock]:
     with patch(
         "infra.stacks.compute.ClusterConstruct"
     ) as mock_cluster_construct, patch(
         "infra.stacks.compute.ClusterConstructArgs"
-    ) as mock_cluster_construct_args, patch(
-        "infra.stacks.compute.CfnOutput"
-    ) as mock_cfn_output:
+    ) as mock_cluster_construct_args:
         return (
             ComputeStack(app, compute_stack_args),
             mock_cluster_construct,
             mock_cluster_construct_args,
-            mock_cfn_output,
         )
 
 
 def test_default_id(
-    mocked_compute_stack: tuple[ComputeStack, MagicMock, MagicMock, MagicMock],
+    mocked_compute_stack: tuple[ComputeStack, MagicMock, MagicMock],
     config: Config,
 ):
-    stack, _, _, _ = mocked_compute_stack
+    (
+        stack,
+        _,
+        _,
+    ) = mocked_compute_stack
     assert stack.node.id == f"{config.project_name}-{config.environment_name}-compute"
 
 
 def test_cluster_construct(
-    mocked_compute_stack: tuple[ComputeStack, MagicMock, MagicMock, MagicMock],
+    mocked_compute_stack: tuple[ComputeStack, MagicMock, MagicMock],
     compute_stack_args: ComputeStackArgs,
 ):
-    stack, mock_cluster_construct, mock_cluster_construct_args, _ = mocked_compute_stack
+    stack, mock_cluster_construct, mock_cluster_construct_args = mocked_compute_stack
 
     mock_cluster_construct_args.assert_called_once_with(
         compute_stack_args.config, compute_stack_args.vpc
     )
     mock_cluster_construct.assert_called_once_with(
         stack, mock_cluster_construct_args.return_value
-    )
-
-
-def test_cfn_output(
-    mocked_compute_stack: tuple[ComputeStack, MagicMock, MagicMock, MagicMock],
-):
-    stack, mock_cluster_construct, _, mock_cfn_output = mocked_compute_stack
-
-    mock_cfn_output.assert_called_once_with(
-        stack,
-        "ecsclustername",
-        value=mock_cluster_construct.return_value.cluster.cluster_name,
     )

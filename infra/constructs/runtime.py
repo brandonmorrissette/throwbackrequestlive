@@ -19,6 +19,7 @@ from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs
+from aws_cdk import aws_rds as rds
 from aws_cdk import aws_secretsmanager as secretsmanager
 
 from infra.config import Config
@@ -37,8 +38,8 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         policy (iam.ManagedPolicy): The IAM managed policy for the task role.
         cluster (ecs.Cluster): The ECS cluster.
         load_balancer (elbv2.IApplicationLoadBalancer): The load balancer.
+        db_instance (rds.IDatabaseInstance): The RDS database instance.
         runtime_variables (dict): The environment variables for the ECS task.
-        runtime_secrets (dict): The secrets for the ECS task.
         uid: Unique identifier for the resource.
             Defaults to runtime.
         prefix: Prefix for resource names.
@@ -53,7 +54,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
         load_balancer: elbv2.IApplicationLoadBalancer,
-        db_credentials_arn: str,
+        db_instance: rds.IDatabaseInstance,
         runtime_variables: dict[str, str] | None = None,
         uid: str = "runtime",
         prefix: str = "",
@@ -65,7 +66,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         self.cluster = cluster
         self.load_balancer = load_balancer
         self.runtime_variables = runtime_variables
-        self.db_credentials_arn = db_credentials_arn
+        self.db_instance = db_instance
 
 
 class RuntimeConstruct(Construct):
@@ -117,7 +118,7 @@ class RuntimeConstruct(Construct):
                     ],
                     resources=[
                         jwt_secret.secret_arn,
-                        args.db_credentials_arn,
+                        args.db_instance.secret.secret_arn,
                     ],
                 ),
                 iam.PolicyStatement(

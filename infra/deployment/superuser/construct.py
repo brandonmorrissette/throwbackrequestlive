@@ -89,11 +89,11 @@ class SuperUserConstruct(Construct):
             ],
         )
 
-        task_role = iam.Role(
+        role = iam.Role(
             self,
-            "superuser-deployment-task-role",
+            "superuser-deployment-role",
             role_name=f"{args.config.project_name}-"
-            f"{args.config.environment_name}-superuser-deployment-task-role",
+            f"{args.config.environment_name}-superuser-deployment-role",
             assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             managed_policies=[policy],
             inline_policies={
@@ -113,9 +113,10 @@ class SuperUserConstruct(Construct):
         self.task_definition = ecs.FargateTaskDefinition(
             self,
             "superuser-deployment-task-definition",
+            # pylint: disable=duplicate-code
             memory_limit_mib=512,
             cpu=256,
-            task_role=task_role,
+            task_role=role,
         )
 
         log_group = logs.LogGroup(

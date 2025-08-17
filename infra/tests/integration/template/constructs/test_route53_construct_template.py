@@ -12,11 +12,6 @@ from infra.stacks.stack import Stack
 
 
 @pytest.fixture(scope="module")
-def hosted_zone(stack: Stack) -> route53.HostedZone:
-    return route53.HostedZone(stack, "MockHostedZone", zone_name="example.com")
-
-
-@pytest.fixture(scope="module")
 def load_balancer(stack: Stack, vpc: ec2.Vpc) -> elbv2.ApplicationLoadBalancer:
     return elbv2.ApplicationLoadBalancer(
         stack,

@@ -41,7 +41,7 @@ class DeploymentStackArgs(StackArgs):  # pylint: disable=too-few-public-methods
             Defaults to "{config.project_name}-{config.environment_name}-".
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         config: Config,
         vpc: ec2.Vpc,

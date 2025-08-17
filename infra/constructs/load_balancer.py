@@ -19,7 +19,9 @@ from infra.constructs.construct import Construct, ConstructArgs
 from infra.stacks.stack import Stack
 
 
-class LoadBalancerConstructArgs(ConstructArgs):
+class LoadBalancerConstructArgs(  # pylint: disable=too-few-public-methods
+    ConstructArgs
+):
     """
     Arguments for LoadBalancerConstruct.
 
@@ -31,7 +33,7 @@ class LoadBalancerConstructArgs(ConstructArgs):
         prefix (str): A prefix for resource names.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         config: Config,
         vpc: ec2.IVpc,
@@ -65,7 +67,7 @@ class LoadBalancerConstruct(Construct):
         log_bucket = s3.Bucket(
             self,
             "alb-log-bucket",
-            bucket_name=f"{args.config.project_name}-{args.config.environment_name}-load-balancer-log-bucket",
+            bucket_name=f"{args.config.project_name}-{args.config.environment_name}-load-balancer-log-bucket",  # pylint: disable=line-too-long
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             removal_policy=RemovalPolicy.RETAIN,
         )

@@ -26,7 +26,7 @@ def test_security_group(
     assert security_group["Properties"]["VpcId"]["Ref"] == vpc_id
     assert (
         security_group["Properties"]["GroupDescription"] == f"{conftest.STACK_NAME}/"
-        f"{config.project_name}-{config.environment_name}-cache/RedisSG"
+        f"{config.project_name}-{config.environment_name}-cache/redis-security-group"
     )
 
     ingress_rule = next(iter(security_group["Properties"]["SecurityGroupIngress"]))

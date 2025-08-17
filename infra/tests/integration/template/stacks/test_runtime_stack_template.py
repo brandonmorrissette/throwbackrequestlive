@@ -1,58 +1,46 @@
 # pylint: disable=missing-function-docstring, missing-module-docstring, redefined-outer-name
 from typing import Any, Mapping
 
-import aws_cdk as cdk
 import pytest
+from aws_cdk import App
+from aws_cdk import aws_certificatemanager as acm
+from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_elasticache as elasticache
+from aws_cdk import aws_elasticloadbalancingv2 as elbv2
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_rds as rds
+from aws_cdk import aws_route53 as route53
 
 from infra.config import Config
-from infra.stacks.compute import ComputeStack, ComputeStackArgs
-from infra.stacks.network import NetworkStack, NetworkStackArgs
 from infra.stacks.runtime import RuntimeStack, RuntimeStackArgs
-from infra.stacks.storage import StorageStack, StorageStackArgs
-from infra.stacks.user_management import UserManagementStack, UserManagementStackArgs
-
-
-@pytest.fixture(scope="module")
-def network_stack(app: cdk.App, config: Config) -> NetworkStack:
-    return NetworkStack(app, NetworkStackArgs(config))
-
-
-@pytest.fixture(scope="module")
-def compute_stack(
-    app: cdk.App, config: Config, network_stack: NetworkStack
-) -> ComputeStack:
-    return ComputeStack(app, ComputeStackArgs(config, network_stack.vpc_construct.vpc))
-
-
-@pytest.fixture(scope="module")
-def storage_stack(
-    app: cdk.App, config: Config, network_stack: NetworkStack
-) -> StorageStack:
-    return StorageStack(app, StorageStackArgs(config, network_stack.vpc_construct.vpc))
-
-
-@pytest.fixture(scope="module")
-def user_management_stack(app: cdk.App, config: Config) -> UserManagementStack:
-    return UserManagementStack(app, UserManagementStackArgs(config))
 
 
 @pytest.fixture(scope="module")
 def stack(  # pylint: disable=too-many-arguments, too-many-positional-arguments
-    app: cdk.App,
+    app: App,
     config: Config,
-    network_stack: NetworkStack,
-    compute_stack: ComputeStack,
-    storage_stack: StorageStack,
-    user_management_stack: UserManagementStack,
+    vpc: ec2.IVpc,
+    certificate: acm.ICertificate,
+    hosted_zone: route53.IHostedZone,
+    policy: iam.ManagedPolicy,
+    cluster: ecs.Cluster,
+    db_instance: rds.IDatabaseInstance,
+    cache_cluster: elasticache.CfnCacheCluster,
+    load_balancer: elbv2.IApplicationLoadBalancer,
 ) -> RuntimeStack:
     return RuntimeStack(
         app,
         RuntimeStackArgs(
             config,
-            user_management_stack=user_management_stack,
-            network_stack=network_stack,
-            compute_stack=compute_stack,
-            storage_stack=storage_stack,
+            vpc=vpc,
+            certificate=certificate,
+            hosted_zone=hosted_zone,
+            policy=policy,
+            cluster=cluster,
+            db_instance=db_instance,
+            cache_cluster=cache_cluster,
+            load_balancer=load_balancer,
         ),
     )
 
@@ -62,4 +50,4 @@ def test_runtime_service_resources(services: Mapping[str, Any]) -> None:
 
 
 def test_route53_resources(record_sets: Mapping[str, Any]) -> None:
-    assert len(record_sets) == 2
+    assert len(record_sets) == 4

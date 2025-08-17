@@ -1,3 +1,12 @@
+# Create Show Stack for better costs
+
+-   Only start RDS during shows.
+    -   May need a process for storing RDS for downtime
+    -   RDS may auto spin up after 7 days
+    -   Move songs, shows, entrypoints to csv in s3
+-   Deploy Cache during show
+-   Tear down cache after show
+
 # Booking
 
 -   Send Message launches email client. Try to send without doing that.
@@ -15,16 +24,12 @@
 
 -   I have a better understanding of roles and policies now and wish to handle this with much better practice.
 -   Remove db variable dependency from runtime. Resolve via ssm.
+-   Review testing. Coverage and practices.
 
 # Docker
 
 -   Break up front end and back end containers
     -   Consider breaking out postgress instance for local storage
-
-# SQL Deployment
-
--   Externalize the tasks for deploying SQL from the storage.
-    -   Think about these responsibilities, what resources are needed and whose responsibility that is. Too tightly coupled currently.
 
 # Data
 
