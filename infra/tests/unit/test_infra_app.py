@@ -179,9 +179,6 @@ def test_compute_stack(mock_invocations):
         mock_invocations.cdk_app.return_value,
         mock_invocations.compute_stack_args.return_value,
     )
-    mock_invocations.compute_stack.return_value.add_dependency.assert_called_once_with(
-        mock_invocations.network_stack.return_value
-    )
 
 
 def test_storage_stack(mock_invocations):
@@ -193,52 +190,41 @@ def test_storage_stack(mock_invocations):
         mock_invocations.cdk_app.return_value,
         mock_invocations.storage_stack_args.return_value,
     )
-    mock_invocations.storage_stack.return_value.add_dependency.assert_called_once_with(
-        mock_invocations.network_stack.return_value
-    )
 
 
 def test_runtime_stack(mock_invocations):
     mock_invocations.runtime_stack_args.assert_called_once_with(
-        mock_invocations.config.return_value,
-        mock_invocations.user_management_stack.return_value,
-        mock_invocations.network_stack.return_value,
-        mock_invocations.compute_stack.return_value,
-        mock_invocations.storage_stack.return_value,
+        config=mock_invocations.config.return_value,
+        vpc=mock_invocations.network_stack.return_value.vpc_construct.vpc,
+        certificate=mock_invocations.network_stack.return_value.cert_construct.certificate,
+        hosted_zone=mock_invocations.network_stack.return_value.cert_construct.hosted_zone,
+        policy=mock_invocations.user_management_stack.return_value.superuser_construct.policy,
+        cluster=mock_invocations.compute_stack.return_value.cluster_construct.cluster,
+        db_instance=mock_invocations.storage_stack.return_value.rds_construct.db_instance,
+        cache_cluster=mock_invocations.storage_stack.return_value.cache_construct.cluster,
+        load_balancer=mock_invocations.network_stack.return_value.load_balancer_construct.load_balancer,  # pylint: disable=line-too-long
     )
     mock_invocations.runtime_stack.assert_called_once_with(
         mock_invocations.cdk_app.return_value,
         mock_invocations.runtime_stack_args.return_value,
     )
-    mock_invocations.runtime_stack.return_value.add_dependency.assert_has_calls(
-        [
-            call(mock_invocations.user_management_stack.return_value),
-            call(mock_invocations.network_stack.return_value),
-            call(mock_invocations.compute_stack.return_value),
-            call(mock_invocations.storage_stack.return_value),
-        ]
-    )
 
 
 def test_deployment_stack(mock_invocations):
     mock_invocations.deployment_stack_args.assert_called_once_with(
-        mock_invocations.config.return_value,
-        mock_invocations.user_management_stack.return_value,
-        mock_invocations.network_stack.return_value,
-        mock_invocations.compute_stack.return_value,
-        mock_invocations.storage_stack.return_value,
+        config=mock_invocations.config.return_value,
+        vpc=mock_invocations.network_stack.return_value.vpc_construct.vpc,
+        security_group=mock_invocations.storage_stack.return_value.rds_construct.security_group,
+        cluster=mock_invocations.compute_stack.return_value.cluster_construct.cluster,
+        db_instance=mock_invocations.storage_stack.return_value.rds_construct.db_instance,
+        user_pool_id=mock_invocations.user_management_stack.return_value.user_pool_construct.user_pool_id,  # pylint: disable=line-too-long
+        subnet=mock_invocations.network_stack.return_value.vpc_construct.private_subnets[
+            0
+        ],
     )
     mock_invocations.deployment_stack.assert_called_once_with(
         mock_invocations.cdk_app.return_value,
         mock_invocations.deployment_stack_args.return_value,
-    )
-    mock_invocations.deployment_stack.return_value.add_dependency.assert_has_calls(
-        [
-            call(mock_invocations.user_management_stack.return_value),
-            call(mock_invocations.network_stack.return_value),
-            call(mock_invocations.compute_stack.return_value),
-            call(mock_invocations.storage_stack.return_value),
-        ]
     )
 
 
