@@ -3,7 +3,6 @@ from typing import Any, Mapping
 
 import aws_cdk as cdk
 import pytest
-from aws_cdk import assertions
 from aws_cdk import aws_ec2 as ec2
 
 from infra.config import Config

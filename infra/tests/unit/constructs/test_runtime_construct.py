@@ -26,7 +26,7 @@ def runtime_construct_args(config: Config) -> RuntimeConstructArgs:
 
 
 @dataclass
-class Mocks:  # pylint: disable=missing-class-docstring
+class Mocks:  # pylint: disable=missing-class-docstring, too-many-instance-attributes
     secretsmanager: MagicMock
     iam: MagicMock
     ecs: MagicMock
@@ -207,7 +207,6 @@ def test_task_image_creation(
 def test_runtime_service_creation(
     mock_runtime_construct: tuple[RuntimeConstruct, Mocks],
     runtime_construct_args: MagicMock,
-    load_balancer,
 ):
     construct, mocks = mock_runtime_construct
 

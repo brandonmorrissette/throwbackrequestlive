@@ -69,6 +69,7 @@ def test_cache_cluster_creation(
     cache_construct, mock_ec2, mock_elasticache = mock_cache_construct
 
     mock_elasticache.CfnCacheCluster.assert_called_once_with(
+        # pylint: disable=duplicate-code
         cache_construct,
         "redis-cluster",
         cache_node_type="cache.t2.micro",

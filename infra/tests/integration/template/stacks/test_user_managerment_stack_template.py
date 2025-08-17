@@ -3,7 +3,6 @@ from typing import Any, Mapping
 
 import aws_cdk as cdk
 import pytest
-from aws_cdk import assertions
 
 from infra.config import Config
 from infra.stacks.user_management import UserManagementStack, UserManagementStackArgs

@@ -2,7 +2,6 @@
 from dataclasses import dataclass
 from unittest.mock import ANY, MagicMock, patch
 
-import aws_cdk as cdk
 import pytest
 
 from infra.config import Config

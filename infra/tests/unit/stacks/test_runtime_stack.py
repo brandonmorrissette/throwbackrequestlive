@@ -36,7 +36,6 @@ def mocked_runtime_stack_args(config: Config):
 def mocked_runtime_stack(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     app: cdk.App,
     mocked_runtime_stack_args: RuntimeStackArgs,
-    config: Config,
 ):
     with patch(
         "infra.stacks.runtime.RuntimeConstruct"

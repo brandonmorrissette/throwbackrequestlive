@@ -177,7 +177,6 @@ def test_task_definition(
     task_definitions: Mapping[str, Any],
     runtime_variables: Mapping[str, Any],
     roles: Mapping[str, Any],
-    secrets: Mapping[str, Any],
     config: Config,
 ) -> None:
     task_definition = next(iter(task_definitions.values()))
