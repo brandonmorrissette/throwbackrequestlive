@@ -12,6 +12,8 @@ Usage example:
 
 from aws_cdk import Duration
 from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 
 from infra.config import Config
@@ -97,4 +99,40 @@ class RdsConstruct(Construct):
             backup_retention=Duration.days(7),
             security_groups=[self.security_group],
             instance_identifier=f"{args.config.project_name}-{args.config.environment_name}-rds-instance",  # pylint: disable=line-too-long
+        )
+
+        rds_lambda_role = iam.Role(
+            self,
+            "rds-lambda-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AWSLambdaBasicExecutionRole"
+                ),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonRDSFullAccess"),
+            ],
+        )
+
+        _lambda.Function(
+            self,
+            "rds-start-lambda",
+            role=rds_lambda_role,
+            runtime=_lambda.Runtime.PYTHON_3_11,
+            handler="handler.lambda_handler",
+            code=_lambda.Code.from_asset("infra/lambda/rds/start"),
+            environment={
+                "DB_INSTANCE_IDENTIFIER": self.db_instance.instance_identifier
+            },
+        )
+
+        _lambda.Function(
+            self,
+            "rds-stop-lambda",
+            role=rds_lambda_role,
+            runtime=_lambda.Runtime.PYTHON_3_11,
+            handler="handler.lambda_handler",
+            code=_lambda.Code.from_asset("infra/lambda/rds/stop"),
+            environment={
+                "DB_INSTANCE_IDENTIFIER": self.db_instance.instance_identifier
+            },
         )
