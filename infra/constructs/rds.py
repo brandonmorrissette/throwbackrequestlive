@@ -115,18 +115,6 @@ class RdsConstruct(Construct):
 
         _lambda.Function(
             self,
-            "rds-start-lambda",
-            role=rds_lambda_role,
-            runtime=_lambda.Runtime.PYTHON_3_11,
-            handler="handler.lambda_handler",
-            code=_lambda.Code.from_asset("infra/lambda/rds/start"),
-            environment={
-                "DB_INSTANCE_IDENTIFIER": self.db_instance.instance_identifier
-            },
-        )
-
-        _lambda.Function(
-            self,
             "rds-stop-lambda",
             role=rds_lambda_role,
             runtime=_lambda.Runtime.PYTHON_3_11,
