@@ -112,9 +112,7 @@ jobs:
     stop-rds:
         name: Stop RDS Instance
         needs: [deploy-deployment-stack, deploy-sql-files, deploy-superuser]
-        uses: ./.github/workflows/invoke_lambda.yml
-        with:
-            lambda_name: stop-rds
+        uses: ./.github/workflows/stop_rds.yml
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
