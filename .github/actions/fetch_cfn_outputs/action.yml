@@ -42,6 +42,5 @@ runs:
               echo "SQL_TASK_DEFINITION_ARN=${CFN_OUTPUTS[sqltaskdefinitionarn]}" >> $GITHUB_ENV
               echo "SUBNET_ID=${CFN_OUTPUTS[subnetid]}" >> $GITHUB_ENV
               echo "SECURITY_GROUP_ID=${CFN_OUTPUTS[securitygroupid]}" >> $GITHUB_ENV
-              echo "RDS_INSTANCE_ARN=${CFN_OUTPUTS[rdsinstancearn]}" >> $GITHUB_ENV
 
               cat $GITHUB_ENV

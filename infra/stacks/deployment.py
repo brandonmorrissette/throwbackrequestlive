@@ -144,9 +144,3 @@ class DeploymentStack(Stack):
             "superusertaskdefinitionarn",
             value=superuser_task_construct.task_definition.task_definition_arn,
         )
-
-        CfnOutput(
-            self,
-            "rdsinstancearn",
-            value=args.db_instance.instance_arn,
-        )

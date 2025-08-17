@@ -6,6 +6,9 @@ on:
             stack-name:
                 required: true
                 type: string
+            ENVIRONMENT_NAME:
+                required: true
+                type: string
         secrets:
             AWS_ACCESS_KEY_ID:
                 required: true
@@ -20,6 +23,9 @@ on:
             stack-name:
                 required: true
                 type: string
+            ENVIRONMENT_NAME:
+                type: string
+                default: 'production'
 
 jobs:
     deploy-stack:
@@ -58,9 +64,7 @@ jobs:
             - name: Deploy Stack
               run: |
                   export PYTHONPATH="$(pwd):$PYTHONPATH"
-                  cdk deploy ${{ github.event.repository.name }}-${{ env.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py" --require-approval never
-
+                  cdk deploy ${{ github.event.repository.name }}-${{ inputs.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py" --require-approval never
               env:
                   PROJECT_NAME: ${{ github.event.repository.name }}
-                  ENVIRONMENT_NAME: 'production'
                   AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
