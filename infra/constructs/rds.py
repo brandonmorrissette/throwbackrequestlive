@@ -115,7 +115,8 @@ class RdsConstruct(Construct):
 
         _lambda.Function(
             self,
-            "rds-stop-lambda",
+            "stop-rds-lambda",
+            function_name="stop-rds",
             role=rds_lambda_role,
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="handler.lambda_handler",
