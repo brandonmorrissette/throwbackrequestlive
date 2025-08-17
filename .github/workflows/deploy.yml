@@ -3,6 +3,10 @@ name: Deploy App
 on:
     workflow_dispatch:
 
+permissions:
+    id-token: write
+    contents: read
+
 jobs:
     deploy-user-management-stack:
         uses: ./.github/workflows/deploy_stack.yml
@@ -113,6 +117,9 @@ jobs:
         name: Stop RDS Instance
         needs: [deploy-deployment-stack, deploy-sql-files, deploy-superuser]
         uses: ./.github/workflows/stop_rds.yml
+        permissions:
+            id-token: write
+            contents: read
         secrets:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
