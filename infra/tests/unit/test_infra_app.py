@@ -18,6 +18,8 @@ with patch("aws_cdk.App"), patch("aws_cdk.Environment"), patch(
     "infra.stacks.runtime.RuntimeStack"
 ), patch(
     "infra.stacks.runtime.RuntimeStackArgs"
+), patch(
+    "infra.stacks.deployment.DeploymentStack"
 ):
     from infra import app
 
@@ -35,6 +37,8 @@ def test_default_project_name():
         "infra.stacks.runtime.RuntimeStack"
     ), patch(
         "infra.stacks.runtime.RuntimeStackArgs"
+    ), patch(
+        "infra.stacks.deployment.DeploymentStack"
     ):
         importlib.reload(app)
 
@@ -62,6 +66,8 @@ class Mocks:  # pylint: disable=missing-class-docstring, too-many-instance-attri
     storage_stack_args: MagicMock
     runtime_stack: MagicMock
     runtime_stack_args: MagicMock
+    deployment_stack: MagicMock
+    deployment_stack_args: MagicMock
 
 
 @pytest.fixture(scope="module")
@@ -90,7 +96,11 @@ def mock_invocations():  # pylint: disable=missing-function-docstring, missing-m
         "infra.stacks.runtime.RuntimeStack"
     ) as mock_runtime_stack, patch(
         "infra.stacks.runtime.RuntimeStackArgs"
-    ) as mock_runtime_stack_args:
+    ) as mock_runtime_stack_args, patch(
+        "infra.stacks.deployment.DeploymentStack"
+    ) as mock_deployment_stack, patch(
+        "infra.stacks.deployment.DeploymentStackArgs"
+    ) as mock_deployment_stack_args:
         importlib.reload(app)
 
     return Mocks(
@@ -108,6 +118,8 @@ def mock_invocations():  # pylint: disable=missing-function-docstring, missing-m
         storage_stack_args=mock_storage_stack_args,
         runtime_stack=mock_runtime_stack,
         runtime_stack_args=mock_runtime_stack_args,
+        deployment_stack=mock_deployment_stack,
+        deployment_stack_args=mock_deployment_stack_args,
     )
 
 
@@ -199,6 +211,28 @@ def test_runtime_stack(mock_invocations):
         mock_invocations.runtime_stack_args.return_value,
     )
     mock_invocations.runtime_stack.return_value.add_dependency.assert_has_calls(
+        [
+            call(mock_invocations.user_management_stack.return_value),
+            call(mock_invocations.network_stack.return_value),
+            call(mock_invocations.compute_stack.return_value),
+            call(mock_invocations.storage_stack.return_value),
+        ]
+    )
+
+
+def test_deployment_stack(mock_invocations):
+    mock_invocations.deployment_stack_args.assert_called_once_with(
+        mock_invocations.config.return_value,
+        mock_invocations.user_management_stack.return_value,
+        mock_invocations.network_stack.return_value,
+        mock_invocations.compute_stack.return_value,
+        mock_invocations.storage_stack.return_value,
+    )
+    mock_invocations.deployment_stack.assert_called_once_with(
+        mock_invocations.cdk_app.return_value,
+        mock_invocations.deployment_stack_args.return_value,
+    )
+    mock_invocations.deployment_stack.return_value.add_dependency.assert_has_calls(
         [
             call(mock_invocations.user_management_stack.return_value),
             call(mock_invocations.network_stack.return_value),
