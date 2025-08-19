@@ -66,7 +66,6 @@ runtime_stack = RuntimeStack(
         policy=user_management_stack.superuser_construct.policy,
         cluster=compute_stack.cluster_construct.cluster,
         db_instance=storage_stack.rds_construct.db_instance,
-        cache_cluster=show_stack.cache_construct.cluster,
         load_balancer=network_stack.load_balancer_construct.load_balancer,
     ),
 )

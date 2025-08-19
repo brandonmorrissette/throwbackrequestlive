@@ -52,7 +52,6 @@ class RuntimeStackArgs(  # pylint: disable=too-few-public-methods, too-many-inst
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
         db_instance: rds.IDatabaseInstance,
-        cache_cluster: elasticache.CfnCacheCluster,
         load_balancer: elbv2.IApplicationLoadBalancer,
         uid: str = "runtime",
         prefix: str = "",
@@ -65,7 +64,6 @@ class RuntimeStackArgs(  # pylint: disable=too-few-public-methods, too-many-inst
         self.cluster = cluster
         self.load_balancer = load_balancer
         self.db_instance = db_instance
-        self.cache_cluster = cache_cluster
 
 
 class RuntimeStack(Stack):
@@ -104,8 +102,6 @@ class RuntimeStack(Stack):
                     # pylint:disable=line-too-long
                     "PROJECT_NAME": str(args.config.project_name),
                     "ENVIRONMENT": str(args.config.environment_name),
-                    "REDIS_HOST": str(args.cache_cluster.attr_redis_endpoint_address),
-                    "REDIS_PORT": str(args.cache_cluster.attr_redis_endpoint_port),
                 },
             ),
         )
