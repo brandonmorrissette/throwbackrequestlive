@@ -94,7 +94,7 @@ def test_given_path_when_create_qr_code_then_qr_code_stored(
     )
     path.rstrip.assert_called_once_with("/")
     mock_boto.client.return_value.put_object.assert_called_once_with(
-        Bucket=service.bucket_name,
+        Bucket=service._bucket_name,
         Key=f"{path.rstrip.return_value}/qr.png",
         Body=mock_io.BytesIO.return_value,
         ContentType="image/png",
@@ -146,7 +146,7 @@ def test_given_invalid_access_token_cookie_when_validate_session_then_return_err
 
 
 def test_given_entry_point_id_when_redirect_then_redirect_main(
-    service: EntryPointService
+    service: EntryPointService,
 ) -> None:
     url = "renderblueprint.render_main"
     with patch.object(

@@ -26,7 +26,6 @@ from infra.stacks.compute import ComputeStack, ComputeStackArgs
 from infra.stacks.deployment import DeploymentStack, DeploymentStackArgs
 from infra.stacks.network import NetworkStack, NetworkStackArgs
 from infra.stacks.runtime import RuntimeStack, RuntimeStackArgs
-from infra.stacks.show import ShowStack, ShowStackArgs
 from infra.stacks.storage import StorageStack, StorageStackArgs
 from infra.stacks.user_management import UserManagementStack, UserManagementStackArgs
 
@@ -53,14 +52,6 @@ storage_stack = StorageStack(
     app,
     StorageStackArgs(
         config,
-        vpc=network_stack.vpc_construct.vpc,
-    ),
-)
-
-show_stack = ShowStack(
-    app,
-    ShowStackArgs(
-        config=config,
         vpc=network_stack.vpc_construct.vpc,
     ),
 )

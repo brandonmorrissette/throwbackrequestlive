@@ -8,7 +8,7 @@ from flask import Flask
 from flask.testing import FlaskClient
 
 from backend.flask.blueprints.song import SongBlueprint
-from backend.flask.services.request import RequestService
+from backend.flask.services.show import ShowService
 
 
 @pytest.fixture()
@@ -19,13 +19,13 @@ def app(blueprint: SongBlueprint) -> Generator[Flask, None, None]:
 
 
 @pytest.fixture()
-def blueprint(service: RequestService) -> SongBlueprint:
+def blueprint(service: ShowService) -> SongBlueprint:
     return SongBlueprint(service=service)
 
 
 @pytest.fixture()
-def service() -> RequestService:
-    return MagicMock(spec=RequestService)
+def service() -> ShowService:
+    return MagicMock(spec=ShowService)
 
 
 def test_when_read_songs_then_songs_are_returned(client: FlaskClient) -> None:

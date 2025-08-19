@@ -52,7 +52,13 @@ class DataService:
         self._metadata = MetaData()
         self._session = sessionmaker(self._engine)
         logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
-        self._refresh_metadata()
+        try:
+            self._refresh_metadata()
+        except SQLAlchemyError as e:
+            logging.error(
+                "Error initiating metadata for data service: %s.\nTry the DataService again later.",
+                e,
+            )
 
     @contextmanager
     def _session_scope(self) -> Generator[Session, None, None]:

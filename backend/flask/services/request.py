@@ -3,156 +3,121 @@ This module provides the RequestService class, which handles operations related 
 in the application. It interacts with the database to retrieve and process request data.
 """
 
-from datetime import datetime, timedelta
-from io import BytesIO
+import uuid
+from datetime import datetime
 
 from flask import current_app as app
-from flask import make_response, redirect, request, url_for
+from flask import jsonify, make_response, redirect, request, url_for
 from werkzeug.wrappers.response import Response
 
 from backend.flask.services.data import DataService
-from backend.flask.services.entrypoint import EntryPointService
 
 
-class RequestService(EntryPointService, DataService):
+class RequestService(DataService):
     """
     Service class for handling operations related to requests.
     Inherits from DataService to provide database interaction capabilities.
     """
 
-    def get_shows_by_entry_point_id(self, entry_point_id: str) -> list:
-        """
-        Get shows by entry point ID.
-
-        Args:
-            entry_point_id (str): The entry point ID.
-
-        Returns:
-            list: A list of shows.
-        """
-        return self.execute(
-            """
-            SELECT shows.*
-            FROM shows
-            JOIN entrypoints ON shows.entry_point_id = entrypoints.id
-            WHERE entrypoints.id = :entry_point_id
-            """,
-            {"entry_point_id": entry_point_id},
-        )
-
-    def redirect(self, entry_point_id: str) -> Response:
+    def redirect(self, show_hash: str) -> Response:
         """
         Enforces uniqueness and then redirects to Requests page.
-        :param entry_point_id: The entry_point_id for the submission.
-        :return: Redirect response to the main page.
+
+        :return: Redirect response to the request page.
+            Returns to main if show_hash is invalid.
         """
-        try:
-            self._validate_entry_point_id(entry_point_id)
-        except ValueError as e:
-            app.logger.error(f"Entry Point Validation error: {e}")
-            # Consider how I can send an error to the toasty notification.
-            return make_response(redirect(url_for("renderblueprint.render_main")))
+        request_id = request.cookies.get("totalRequestLiveRequestId", "")
+        if self._is_duplicate(request_id, show_hash):
+            app.logger.info("Duplicate request %s detected, redirecting to main page.", request_id)
+            duplicate_request = self._get_duplicate_request(request_id)
+            return redirect(
+                url_for(
+                    "renderblueprint.render_main",
+                    songName=next(iter(duplicate_request), {}).get(
+                        "display_name", "UNABLE TO RETRIEVE SONG NAME"
+                    ),
+                )
+            )
 
-        uid = request.cookies.get("uid", "")
-        if self._is_duplicate(uid, entry_point_id):
-            return self._handle_duplicate_submission(uid)
-
-        response = make_response(redirect(url_for("renderblueprint.render_request")))
-
-        self.set_session_cookies(response)
-        response.set_cookie(
-            "showId",
-            str(next(iter(self.get_shows_by_entry_point_id(entry_point_id))).get("id")),
-            httponly=True,
-            secure=True,
-            samesite="Lax",
-        )
-        response.set_cookie(
-            "entryPointId",
-            entry_point_id,
-            httponly=True,
-            secure=True,
-            samesite="Lax",
-        )
+        response = make_response(redirect(url_for("renderblueprint.render_request", show_hash=show_hash)))
 
         app.logger.info("Redirecting to the request page.")
         return response
 
-    def _validate_entry_point_id(self, entry_point_id: str) -> None:
-        """
-        Validate the entry point ID.
-        :param entry_point_id: The entry point ID to validate.
-        """
-        error = ValueError("Invalid entryPointId")
-        show = next(iter(self.get_shows_by_entry_point_id(entry_point_id)), {})
+    def write_request(self, song_request: dict) -> Response:
+        """Writes the request.
 
-        if not show:
-            app.logger.error("No show found for the given entry point ID.")
-            raise error
-
-        start_time = show.get("start_time", "")
-        if (
-            not (start_time - timedelta(hours=1))
-            < datetime.now()
-            < show.get("end_time", start_time + timedelta(hours=1))
-        ):
-            app.logger.error("The current time is outside the show time range.")
-            raise error
-
-    def _is_duplicate(self, uid: str, entry_point_id: str) -> bool:
+        :param request: The data for the request.
+        :return: The response to the write operation.
         """
-        Check if the submission is a duplicate.
-        :param uid.
-        : The unique identifier for the submission.
-        :param entry_point_id: The entry point ID for the submission.
-        :return: True if the submission is a duplicate, otherwise False.
+        song_request["request_time"] = datetime.now().isoformat()
+        song_request["request_id"] = uuid.uuid4().hex
+
+        self.insert_rows("requests", [song_request])
+        app.logger.info("Request %s written successfully.", song_request["request_id"])
+        response = make_response(jsonify(song_request), 201)
+
+        response.set_cookie(
+            "totalRequestLiveRequestId",
+            song_request["request_id"],
+            httponly=True,
+            secure=True,
+            samesite="Lax",
+        )
+        return response
+
+    def get_requests_counts(self) -> list:
         """
-        if uid:
+        Get the requests for each song.
+        :return: A list of dictionaries containing song IDs and their request counts.
+        """
+        result = self.execute(
+            """
+            SELECT song_id, COUNT(*) as request_count
+            FROM requests
+            GROUP BY song_id
+            """
+        )
+        return result
+
+    def _is_duplicate(self, request_id: str, show_hash: str) -> bool:
+        """
+        Check if the request is a duplicate.
+        :param request_id: The unique identifier for the request.
+        :param show_hash: The unique identifier for the show.
+        :return: True if the request is a duplicate, otherwise False.
+        """
+        if request_id:
             result = self.execute(
                 # pylint: disable=R0801
                 """
                 SELECT 1
-                FROM submissions
-                WHERE id = :uid AND entry_point_id = :entry_point_id
+                FROM requests
+                WHERE request_id = :request_id AND show_hash = :show_hash
                 LIMIT 1
                 """,
-                {"uid": uid, "entry_point_id": entry_point_id},
+                {"request_id": request_id, "show_hash": show_hash},
             )
             if result:
-                app.logger.info("Duplicate submission detected.")
+                app.logger.info("Duplicate request %s detected.", request_id)
                 return True
 
         return False
 
-    def _handle_duplicate_submission(self, uid: str) -> Response:
+    def _get_duplicate_request(self, request_id: str) -> list:
         """
-        Handle duplicate submission by redirecting to the main page."
-        """
-
-        redirect_args = self._get_duplicate_submission(uid)
-        return redirect(
-            url_for(
-                "renderblueprint.render_main",
-                songName=next(iter(redirect_args), {}).get(
-                    "song_name", "UNABLE TO RETRIEVE SONG NAME"
-                ),
-            )
-        )
-
-    def _get_duplicate_submission(self, uid: str) -> list:
-        """
-        Get duplicate submission by uid.
-        :param uid: The unique identifier for the submission.
-        :return: JSON response with the duplicate submission details.
+        Get duplicate request by request_id.
+        :param request_id: The unique identifier for the request.
+        :return: JSON response with the duplicate request details.
         """
         request_result = self.execute(
             # pylint: disable=R0801
             """
             SELECT song_id
             FROM requests
-            WHERE id = :uid
+            WHERE request_id = :request_id
             """,
-            {"uid": uid},
+            {"request_id": request_id},
         )
 
         song_id = next(iter(request_result), {}).get("song_id")
@@ -167,61 +132,3 @@ class RequestService(EntryPointService, DataService):
             """,
             {"song_id": song_id},
         )
-
-    def get_request_count_by_show_id(self, show_id: str):
-        """
-        Retrieves the count of requests grouped by song name and band name for a specific show.
-
-        Args:
-            show_id (str): The unique identifier of the show.
-
-        Returns:
-            list: A list of tuples, where each tuple contains:
-                - song_name (str): The name of the song.
-                - band_name (str): The name of the band.
-                - request_count (int): The count of requests for the song and band.
-        """
-        return self.execute(
-            # pylint: disable=R0801
-            """
-            SELECT song_id, COUNT(id) AS count
-            FROM requests
-            WHERE show_id = :show_id
-            GROUP BY song_id
-            ORDER BY count DESC
-            """,
-            {"show_id": show_id},
-        )
-
-    def get_demo_entry_point_id(self) -> str:
-        """
-        Retrieves the demo entry point ID from the database.
-        Returns:
-            str: The demo entry point ID.
-        """
-        return str(
-            next(
-                iter(
-                    self.execute(
-                        """
-                        SELECT entry_point_id
-                        FROM shows
-                        WHERE name = 'DEMO'
-                        """,
-                        None,
-                    )
-                ),
-                {},
-            ).get("entry_point_id", "")
-        )
-
-    def get_demo_qr(self) -> BytesIO:
-        """
-        Retrieves the QR code image for the demo entry point.
-        Returns:
-            BytesIO: A BytesIO object containing the QR code image data.
-        """
-        response = self.s3_client.get_object(
-            Bucket=self.bucket_name, Key="entrypoints/DEMO/qr.png"
-        )
-        return BytesIO(response["Body"].read())

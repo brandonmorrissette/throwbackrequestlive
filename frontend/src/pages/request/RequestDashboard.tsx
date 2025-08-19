@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Show } from '../../models/show';
 import { Song } from '../../models/song';
 import { default as RequestService } from '../../services/request';
+import { default as ShowService } from '../../services/show';
 import './RequestDashboard.css';
 
 /**
@@ -38,7 +39,7 @@ const RequestDashboard: React.FC = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const shows = await RequestService.getRows('shows', token);
+                const shows = await ShowService.getShows();
                 const songs = await RequestService.getRows('songs', token);
                 setShows(shows.map((show: any) => new Show(show)));
                 setSongs(songs);
@@ -62,7 +63,7 @@ const RequestDashboard: React.FC = () => {
         setLoading(true);
         try {
             const data = await RequestService.getCountOfRequestsByShowId(
-                show.id
+                show.hash || ''
             );
             setSongRequestCounts(data);
         } catch (error) {
@@ -81,7 +82,7 @@ const RequestDashboard: React.FC = () => {
         setSyncing(true);
         try {
             const data = await RequestService.getCountOfRequestsByShowId(
-                selectedShow.id
+                selectedShow.hash || ''
             );
             setSongRequestCounts(data);
             if (chartRef.current) {
@@ -117,7 +118,7 @@ const RequestDashboard: React.FC = () => {
                     id="showSelect"
                     onChange={(e) => {
                         const selectedShow = shows.find(
-                            (show) => show.id === e.target.value
+                            (show) => show.hash === e.target.value
                         );
                         if (selectedShow) {
                             handleShowChange(selectedShow);
@@ -127,7 +128,7 @@ const RequestDashboard: React.FC = () => {
                 >
                     <option value="">-- Select a Show --</option>
                     {shows.map((show) => (
-                        <option key={show.id} value={show.id}>
+                        <option key={show.hash} value={show.hash}>
                             {`${show.venue} - ${new Date(
                                 show.start_time
                             ).toLocaleString()}`}

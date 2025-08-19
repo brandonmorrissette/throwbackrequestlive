@@ -126,9 +126,6 @@ class SqlDeploymentConstruct(Construct):
                 'echo "Running entrypoints.sql"; '
                 "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
                 "-f /schema/entrypoints.sql; "
-                'echo "Running shows.sql"; '
-                "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
-                "-f /schema/shows.sql; "
                 'echo "Running songs.sql"; '
                 "psql postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:5432/throwbackrequestlive "
                 "-f /schema/songs.sql; "

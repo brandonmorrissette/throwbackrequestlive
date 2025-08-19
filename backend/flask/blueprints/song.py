@@ -7,23 +7,25 @@ from typing import Any, Tuple
 
 from flask import jsonify
 
-from backend.flask.blueprints.data import DataBlueprint
+from backend.flask.blueprints.blueprint import Blueprint
+from backend.flask.services.song import SongService
 
 
-class SongBlueprint(DataBlueprint):
+class SongBlueprint(Blueprint):
     """
     Blueprint for handling song related routes.
     """
+
+    _service: SongService
 
     def register_routes(self) -> None:
         """
         Register routes for song operations.
         """
 
-        @self.route("/tables/songs/rows", methods=["GET"])
+        @self.route("/songs", methods=["GET"])
         def read_songs() -> Tuple[Any, int]:
             """
-            Read rows from the 'songs' table.
-            :return: JSON response with the rows.
+            Read all songs.
             """
-            return jsonify(self._get_rows("songs")), 200
+            return jsonify(self._service.get_songs()), 200

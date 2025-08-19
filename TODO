@@ -11,15 +11,6 @@
 
 -   Send Message launches email client. Try to send without doing that.
 
-# Cognito/User concepts cleanup
-
--   Runtime and Cognito are tightly coupled. Somehow deploying Runtime really messes up User-DataManagement
-    -   At this point they belong in different projects. Will move user-management out to it's own project referenced using boto.
--   Dynamic table properties for user flow (Currently hard coded)
--   Want a much better super user creation process
-    -   Current task has some assumptions in the code and is inflexible.
--   Only Update Cognito users when there have been actual updates
-
 # Infra
 
 -   I have a better understanding of roles and policies now and wish to handle this with much better practice.
@@ -56,9 +47,15 @@
 -   Testing
     -   Better pattern for testing url for
 
-# Boto
+# Cognito/User concepts cleanup
 
--   Find a more central way of handling boto clients
+-   I have destroyed the cognito flow. Complete rewrite.
+-   Runtime and Cognito are tightly coupled. Somehow deploying Runtime really messes up User-DataManagement
+    -   At this point they belong in different projects. Will move user-management out to it's own project referenced using boto.
+-   Dynamic table properties for user flow (Currently hard coded)
+-   Want a much better super user creation process
+    -   Current task has some assumptions in the code and is inflexible.
+-   Only Update Cognito users when there have been actual updates
 
 # Improve Front End Skills
 

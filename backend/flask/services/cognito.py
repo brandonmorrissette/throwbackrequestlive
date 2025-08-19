@@ -3,14 +3,12 @@ This module provides a service for interacting with AWS Cognito.
 It includes functionalities to read, write, add, update, and delete users in Cognito.
 """
 
-import json
 import secrets
 import string
 from datetime import datetime
 from typing import Any, Dict, List
 
 import boto3
-import redis
 
 from backend.flask.config import Config
 from backend.flask.exceptions.boto import raise_http_exception
@@ -40,7 +38,7 @@ class CognitoService:
     """
 
     @raise_http_exception
-    def __init__(self, redis_client: redis.Redis, config: Config) -> None:
+    def __init__(self, config: Config) -> None:
         """
         Initialize the CognitoService.
 
@@ -57,8 +55,6 @@ class CognitoService:
         self._cognito_client = boto3.client(
             "cognito-idp", region_name=config.AWS_DEFAULT_REGION
         )
-
-        self._redis_client = redis_client
 
     @raise_http_exception
     def read_rows(self) -> List[Dict[str, Any]]:
@@ -80,8 +76,6 @@ class CognitoService:
             groups = [group["GroupName"] for group in groups_response["Groups"]]
             user["Groups"] = groups
 
-            self._persist_user(username, user)
-
             users.append(user)
 
         return users
@@ -94,25 +88,7 @@ class CognitoService:
         Args:
             rows (list): A list of user dictionaries.
         """
-        existing_usernames = set(self._redis_client.keys())
-        row_usernames = {row["Username"] for row in rows if "Username" in row}
-
-        users_to_delete = existing_usernames - row_usernames
-        for username in users_to_delete:
-            self._delete_user(username)
-
-        users_to_add = [
-            row
-            for row in rows
-            if "Username" not in row or row["Username"] not in existing_usernames
-        ]
-        for user in users_to_add:
-            self._add_user(user)
-
-        row_dict = {row.get("Username"): row for row in rows if row.get("Username")}
-        users_to_update = row_usernames & existing_usernames
-        for username in users_to_update:
-            self._update_user(username, row_dict[username])
+        raise NotImplementedError("write_rows not implemented")
 
     def _generate_temp_password(self) -> str:
         """
@@ -141,7 +117,7 @@ class CognitoService:
             TemporaryPassword=self._generate_temp_password(),
         )
         user = response["User"]
-        self._persist_user(user["Username"], user)
+        raise NotImplementedError("add_user not fully implemented")
 
     @raise_http_exception
     def _update_user(self, username: str, user: Dict[str, Any]) -> None:
@@ -160,7 +136,7 @@ class CognitoService:
             ],
         )
 
-        self._persist_user(username, user)
+        raise NotImplementedError("update_user not fully implemented")
 
     @raise_http_exception
     def _delete_user(self, username: str) -> None:
@@ -170,27 +146,4 @@ class CognitoService:
         Args:
             username (str): The username of the user.
         """
-        self._cognito_client.admin_delete_user(
-            UserPoolId=self._user_pool_id,
-            Username=username,
-        )
-        self._remove_user(username)
-
-    def _persist_user(self, username: str, user: Dict[str, Any]) -> None:
-        """
-        Persist a user in Redis.
-
-        Args:
-            username (str): The username of the user.
-            user (dict): A user dictionary.
-        """
-        self._redis_client.set(username, json.dumps(user, default=cognito_json_encoder))
-
-    def _remove_user(self, username: str) -> None:
-        """
-        Remove a user from Redis.
-
-        Args:
-            username (str): The username of the user.
-        """
-        self._redis_client.delete(username)
+        raise NotImplementedError("delete_user not implemented")

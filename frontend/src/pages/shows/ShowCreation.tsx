@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 import { useError } from '../../contexts/ErrorContext';
-import { default as DataService } from '../../services/data';
+import { default as ShowService } from '../../services/show';
 
 /**
  * ShowCreation component that renders the form for creating a show.
@@ -30,7 +30,7 @@ const ShowCreation: React.FC = ({}) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         console.log('Form submitted:', formData);
-        DataService.postRows('shows', token, [formData])
+        ShowService.insertShow(formData, token)
             .then(() => {
                 toast.success('Show created successfully:');
             })

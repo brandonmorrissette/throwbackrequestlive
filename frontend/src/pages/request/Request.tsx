@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Modal from '../../components/modal/Modal';
-import { useAuth } from '../../contexts/AuthContext';
 import { useError } from '../../contexts/ErrorContext';
 import { Song } from '../../models/song';
-import { default as AuthService } from '../../services/auth';
 import { default as RequestService } from '../../services/request';
+import { default as SongService } from '../../services/song';
 import styles from './Request.module.css';
 
 /**
@@ -22,32 +21,14 @@ const Request: React.FC = () => {
     const [selectedSong, setSelectedSong] = useState<Song | null>(null);
 
     const [searchParams] = useSearchParams();
-    const showId = searchParams.get('showId') || '';
+    const showHash = searchParams.get('showHash') || '';
 
     const navigate = useNavigate();
     const { setError } = useError();
-    const { token } = useAuth();
 
     useEffect(() => {
-        const validate = async () => {
-            try {
-                const response = await AuthService.validateSession();
-
-                if (!response.success) {
-                    throw new Error('Session validation failed');
-                }
-            } catch (error: any) {
-                console.error('Error validating session:', error);
-                setError(error);
-                navigate('/');
-            }
-        };
-
-        validate();
-    }, [navigate, setError]);
-
-    useEffect(() => {
-        const songs = RequestService.getRows('songs', token);
+        const songs = SongService.getSongs();
+        console.log(songs);
         songs
             .then((data) => {
                 setSongs(data);
@@ -61,7 +42,7 @@ const Request: React.FC = () => {
 
     const handleRequest = async () => {
         if (selectedSong) {
-            RequestService.putRequest(selectedSong, showId);
+            RequestService.putRequest(selectedSong, showHash);
             navigate(
                 '/?songName=' + encodeURIComponent(selectedSong.song_name)
             );
@@ -71,7 +52,7 @@ const Request: React.FC = () => {
     return (
         <div>
             <h2>Request Now!</h2>
-            <div className="list-group">
+            <div className={styles.requestButtonGrid}>
                 {songs.map((song, index) => (
                     <button
                         key={index}

@@ -1,6 +1,5 @@
 import { ColDef as BaseColDef, ICellEditorComp } from 'ag-grid-community';
 import moment from 'moment';
-import { DateTimeCellEditor } from './Cell';
 
 /**
  * Class representing a column definition for the table.
@@ -35,7 +34,7 @@ export class ColDef implements BaseColDef {
             };
         }
         if (init.cellDataType === 'datetime') {
-            this.cellEditor = DateTimeCellEditor;
+            // this.cellEditor = DateTimeCellEditor;
             this.cellEditorPopup = true;
 
             this.valueFormatter = (params: any) => {

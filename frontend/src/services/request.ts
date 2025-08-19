@@ -18,18 +18,18 @@ export class RequestService extends DataService {
     /**
      * Submits a new request for a song in a specific show.
      * @param song - The song object containing song details.
-     * @param showId - The ID of the show.
+     * @param showHash - The ID of the show.
      * @returns A promise resolving to the response of the request submission.
      */
-    async putRequest(song: Song, showId: string): Promise<any[]> {
+    async putRequest(song: Song, showHash: string): Promise<any[]> {
         return await apiRequest(`/api/requests`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                song_id: song.id,
-                show_id: showId,
+                display_name: song.display_name,
+                show_hash: showHash,
             }),
         });
     }
