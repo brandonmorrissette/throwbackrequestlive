@@ -64,13 +64,13 @@ class CertConstruct(Construct):
         super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
         self.hosted_zone = route53.HostedZone.from_lookup(
-            self, "hosed-zone", domain_name="throwbackrequestlive.com"
+            self, "hosted-zone", domain_name=f"{args.config.project_name}.com"
         )
 
         self.certificate = acm.Certificate(
             self,
             "site-certificate",
-            domain_name="throwbackrequestlive.com",
-            subject_alternative_names=["www.throwbackrequestlive.com"],
+            domain_name=f"{args.config.project_name}.com",
+            subject_alternative_names=[f"www.{args.config.project_name}.com"],
             validation=acm.CertificateValidation.from_dns(self.hosted_zone),
         )
