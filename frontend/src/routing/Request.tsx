@@ -33,7 +33,9 @@ async function validate(response: Response) {
         console.error('Error in validation:', response);
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-            `${response.status} - ${errorData.error || response.statusText}`
+            `${response.status} - ${
+                errorData.message || errorData.error || response.statusText
+            }`
         );
     }
 }

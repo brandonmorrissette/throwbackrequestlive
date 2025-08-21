@@ -8,8 +8,6 @@ from collections import Counter
 from io import BytesIO
 
 from flask import current_app as app
-from flask import jsonify, make_response
-from werkzeug.wrappers.response import Response
 
 from backend.flask.services.s3 import S3Service
 from backend.flask.services.request import RequestService
@@ -30,7 +28,7 @@ class DemoService(S3Service, RequestService):
             )["Body"].read()
         )
 
-    def write_request(self, song_request: dict) -> Response:
+    def write_request(self, song_request: dict) -> None:
         """Writes the request.
 
         :param request: The data for the request.
@@ -44,27 +42,17 @@ class DemoService(S3Service, RequestService):
         )
 
         app.logger.info("Request %s written successfully.", song_request["id"])
-        response = make_response(jsonify(song_request), 201)
 
-        response.set_cookie(
-            "totalRequestLiveRequestId",
-            song_request["id"],
-            httponly=True,
-            secure=True,
-            samesite="Lax",
-        )
-        return response
 
-    def get_requests_counts(self) -> list:
+
+    def get_requests_counts(self) -> dict:
         """
         Get the requests for each song.
-        :return: A list of dictionaries containing song IDs and their request counts.
+        :return: A dictionary containing song display names and their request counts.
         """
-        song_counts = Counter(request["song_code"] for request in self.requests)
-        return [
-            {"song_code": song_code, "request_count": count}
-            for song_code, count in song_counts.items()
-        ]
+        song_counts = dict(Counter(request["display_name"] for request in self.requests))
+        app.logger.info("Retrieved song request counts: %s", song_counts)
+        return song_counts
 
     def _is_duplicate(self, request_id: str, show_hash: str) -> bool:
         """

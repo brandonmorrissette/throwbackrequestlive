@@ -21,7 +21,7 @@ const Request: React.FC = () => {
     const [selectedSong, setSelectedSong] = useState<Song | null>(null);
 
     const [searchParams] = useSearchParams();
-    const showHash = searchParams.get('showHash') || '';
+    const showHash = searchParams.get('show_hash') || '';
 
     const navigate = useNavigate();
     const { setError } = useError();
@@ -42,7 +42,7 @@ const Request: React.FC = () => {
 
     const handleRequest = async () => {
         if (selectedSong) {
-            RequestService.putRequest(selectedSong, showHash);
+            RequestService.postRequest(selectedSong, showHash);
             navigate(
                 '/?songName=' + encodeURIComponent(selectedSong.song_name)
             );

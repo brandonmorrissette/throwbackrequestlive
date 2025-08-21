@@ -26,6 +26,7 @@ class RequestService(DataService):
         :return: Redirect response to the request page.
             Returns to main if show_hash is invalid.
         """
+        app.logger.info("Processing redirect for show_hash: %s", show_hash)
         request_id = request.cookies.get("totalRequestLiveRequestId", "")
         if self._is_duplicate(request_id, show_hash):
             app.logger.info("Duplicate request %s detected, redirecting to main page.", request_id)

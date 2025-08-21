@@ -13,6 +13,8 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
+from errors import register_error_handlers
+
 from backend.flask.blueprints.auth import AuthBlueprint
 from backend.flask.blueprints.data import DataBlueprint
 from backend.flask.blueprints.demo import DemoBlueprint
@@ -92,6 +94,9 @@ def _create_app(app_config: Config) -> Flask:
 
     # Render Blueprints
     flask_app.register_blueprint(RenderBlueprint())
+
+    # Error Handlers
+    register_error_handlers(flask_app)
 
     return flask_app
 

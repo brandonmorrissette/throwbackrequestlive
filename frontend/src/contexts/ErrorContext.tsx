@@ -36,7 +36,7 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({
         if (error) {
             console.error('Global Error:', error);
             toast.error(
-                `Looks like something, somewhere is unhappy\n${error.message}.\nWe're on it.`
+                `Looks like something, somewhere is unhappy. We're on it!\n${error.message}.\nPlease try again later.`
             );
             setError(null);
         }

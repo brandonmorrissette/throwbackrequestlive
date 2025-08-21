@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Tuple
 
-from flask import make_response, redirect, request, send_file, url_for
+from flask import make_response, request, send_file, jsonify, current_app as app
 
 from backend.flask.blueprints.request import RequestBlueprint
 from backend.flask.services.demo import DemoService
@@ -45,7 +45,7 @@ class DemoBlueprint(RequestBlueprint):
                 download_name="qr.png",
             )
 
-        @self.route("/demo", methods=["PUT"])
+        @self.route("/api/requests/DEMO", methods=["POST"])
         def write_request() -> Tuple[Any, int]:
             """
             Writes a new row in the 'requests' table.
@@ -55,6 +55,23 @@ class DemoBlueprint(RequestBlueprint):
 
             song_request["request_time"] = datetime.now().isoformat()
             song_request["id"] = uuid.uuid4().hex
-            song_request["show_hash"] = request.cookies.get("throwbackRequestLiveShowHash", "")
+            self._service.write_request(song_request)
 
-            return self._service.write_request(song_request), 201
+            response = make_response(jsonify(song_request), 201)
+            response.set_cookie(
+                "totalRequestLiveRequestId",
+                song_request["id"],
+                httponly=True,
+                secure=True,
+                samesite="Lax",
+            )
+
+            return response
+
+        @self.route("/api/requests/counts/DEMO", methods=["GET"])
+        def get_requests_counts() -> Tuple[Any, int]:
+            """
+            Gets the count of requests for the demo show.
+            """
+            app.logger.info("Getting request counts for DEMO show.")
+            return jsonify(self._service.get_requests_counts()), 200

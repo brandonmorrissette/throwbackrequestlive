@@ -60,14 +60,14 @@ class ShowService(S3Service):
         return [
             show
             for show in self.shows
-            if datetime.fromisoformat(show.get("start_time")) > datetime.now()
+            if datetime.fromisoformat(show.get("end_time")) > datetime.now() and show.get("name") != "DEMO"
         ]
 
     def insert_show(self, show: dict[str, str]) -> None:
         """Insert a new show into the list."""
         show["hash"] = self._create_hash(show)
         show["url"] = (
-            f"https://www.throwbackrequestlive.com/request/redirect/{show['hash']}"
+            f"https://www.throwbackrequestlive.com/api/requests/redirect/{show['hash']}"
         )
 
         image = self.create_qr_code(show["url"])
@@ -77,7 +77,7 @@ class ShowService(S3Service):
 
         self._s3_client.put_object(
             Bucket=self._bucket_name,
-            Key=f"shows/{show['hash']}/qr.png",
+            Key=f"shows/{show['name']}-{show['venue']}-{show['start_time']}-{show['hash']}/qr.png",
             Body=buffer,
             ContentType="image/png",
         )
