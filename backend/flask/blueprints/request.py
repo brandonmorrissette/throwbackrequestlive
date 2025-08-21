@@ -5,7 +5,9 @@ for handling request related public routes in a Flask application.
 
 from typing import Any, Tuple
 
-from flask import request
+from flask import request, redirect, url_for, current_app
+
+from sqlalchemy.exc import OperationalError
 
 from backend.flask.blueprints.data import DataBlueprint
 from backend.flask.services.request import RequestService
@@ -28,7 +30,11 @@ class RequestBlueprint(DataBlueprint):
             """
             Redirects to the request page for a specific show.
             """
-            return self._service.redirect(show_hash), 302
+            try:
+                return self._service.redirect(show_hash), 302
+            except OperationalError as e:
+                return redirect(url_for("renderblueprint.render_main", error="We are not currently taking requests."), 302)
+
 
         @self.route("/requests", methods=["POST"])
         def write_request() -> Tuple[Any, int]:

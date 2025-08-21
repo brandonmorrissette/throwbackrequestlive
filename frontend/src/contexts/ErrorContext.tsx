@@ -33,6 +33,14 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const errorParam = params.get('error');
+        if (errorParam) {
+            setError(new Error(errorParam));
+        }
+    }, [location.search]);
+
+    useEffect(() => {
         if (error) {
             console.error('Global Error:', error);
             toast.error(
