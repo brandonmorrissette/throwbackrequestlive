@@ -5,7 +5,7 @@ for handling request related public routes in a Flask application.
 
 from typing import Any, Tuple
 
-from flask import request, redirect, url_for, current_app
+from flask import request, redirect, url_for
 
 from sqlalchemy.exc import OperationalError
 
