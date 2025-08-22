@@ -11,6 +11,7 @@ Usage example:
 
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_route53 as route53
+from aws_cdk import aws_apigatewayv2 as apigwv2
 
 from infra.constructs.construct import Construct, ConstructArgs
 from infra.stacks.stack import Stack
@@ -63,14 +64,23 @@ class CertConstruct(Construct):
         """
         super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
+        _domain_name = f"{args.config.project_name}.com"
+
         self.hosted_zone = route53.HostedZone.from_lookup(
-            self, "hosted-zone", domain_name=f"{args.config.project_name}.com"
+            self, "hosted-zone", domain_name=_domain_name
         )
 
         self.certificate = acm.Certificate(
             self,
             "site-certificate",
-            domain_name=f"{args.config.project_name}.com",
-            subject_alternative_names=[f"www.{args.config.project_name}.com"],
+            domain_name=_domain_name,
+            subject_alternative_names=[f"www.{_domain_name}"],
             validation=acm.CertificateValidation.from_dns(self.hosted_zone),
+        )
+
+        self.domain_name = apigwv2.DomainName(
+            self,
+            f"{args.config.project_name}-domain-name",
+            domain_name=_domain_name,
+            certificate=self.certificate
         )

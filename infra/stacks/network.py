@@ -8,11 +8,9 @@ from constructs import Construct
 
 from infra.config import Config
 from infra.constructs.cert import CertConstruct, CertConstructArgs
-from infra.constructs.load_balancer import (
-    LoadBalancerConstruct,
-    LoadBalancerConstructArgs,
-)
 from infra.constructs.vpc import VpcConstruct, VpcConstructArgs
+from infra.constructs.gateway import GatewayConstruct, GatewayConstructArgs
+from infra.constructs.route_53 import Route53Construct, Route53ConstructArgs
 from infra.stacks.stack import Stack, StackArgs
 
 
@@ -60,13 +58,19 @@ class NetworkStack(Stack):
 
         self.vpc_construct = VpcConstruct(self, VpcConstructArgs(args.config))
         self.cert_construct = CertConstruct(self, CertConstructArgs(args.config))
-        self.load_balancer_construct = LoadBalancerConstruct(
+
+        self.gateway_construct = GatewayConstruct(self, GatewayConstructArgs(
+            args.config,
+            self.vpc_construct.vpc,
+            self.cert_construct.domain_name
+        ))
+
+        Route53Construct(
             self,
-            LoadBalancerConstructArgs(
+            Route53ConstructArgs(
                 args.config,
-                self.vpc_construct.vpc,
-                self.cert_construct.certificate,
-                args.uid,
-                args.prefix,
+                hosted_zone=self.cert_construct.hosted_zone,
+                domain_name=self.cert_construct.domain_name
             ),
         )
+

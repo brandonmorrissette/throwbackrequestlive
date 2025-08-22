@@ -9,11 +9,8 @@ using the provided AWS resources and configuration.
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
-from aws_cdk import aws_elasticache as elasticache
-from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_rds as rds
-from aws_cdk import aws_route53 as route53
 from constructs import Construct
 
 from infra.config import Config
@@ -32,11 +29,10 @@ class RuntimeStackArgs(  # pylint: disable=too-few-public-methods, too-many-inst
         config (Config): Configuration object.
         vpc (ec2.IVpc): The VPC where the runtime constructs will be deployed.
         certificate (acm.ICertificate): The ACM certificate for the load balancer.
-        hosted_zone (route53.IHostedZone): The Route 53 hosted zone.
         policy (iam.ManagedPolicy): The IAM managed policy for the task role.
         cluster (ecs.Cluster): The ECS cluster.
         db_instance (rds.IDatabaseInstance): The database instance.
-        cache_cluster (elasticache.CfnCacheCluster): The cache cluster.
+        gateway_security_group (ec2.ISecurityGroup): The security group for the API Gateway.
         uid (str): The ID of the stack.
             Defaults to "runtime".
         prefix (str): The prefix for the stack name.
@@ -48,22 +44,20 @@ class RuntimeStackArgs(  # pylint: disable=too-few-public-methods, too-many-inst
         config: Config,
         vpc: ec2.IVpc,
         certificate: acm.ICertificate,
-        hosted_zone: route53.IHostedZone,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
         db_instance: rds.IDatabaseInstance,
-        load_balancer: elbv2.IApplicationLoadBalancer,
+        gateway_security_group: ec2.ISecurityGroup,
         uid: str = "runtime",
         prefix: str = "",
     ) -> None:
         super().__init__(config, uid, prefix)
         self.vpc = vpc
         self.certificate = certificate
-        self.hosted_zone = hosted_zone
         self.policy = policy
         self.cluster = cluster
-        self.load_balancer = load_balancer
         self.db_instance = db_instance
+        self.gateway_security_group = gateway_security_group
 
 
 class RuntimeStack(Stack):
@@ -96,21 +90,12 @@ class RuntimeStack(Stack):
                 certificate=args.certificate,
                 policy=args.policy,
                 cluster=args.cluster,
-                load_balancer=args.load_balancer,
                 db_instance=args.db_instance,
+                gateway_security_group=args.gateway_security_group,
                 runtime_variables={
                     # pylint:disable=line-too-long
                     "PROJECT_NAME": str(args.config.project_name),
                     "ENVIRONMENT": str(args.config.environment_name),
                 },
-            ),
-        )
-
-        Route53Construct(
-            self,
-            Route53ConstructArgs(
-                args.config,
-                hosted_zone=args.hosted_zone,
-                load_balancer=args.load_balancer,
             ),
         )

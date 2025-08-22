@@ -14,9 +14,7 @@ from aws_cdk import Duration, RemovalPolicy
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr_assets as ecr_assets
-from aws_cdk import aws_ecs as ecs
-from aws_cdk import aws_ecs_patterns as ecs_patterns
-from aws_cdk import aws_elasticloadbalancingv2 as elbv2
+from aws_cdk import aws_ecs as ecs, aws_servicediscovery as servicediscovery
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs
 from aws_cdk import aws_rds as rds
@@ -37,8 +35,8 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         certificate (acm.Certificate): The ACM certificate for the load balancer.
         policy (iam.ManagedPolicy): The IAM managed policy for the task role.
         cluster (ecs.Cluster): The ECS cluster.
-        load_balancer (elbv2.IApplicationLoadBalancer): The load balancer.
         db_instance (rds.IDatabaseInstance): The RDS database instance.
+        gateway_security_group (ec2.ISecurityGroup): The security group for the API Gateway.
         runtime_variables (dict): The environment variables for the ECS task.
         uid: Unique identifier for the resource.
             Defaults to runtime.
@@ -53,8 +51,8 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         certificate: acm.ICertificate,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
-        load_balancer: elbv2.IApplicationLoadBalancer,
         db_instance: rds.IDatabaseInstance,
+        gateway_security_group: ec2.ISecurityGroup,
         runtime_variables: dict[str, str] | None = None,
         uid: str = "runtime",
         prefix: str = "",
@@ -64,9 +62,9 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         self.certificate = certificate
         self.policy = policy
         self.cluster = cluster
-        self.load_balancer = load_balancer
         self.runtime_variables = runtime_variables
         self.db_instance = db_instance
+        self.gateway_security_group = gateway_security_group
 
 
 class RuntimeConstruct(Construct):
@@ -136,6 +134,7 @@ class RuntimeConstruct(Construct):
                         "s3:PutObject",
                         "s3:GetObject",
                         "s3:DeleteObject",
+                        "s3:ListBucket"
                     ],
                     resources=[
                         f"arn:aws:s3:::{args.config.project_name}-"
@@ -153,9 +152,9 @@ class RuntimeConstruct(Construct):
         )
 
         security_group.add_ingress_rule(
-            peer=args.load_balancer.connections.security_groups[0],
+            peer=args.gateway_security_group,
             connection=ec2.Port.tcp(5000),
-            description="Allow HTTP traffic from the load balancer",
+            description="Allow Flask traffic from Lambda"
         )
 
         security_group.add_egress_rule(
@@ -164,9 +163,17 @@ class RuntimeConstruct(Construct):
             description="Allow ECS to access RDS",
         )
 
+        log_group = aws_logs.LogGroup(
+            self,
+            "runtime-log-group",
+            log_group_name=f"/{args.config.project_name}-{args.config.environment_name}-runtime",
+            retention=aws_logs.RetentionDays.ONE_WEEK,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
         task_role = iam.Role(
             self,
-            "RuntimeTaskRole",
+            f"{args.config.project_name}-runtime-task-role",
             role_name=f"{args.config.project_name}-"
             f"{args.config.environment_name}-runtime-task-role",
             assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
@@ -179,6 +186,12 @@ class RuntimeConstruct(Construct):
             ],
         )
 
+        task_definition = ecs.FargateTaskDefinition(
+            self, 
+            f"{args.config.project_name}-runtime-task-def",
+            task_role=task_role,
+        )
+        
         docker_image = ecr_assets.DockerImageAsset(
             self,
             f"{args.config.project_name}-{args.config.environment_name}-image",
@@ -186,43 +199,35 @@ class RuntimeConstruct(Construct):
             exclude=["infra", "infra/*", "cdk.out", "node_modules"],
         )
 
-        log_group = aws_logs.LogGroup(
-            self,
-            "runtime-log-group",
-            log_group_name=f"/{args.config.project_name}-{args.config.environment_name}-runtime",
-            retention=aws_logs.RetentionDays.ONE_WEEK,
-            removal_policy=RemovalPolicy.DESTROY,
-        )
-
-        task_image = ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
+        container = task_definition.add_container(
+            f"{args.config.project_name}-{args.config.environment_name}-flask-container",
             image=ecs.ContainerImage.from_docker_image_asset(docker_image),
-            container_port=5000,
-            log_driver=ecs.LogDrivers.aws_logs(
-                stream_prefix=args.config.project_name, log_group=log_group
-            ),
+            logging=ecs.LogDrivers.aws_logs(stream_prefix=args.config.project_name, log_group=log_group),
             environment=args.runtime_variables,
             secrets={"JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret)},
-            task_role=task_role,
         )
 
-        self.runtime_service = ecs_patterns.ApplicationLoadBalancedFargateService(
-            self,
-            "runtime-service",
+        container.add_port_mappings(ecs.PortMapping(container_port=5000))
+
+        namespace = servicediscovery.PrivateDnsNamespace(
+            self, 
+            f"{args.config.project_name}-{args.config.environment_name}-service-discovery-namespace",
+            name=f"{args.config.project_name}-{args.config.environment_name}.local",
+            vpc=args.vpc
+        )
+
+        self.runtime_service = ecs.FargateService(
+            self, 
+            f"{args.config.project_name}-{args.config.environment_name}-runtime-service",
             cluster=args.cluster,
+            task_definition=task_definition,
+            assign_public_ip=False,   
             desired_count=1,
-            task_image_options=task_image,
-            certificate=args.certificate,
-            redirect_http=True,
-            health_check_grace_period=Duration.minutes(5),
-            load_balancer=args.load_balancer,
-            ip_address_type=elbv2.IpAddressType.IPV4,
             security_groups=[security_group],
-            assign_public_ip=True,
-        )
-
-        self.runtime_service.target_group.configure_health_check(
-            path="/",
-            interval=Duration.seconds(30),
-            timeout=Duration.seconds(10),
-            healthy_http_codes="200",
+            cloud_map_options=ecs.CloudMapOptions(
+                name="runtime",
+                cloud_map_namespace=namespace,
+                dns_record_type=servicediscovery.DnsRecordType.A,
+                dns_ttl=Duration.seconds(30)
+            )
         )
