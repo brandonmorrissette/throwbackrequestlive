@@ -64,7 +64,7 @@ jobs:
             - name: Deploy Stack
               run: |
                   export PYTHONPATH="$(pwd):$PYTHONPATH"
-                  cdk deploy ${{ github.event.repository.name }}-${{ inputs.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py" --require-approval never
+                  cdk deploy ${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py" --require-approval never
               env:
                   PROJECT_NAME: ${{ github.event.repository.name }}
                   ENVIRONMENT_NAME: ${{ inputs.ENVIRONMENT_NAME }}
