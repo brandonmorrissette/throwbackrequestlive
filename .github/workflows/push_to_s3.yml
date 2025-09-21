@@ -5,6 +5,7 @@ on:
 
 jobs:
     push-to-s3:
+        name: Push Assets to S3
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repo
@@ -19,6 +20,6 @@ jobs:
 
             - name: Sync assets to S3
               run: aws s3 sync infra/assets s3://${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT_NAME }}-bucket --delete
-            env:
-                PROJECT_NAME: ${{ github.event.repository.name }}
-                ENVIRONMENT_NAME: 'production'
+              env:
+                  PROJECT_NAME: ${{ github.event.repository.name }}
+                  ENVIRONMENT_NAME: 'production'
