@@ -3,13 +3,11 @@ This module defines the RequestBlueprint class and related functions
 for handling request related public routes in a Flask application.
 """
 
-from datetime import datetime
 from typing import Any, Tuple
 
-from flask import current_app as app
-from flask import jsonify, make_response, redirect, request, send_file, url_for
-from werkzeug.exceptions import BadRequest
-from werkzeug.wrappers.response import Response
+from flask import request, redirect, url_for
+
+from sqlalchemy.exc import OperationalError
 
 from backend.flask.blueprints.data import DataBlueprint
 from backend.flask.services.request import RequestService
@@ -27,107 +25,31 @@ class RequestBlueprint(DataBlueprint):
         Register routes for request operations.
         """
 
-        @self.route("/api/requests", methods=["PUT"])
+        @self.route("/requests/redirect/<string:show_hash>", methods=["GET"])
+        def redirect_request(show_hash: str) -> Tuple[Any, int]:
+            """
+            Redirects to the request page for a specific show.
+            """
+            try:
+                return self._service.redirect(show_hash), 302
+            except OperationalError as e:
+                return redirect(url_for("renderblueprint.render_main", error="We are not currently taking requests."), 302)
+
+
+        @self.route("/requests", methods=["POST"])
         def write_request() -> Tuple[Any, int]:
             """
             Writes a new row in the 'requests' table.
             :return: JSON response with the result of the operation.
             """
-            try:
-                data = request.get_json()
-                app.logger.debug(f"Received data for writing request: {data}")
-            except BadRequest as e:
-                app.logger.error(f"Bad request: {e}")
-                return jsonify({"error": "Invalid JSON data."}), 400
+            song_request = request.get_json()
+            return self._service.write_request(song_request), 201
 
-            if not data:
-                message = "No song request data found."
-                app.logger.error(message)
-                return jsonify({"error": message}), 400
-
-            uid = request.cookies.get("uid")
-            data["request_time"] = datetime.now().isoformat()
-            data["id"] = uid
-            data["show_id"] = request.cookies.get("showId")
-
-            self._service.insert_rows("requests", [data])
-
-            results = self._service.insert_rows(
-                "submissions",
-                [
-                    {
-                        "id": uid,
-                        "entry_point_id": request.cookies.get("entryPointId"),
-                    }
-                ],
-            )
-
-            return jsonify(results), 200
-
-        @self.route("/api/requests/count", methods=["GET"])
-        def get_request_count_by_show_id() -> Tuple[Any, int]:
+        @self.route("/requests/count", methods=["GET"])
+        def get_requests_count() -> Tuple[Any, int]:
             """
-            Returns the count of requests for a song.
+            Returns the count of requests for the songs.
+
             :return: JSON response with the count of requests.
             """
-            show_id = request.args.get("showId")
-            app.logger.debug(f"Received show ID for request count: {show_id}")
-            if not show_id:
-                message = "No show ID provided."
-                app.logger.error(message)
-                return jsonify({"error": message}), 400
-
-            return self._service.get_request_count_by_show_id(show_id), 200
-
-        @self.route("/demo", methods=["GET"])
-        def demo() -> Response:
-            """
-            Returns a demo response.
-            :return: JSON response with the demo data.
-            """
-
-            demo_entry_point_id = self._service.get_demo_entry_point_id()
-            app.logger.info(f"Recreating a demo request. {demo_entry_point_id}")
-            response = make_response(
-                redirect(url_for("renderblueprint.render_request"))
-            )
-
-            self._service.set_session_cookies(response)
-            response.set_cookie(
-                "entryPointId",
-                demo_entry_point_id,
-                httponly=True,
-                secure=True,
-                samesite="Lax",
-            )
-            response.set_cookie(
-                "showId",
-                str(
-                    next(
-                        iter(
-                            self._service.get_shows_by_entry_point_id(
-                                demo_entry_point_id
-                            )
-                        ),
-                        {},
-                    ).get("id")
-                ),
-                httponly=True,
-                secure=True,
-                samesite="Lax",
-            )
-
-            return response
-
-        @self.route("/qr", methods=["GET"])
-        def demo_qr():
-            """
-            Returns a demo QR code response.
-            :return: JSON response with the demo QR code data.
-            """
-            return send_file(
-                self._service.get_demo_qr(),
-                mimetype="image/png",
-                as_attachment=False,
-                download_name="qr.png",
-            )
+            return self._service.get_requests_counts(), 200

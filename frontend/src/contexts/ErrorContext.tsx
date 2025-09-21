@@ -33,10 +33,18 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const errorParam = params.get('error');
+        if (errorParam) {
+            setError(new Error(errorParam));
+        }
+    }, [location.search]);
+
+    useEffect(() => {
         if (error) {
             console.error('Global Error:', error);
             toast.error(
-                `Looks like something, somewhere is unhappy\n${error.message}.\nWe're on it.`
+                `Looks like something, somewhere is unhappy. We're on it!\n${error.message}.\nPlease try again later.`
             );
             setError(null);
         }

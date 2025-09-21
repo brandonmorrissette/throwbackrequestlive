@@ -58,7 +58,7 @@ jobs:
             - name: Destroy Stack
               run: |
                   export PYTHONPATH="$(pwd):$PYTHONPATH"
-                  yes | cdk destroy ${{ github.event.repository.name }}-${{ env.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py"
+                  yes | cdk destroy ${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ inputs.stack-name }} --app "python infra/app.py"
 
               env:
                   PROJECT_NAME: ${{ github.event.repository.name }}

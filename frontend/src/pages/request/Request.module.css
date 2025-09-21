@@ -1,3 +1,10 @@
+.requestButtonGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px 0;
+}
+
 .requestButton {
     display: flex;
     flex-direction: column;
@@ -5,12 +12,12 @@
     justify-content: center;
     width: 100%;
     box-sizing: border-box;
-    margin: 10px 0;
-    padding: 10px;
+    padding: 15px;
     border: transparent;
     border-radius: 10px;
     background-color: var(--color-accent);
     transition: background-color 0.3s ease, transform 0.2s ease;
+    min-height: 80px;
 }
 
 .requestButton:hover {
@@ -20,21 +27,19 @@
 
 .songDetails {
     display: flex;
+    flex-direction: column;
     align-items: center;
     margin: 0 10px;
     width: 100%;
 }
 
 .songBand {
-    text-align: right;
-    flex: 1;
-    margin-right: 10px;
+    text-align: center;
+    margin-bottom: 5px;
     font-weight: bold;
 }
 
 .songName {
-    text-align: left;
-    flex: 1;
-    margin-left: 10px;
+    text-align: center;
     font-style: italic;
 }

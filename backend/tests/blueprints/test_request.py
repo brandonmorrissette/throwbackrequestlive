@@ -9,7 +9,7 @@ from flask import Flask
 from flask.testing import FlaskClient
 
 from backend.flask.blueprints.request import RequestBlueprint
-from backend.flask.services.request import RequestService
+from backend.flask.services.show import ShowService
 
 UID = "uid"
 SHOW_ID = "show_id"
@@ -26,13 +26,13 @@ def app(blueprint: RequestBlueprint) -> Generator[Flask, None, None]:
 
 
 @pytest.fixture()
-def blueprint(service: RequestService) -> RequestBlueprint:
+def blueprint(service: ShowService) -> RequestBlueprint:
     return RequestBlueprint(service=service)
 
 
 @pytest.fixture()
-def service() -> RequestService:
-    return MagicMock(spec=RequestService)
+def service() -> ShowService:
+    return MagicMock(spec=ShowService)
 
 
 def test_given_request_with_bad_data_when_write_request_then_error_is_returned(
@@ -62,7 +62,7 @@ def test_given_request_without_data_when_write_request_then_error_is_returned(
 
 
 def test_given_request_with_required_cookies_when_write_request_then_data_is_inserted(
-    client: FlaskClient, service: RequestService
+    client: FlaskClient, service: ShowService
 ) -> None:
 
     with patch("backend.flask.blueprints.request.datetime") as mock_datetime:
@@ -108,7 +108,7 @@ def test_given_request_without_show_id_when_get_request_count_by_show_id_then_er
 
 
 def test_given_show_id_when_get_request_count_by_show_id_then_count_is_returned(
-    client: FlaskClient, service: RequestService
+    client: FlaskClient, service: ShowService
 ) -> None:
     count = {"count": 5}
 
@@ -122,7 +122,7 @@ def test_given_show_id_when_get_request_count_by_show_id_then_count_is_returned(
 
 
 def test_when_demo_endpoint_then_redirect_to_render_request(
-    client: FlaskClient, service: RequestService
+    client: FlaskClient, service: ShowService
 ) -> None:
     url = "/render_request"
     service.get_demo_entry_point_id.return_value = ENTRY_POINT_ID
@@ -150,7 +150,7 @@ def test_when_demo_endpoint_then_redirect_to_render_request(
 
 
 def test_when_qr_then_qr_code_is_returned(
-    client: FlaskClient, service: RequestService
+    client: FlaskClient, service: ShowService
 ) -> None:
     file = io.BytesIO(b"Mock Image")
     file.name = "mock_image.png"

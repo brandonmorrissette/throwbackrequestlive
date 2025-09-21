@@ -22,8 +22,6 @@ def args(config: Config, vpc: ec2.IVpc) -> StorageStackArgs:
 class Mocks:  # pylint: disable=missing-class-docstring
     rds_construct: MagicMock
     rds_construct_args: MagicMock
-    cache_construct: MagicMock
-    cache_construct_args: MagicMock
 
 
 @pytest.fixture(scope="module")
@@ -32,16 +30,10 @@ def mocked_storage_stack(
 ) -> tuple[StorageStack, Mocks]:
     with patch("infra.stacks.storage.RdsConstruct") as mock_rds_construct, patch(
         "infra.stacks.storage.RdsConstructArgs"
-    ) as mock_rds_construct_args, patch(
-        "infra.stacks.storage.CacheConstruct"
-    ) as mock_cache_construct, patch(
-        "infra.stacks.storage.CacheConstructArgs"
-    ) as mock_cache_construct_args:
+    ) as mock_rds_construct_args:
         return StorageStack(app, args), Mocks(
             rds_construct=mock_rds_construct,
             rds_construct_args=mock_rds_construct_args,
-            cache_construct=mock_cache_construct,
-            cache_construct_args=mock_cache_construct_args,
         )
 
 
@@ -63,17 +55,4 @@ def test_rds_construct(
     mocks.rds_construct_args.assert_called_once_with(config, vpc)
     mocks.rds_construct.assert_called_once_with(
         stack, mocks.rds_construct_args.return_value
-    )
-
-
-def test_cache_construct(
-    mocked_storage_stack: tuple[StorageStack, Mocks],
-    vpc: MagicMock,
-    config: Config,
-):
-    stack, mocks = mocked_storage_stack
-
-    mocks.cache_construct_args.assert_called_once_with(config, vpc)
-    mocks.cache_construct.assert_called_once_with(
-        stack, mocks.cache_construct_args.return_value
     )

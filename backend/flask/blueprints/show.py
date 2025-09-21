@@ -10,7 +10,7 @@ from flask import jsonify, request
 
 from backend.flask.blueprints.data import DataBlueprint
 from backend.flask.decorators.auth import restrict_access
-from backend.flask.services.entrypoint import EntryPointService
+from backend.flask.services.show import ShowService
 
 
 class ShowBlueprint(DataBlueprint):
@@ -18,42 +18,33 @@ class ShowBlueprint(DataBlueprint):
     Blueprint for handling show related routes.
     """
 
-    _service: EntryPointService
+    _service: ShowService
 
     def register_routes(self) -> None:
         """
         Register routes for show operations.
         """
 
-        @self.route("/tables/shows/rows", methods=["GET"])
+        @self.route("/shows", methods=["GET"])
         def read_shows() -> Tuple[Any, int]:
             """
             Read rows from the 'shows' table.
-            :return: JSON response with the rows.
             """
-            return jsonify(self._service.execute("SELECT * FROM shows")), 200
+            return jsonify(self._service.get_shows()), 200
 
-        @self.route("/tables/shows/rows", methods=["POST"])
+        @self.route("/shows", methods=["POST"])
         @restrict_access(["superuser"])
         def insert_show() -> Tuple[Any, int]:
             """
             Insert rows into the 'shows' table.
             :return: JSON response with the result of the operation.
             """
-            show = next(iter(request.get_json().get("rows", {})), None)
-            app.logger.info(f"Show received: {show}")
+            show = request.get_json()
+            app.logger.info(f"Show received to insert: {show}")
             if not show:
                 return {"message": "No data provided"}, 400
 
-            entry_point_id = self._service.create_entrypoint()
-            show["entry_point_id"] = entry_point_id
-
-            self._service.insert_rows("shows", [show])
-
-            self._service.create_qr_code(
-                f"https://www.throwbackrequestlive.com/entrypoint?entryPointId={entry_point_id}",  # pylint: disable=line-too-long
-                f"entrypoints/{show['name']}/",
-            )
+            self._service.insert_show(show)
 
             return jsonify({"success": True}), 201
 
@@ -63,11 +54,4 @@ class ShowBlueprint(DataBlueprint):
             Get upcoming shows.
             :return: JSON response with the upcoming shows.
             """
-            return (
-                jsonify(
-                    self._service.execute(
-                        "SELECT * FROM shows WHERE start_time > NOW()::timestamp ORDER BY start_time ASC"  # pylint: disable=line-too-long
-                    )
-                ),
-                200,
-            )
+            return self._service.get_upcoming_shows(), 200

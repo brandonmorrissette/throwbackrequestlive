@@ -8,7 +8,6 @@ from aws_cdk import aws_ec2 as ec2
 from constructs import Construct
 
 from infra.config import Config
-from infra.constructs.cache import CacheConstruct, CacheConstructArgs
 from infra.constructs.rds import RdsConstruct, RdsConstructArgs
 from infra.constructs.s3 import S3Construct
 from infra.stacks.stack import Stack, StackArgs
@@ -60,9 +59,6 @@ class StorageStack(Stack):
         super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
         self.rds_construct = RdsConstruct(self, RdsConstructArgs(args.config, args.vpc))
-        self.cache_construct = CacheConstruct(
-            self, CacheConstructArgs(args.config, args.vpc)
-        )
         self.s3_construct = S3Construct(
             self,
             args.config,

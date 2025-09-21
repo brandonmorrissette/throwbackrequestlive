@@ -1,13 +1,12 @@
 # pylint: disable=redefined-outer-name, protected-access, missing-function-docstring, missing-module-docstring
+from datetime import datetime, timedelta
 from typing import Generator, Tuple
 from unittest.mock import MagicMock, patch
-from datetime import datetime, timedelta
 
 import pytest
 from flask import Flask
 
-from backend.flask.services.request import RequestService
-
+from backend.flask.services.show import ShowService
 
 ENTRYPOINT = "entrypoint"
 UID = "uid"
@@ -41,13 +40,13 @@ def service(
     config: MagicMock,
     mocks: Generator[Tuple[MagicMock], None, None],
     mock_sql_alchemy_libraries: Generator[None, None, None],
-) -> RequestService:
-    service = RequestService(redis_client, config)
+) -> ShowService:
+    service = ShowService(redis_client, config)
     return service
 
 
 def test_given_entry_point_id_when_get_shows_by_entry_point_id_then_shows_retrieved(
-    service: RequestService,
+    service: ShowService,
 ):
 
     with patch(
@@ -70,7 +69,7 @@ def test_given_entry_point_id_when_get_shows_by_entry_point_id_then_shows_retrie
 
 
 def test_given_invalid_entry_point_id_when_redirect_then_redirect_to_main(
-    service: RequestService
+    service: ShowService,
 ):
     with patch.object(
         service,
@@ -87,7 +86,7 @@ def test_given_invalid_entry_point_id_when_redirect_then_redirect_to_main(
 
 
 def test_given_duplicate_submission_when_redirect_then_handle_duplicate(
-    service: RequestService,
+    service: ShowService,
     app: Flask,
 ):
     with patch.object(
@@ -110,7 +109,7 @@ def test_given_duplicate_submission_when_redirect_then_handle_duplicate(
 
 
 def test_given_entry_point_id_when_redirect_then_redirect_to_request_page(
-    service: RequestService, app: Flask
+    service: ShowService, app: Flask
 ):
     with patch.object(service, "_validate_entry_point_id"), patch.object(
         service, "_is_duplicate", return_value=False
@@ -141,7 +140,7 @@ def test_given_entry_point_id_when_redirect_then_redirect_to_request_page(
 
 
 def test_given_entry_point_with_no_shows_when_validate_entry_point_id_then_raises_error(
-    service: RequestService,
+    service: ShowService,
 ):
     with patch.object(
         service, "get_shows_by_entry_point_id", return_value=[]
@@ -153,7 +152,7 @@ def test_given_entry_point_with_no_shows_when_validate_entry_point_id_then_raise
 
 
 def test_given_show_start_time_after_now_when_validate_entry_point_id_then_raises_error(
-    service: RequestService,
+    service: ShowService,
 ):
     with patch.object(
         service,
@@ -171,7 +170,7 @@ def test_given_show_start_time_after_now_when_validate_entry_point_id_then_raise
 
 
 def test_given_show_start_time_within_last_hour_when_validate_entry_point_id_then_continue(
-    service: RequestService,
+    service: ShowService,
 ):
     with patch.object(
         service,
@@ -188,7 +187,7 @@ def test_given_show_start_time_within_last_hour_when_validate_entry_point_id_the
 
 
 def test_given_show_end_time_before_now_when_validate_entry_point_id_then_raises_error(
-    service: RequestService,
+    service: ShowService,
 ):
     with patch.object(
         service,
@@ -206,8 +205,8 @@ def test_given_show_end_time_before_now_when_validate_entry_point_id_then_raises
     mock_get_shows_by_entry_point_id.assert_called_once_with(ENTRYPOINT)
 
 
-def test_given_show_with_no_end_time_and_show_started_within_last_hour_when_validate_entry_point_id_then_continue( # pylint: disable=line-too-long
-    service: RequestService,
+def test_given_show_with_no_end_time_and_show_started_within_last_hour_when_validate_entry_point_id_then_continue(  # pylint: disable=line-too-long
+    service: ShowService,
 ):
     with patch.object(
         service,
@@ -223,8 +222,8 @@ def test_given_show_with_no_end_time_and_show_started_within_last_hour_when_vali
     mock_get_shows_by_entry_point_id.assert_called_once_with(ENTRYPOINT)
 
 
-def test_given_show_with_no_end_time_and_show_not_started_within_last_hour_when_validate_entry_point_id_then_raises_error( # pylint: disable=line-too-long
-    service: RequestService,
+def test_given_show_with_no_end_time_and_show_not_started_within_last_hour_when_validate_entry_point_id_then_raises_error(  # pylint: disable=line-too-long
+    service: ShowService,
 ):
     with patch.object(
         service,
@@ -242,14 +241,14 @@ def test_given_show_with_no_end_time_and_show_not_started_within_last_hour_when_
 
 
 def test_given_no_uid_when_is_duplicate_then_returns_false(
-    service: RequestService,
+    service: ShowService,
 ):
     result = service._is_duplicate(None, ENTRYPOINT)
     assert not result
 
 
 def test_given_uid_and_unique_entry_point_id_when_is_duplicate_then_returns_false(
-    service: RequestService,
+    service: ShowService,
 ):
     with patch.object(service, "execute", return_value=None) as mock_execute:
         result = service._is_duplicate(UID, ENTRYPOINT)
@@ -267,7 +266,7 @@ def test_given_uid_and_unique_entry_point_id_when_is_duplicate_then_returns_fals
 
 
 def test_given_uid_and_duplicate_entry_point_id_when_is_duplicate_then_returns_true(
-    service: RequestService,
+    service: ShowService,
 ):
     with patch.object(service, "execute", return_value=[{"1": 1}]) as mock_execute:
         result = service._is_duplicate(UID, ENTRYPOINT)
@@ -286,7 +285,7 @@ def test_given_uid_and_duplicate_entry_point_id_when_is_duplicate_then_returns_t
 
 
 def test_given_uid_when_handle_duplicate_submission_then_redirect_to_main(
-    service: RequestService,
+    service: ShowService,
 ):
     song_name = "Duplicate Song"
     duplicate_song = {"song_name": song_name}
@@ -295,7 +294,7 @@ def test_given_uid_when_handle_duplicate_submission_then_redirect_to_main(
     ) as mock_url_for, patch.object(
         service, "_get_duplicate_submission", return_value=[duplicate_song]
     ):
-        response = service._handle_duplicate_submission(UID)
+        response = service._handle_duplicate_request(UID)
 
     assert response.status_code == 302
     assert response.location == MAIN_URL
@@ -305,13 +304,13 @@ def test_given_uid_when_handle_duplicate_submission_then_redirect_to_main(
 
 
 def test_given_uid_when_get_duplicate_submission_then_return_song(
-    service: RequestService,
+    service: ShowService,
 ):
 
     with patch.object(
         service, "execute", side_effect=[[{"song_id": SONG_ID}], songs]
     ) as mock_execute:
-        result = service._get_duplicate_submission(UID)
+        result = service._get_duplicate_request(UID)
 
     mock_execute.assert_any_call(
         # pylint: disable=R0801
@@ -334,10 +333,10 @@ def test_given_uid_when_get_duplicate_submission_then_return_song(
 
 
 def test_given_no_song_id_when_get_duplicate_submission_then_return_empty_list(
-    service: RequestService,
+    service: ShowService,
 ):
     with patch.object(service, "execute", return_value=[]) as mock_execute:
-        result = service._get_duplicate_submission(UID)
+        result = service._get_duplicate_request(UID)
 
     mock_execute.assert_called_once_with(
         """
@@ -351,7 +350,7 @@ def test_given_no_song_id_when_get_duplicate_submission_then_return_empty_list(
 
 
 def test_given_show_id_when_get_request_count_by_show_id_then_return_request_count(
-    service: RequestService,
+    service: ShowService,
 ):
 
     with patch.object(service, "execute") as mock_execute:
@@ -371,7 +370,7 @@ def test_given_show_id_when_get_request_count_by_show_id_then_return_request_cou
     assert result == mock_execute.return_value
 
 
-def test_get_demo_entry_point_id(service: RequestService):
+def test_get_demo_entry_point_id(service: ShowService):
     with patch.object(
         service, "execute", return_value=[{"entry_point_id": ENTRYPOINT}]
     ) as mock_execute:
@@ -389,14 +388,14 @@ def test_get_demo_entry_point_id(service: RequestService):
 
 
 def test_get_demo_qr(
-    service: RequestService, mocks: Generator[Tuple[MagicMock,], None, None]
+    service: ShowService, mocks: Generator[Tuple[MagicMock,], None, None]
 ):
     (mock_boto,) = mocks
     with patch("backend.flask.services.request.BytesIO") as mock_bytes_io:
         response = service.get_demo_qr()
 
     mock_boto.client.return_value.get_object.assert_called_once_with(
-        Bucket=service.bucket_name,
+        Bucket=service._bucket_name,
         Key="entrypoints/DEMO/qr.png",
     )
     mock_bytes_io.assert_called_once_with(

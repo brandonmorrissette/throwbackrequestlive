@@ -2,7 +2,7 @@
  * Class representing a Show.
  */
 export class Show {
-    id: string;
+    hash?: string;
     name: string;
     start_time: string;
     end_time: string;
@@ -10,20 +10,22 @@ export class Show {
     street: string;
     city: string;
     state: string;
+    url?: string;
 
     /**
      * Create a Show.
      * @param {Show} show - The show data.
      */
-    constructor(show: Show) {
-        this.id = show.id;
-        this.name = show.name;
-        this.start_time = this.formatDateTime(show.start_time);
-        this.end_time = this.formatDateTime(show.end_time);
-        this.venue = show.venue;
-        this.street = show.street;
-        this.city = show.city;
-        this.state = show.state;
+    constructor(show: Partial<Show>) {
+        this.hash = show.hash;
+        this.name = show.name || '';
+        this.start_time = this.formatDateTime(show.start_time || '');
+        this.end_time = this.formatDateTime(show.end_time || '');
+        this.venue = show.venue || '';
+        this.street = show.street || '';
+        this.city = show.city || '';
+        this.state = show.state || '';
+        this.url = show.url;
     }
 
     /**

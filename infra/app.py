@@ -56,19 +56,17 @@ storage_stack = StorageStack(
     ),
 )
 
-
 runtime_stack = RuntimeStack(
     app,
     RuntimeStackArgs(
         config=config,
         vpc=network_stack.vpc_construct.vpc,
         certificate=network_stack.cert_construct.certificate,
-        hosted_zone=network_stack.cert_construct.hosted_zone,
         policy=user_management_stack.superuser_construct.policy,
         cluster=compute_stack.cluster_construct.cluster,
+        bucket=storage_stack.s3_construct.bucket,
         db_instance=storage_stack.rds_construct.db_instance,
-        cache_cluster=storage_stack.cache_construct.cluster,
-        load_balancer=network_stack.load_balancer_construct.load_balancer,
+        gateway_security_group=network_stack.gateway_construct.security_group,
     ),
 )
 

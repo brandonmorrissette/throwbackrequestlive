@@ -97,4 +97,6 @@ class RdsConstruct(Construct):
             backup_retention=Duration.days(7),
             security_groups=[self.security_group],
             instance_identifier=f"{args.config.project_name}-{args.config.environment_name}-rds-instance",  # pylint: disable=line-too-long
+            allocated_storage=20,
+            storage_type=rds.StorageType.GP2
         )

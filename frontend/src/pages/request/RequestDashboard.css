@@ -1,7 +1,49 @@
-#syncButton {
-    display: inline-flex;
+.request-table {
+    width: 80%;
+    margin: 20px auto; /* centers the table horizontally */
+}
+
+.request-table table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.request-table th,
+.request-table td {
+    padding: 12px 16px;
+    width: 50%;
+}
+
+.request-table th {
+    background-color: var(--color-background-dark);
+    color: white;
+}
+
+.request-table tr {
+    background-color: transparent;
+}
+
+.count-container {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    margin: 25px;
+    gap: 8px;
+}
+
+.count-container .count {
+    text-align: right;
+    min-width: 30px;
+}
+
+.bar-container {
+    flex: 1;
     height: 20px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    background-color: var(--color-primary);
+    border-radius: 4px;
 }
