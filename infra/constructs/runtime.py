@@ -18,6 +18,7 @@ from aws_cdk import aws_ecs as ecs, aws_servicediscovery as servicediscovery
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs
 from aws_cdk import aws_rds as rds
+from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_secretsmanager as secretsmanager
 
 from infra.config import Config
@@ -51,6 +52,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         certificate: acm.ICertificate,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
+        bucket: s3.IBucket,
         db_instance: rds.IDatabaseInstance,
         gateway_security_group: ec2.ISecurityGroup,
         runtime_variables: dict[str, str] | None = None,
@@ -63,6 +65,7 @@ class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-met
         self.policy = policy
         self.cluster = cluster
         self.runtime_variables = runtime_variables
+        self.bucket = bucket
         self.db_instance = db_instance
         self.gateway_security_group = gateway_security_group
 
@@ -184,6 +187,26 @@ class RuntimeConstruct(Construct):
                 args.policy,
                 policy,
             ],
+            inline_policies={
+                "S3AccessPolicy": iam.PolicyDocument(
+                    statements=[
+                        iam.PolicyStatement(
+                            actions=[
+                                "s3:ListBucket",
+                            ],
+                            resources=[args.bucket.bucket_arn],
+                        ),
+                        iam.PolicyStatement(
+                            actions=[
+                                "s3:GetObject",
+                                "s3:PutObject",
+                                "s3:DeleteObject",
+                            ],
+                            resources=[f"{args.bucket.bucket_arn}/*"],
+                        ),
+                    ]
+                )
+            },
         )
 
         task_definition = ecs.FargateTaskDefinition(
