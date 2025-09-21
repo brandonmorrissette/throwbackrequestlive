@@ -64,6 +64,7 @@ runtime_stack = RuntimeStack(
         certificate=network_stack.cert_construct.certificate,
         policy=user_management_stack.superuser_construct.policy,
         cluster=compute_stack.cluster_construct.cluster,
+        bucket=storage_stack.s3_construct.bucket,
         db_instance=storage_stack.rds_construct.db_instance,
         gateway_security_group=network_stack.gateway_construct.security_group,
     ),

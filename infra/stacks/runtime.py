@@ -11,10 +11,10 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_rds as rds
+from aws_cdk import aws_s3 as s3
 from constructs import Construct
 
 from infra.config import Config
-from infra.constructs.route_53 import Route53Construct, Route53ConstructArgs
 from infra.constructs.runtime import RuntimeConstruct, RuntimeConstructArgs
 from infra.stacks.stack import Stack, StackArgs
 
@@ -46,6 +46,7 @@ class RuntimeStackArgs(  # pylint: disable=too-few-public-methods, too-many-inst
         certificate: acm.ICertificate,
         policy: iam.ManagedPolicy,
         cluster: ecs.Cluster,
+        bucket: s3.IBucket,
         db_instance: rds.IDatabaseInstance,
         gateway_security_group: ec2.ISecurityGroup,
         uid: str = "runtime",
@@ -56,6 +57,7 @@ class RuntimeStackArgs(  # pylint: disable=too-few-public-methods, too-many-inst
         self.certificate = certificate
         self.policy = policy
         self.cluster = cluster
+        self.bucket = bucket
         self.db_instance = db_instance
         self.gateway_security_group = gateway_security_group
 
@@ -90,6 +92,7 @@ class RuntimeStack(Stack):
                 certificate=args.certificate,
                 policy=args.policy,
                 cluster=args.cluster,
+                bucket=args.bucket,
                 db_instance=args.db_instance,
                 gateway_security_group=args.gateway_security_group,
                 runtime_variables={
