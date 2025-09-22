@@ -103,4 +103,15 @@ class Route53Construct(Construct):
             ),
         )
 
-
+        route53.AaaaRecord(
+            self,
+            "gateway-alias-record-www-aaaa",
+            record_name="www",
+            zone=args.hosted_zone,
+            target=route53.RecordTarget.from_alias(
+                targets.ApiGatewayv2DomainProperties(
+                    args.domain_name.regional_domain_name,
+                    args.domain_name.regional_hosted_zone_id,
+                )
+            ),
+        )
