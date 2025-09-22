@@ -108,10 +108,6 @@ class ShowService(S3Service):
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
 
-        buffer = BytesIO()
-        img.save(buffer)
-        buffer.seek(0)
-
         return img
 
     def get_demo_qr(self) -> BytesIO:
