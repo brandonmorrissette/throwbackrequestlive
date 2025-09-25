@@ -76,30 +76,30 @@ class DeploymentStack(Stack):
     ) -> None:
         super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
-        args.vpc.add_interface_endpoint(
-            "EcrEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.ECR,
-        ).apply_removal_policy(RemovalPolicy.DESTROY)
+        # args.vpc.add_interface_endpoint(
+        #     "EcrEndpoint",
+        #     service=ec2.InterfaceVpcEndpointAwsService.ECR,
+        # ).apply_removal_policy(RemovalPolicy.DESTROY)
 
-        args.vpc.add_interface_endpoint(
-            "SsmEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.SSM,
-        ).apply_removal_policy(RemovalPolicy.DESTROY)
+        # args.vpc.add_interface_endpoint(
+        #     "SsmEndpoint",
+        #     service=ec2.InterfaceVpcEndpointAwsService.SSM,
+        # ).apply_removal_policy(RemovalPolicy.DESTROY)
 
-        args.vpc.add_interface_endpoint(
-            "EcrDockerEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
-        ).apply_removal_policy(RemovalPolicy.DESTROY)
+        # args.vpc.add_interface_endpoint(
+        #     "EcrDockerEndpoint",
+        #     service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
+        # ).apply_removal_policy(RemovalPolicy.DESTROY)
 
-        args.vpc.add_interface_endpoint(
-            "SecretsManagerEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-        ).apply_removal_policy(RemovalPolicy.DESTROY)
+        # args.vpc.add_interface_endpoint(
+        #     "SecretsManagerEndpoint",
+        #     service=ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+        # ).apply_removal_policy(RemovalPolicy.DESTROY)
 
-        args.vpc.add_interface_endpoint(
-            "CloudWatchLogsEndpoint",
-            service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
-        ).apply_removal_policy(RemovalPolicy.DESTROY)
+        # args.vpc.add_interface_endpoint(
+        #     "CloudWatchLogsEndpoint",
+        #     service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
+        # ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         # Deployment Task Constructs
         sql_task_construct = SqlDeploymentConstruct(
