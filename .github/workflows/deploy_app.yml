@@ -113,7 +113,13 @@ jobs:
 
     destroy-deployment-stack:
         name: Destroy Deployment Stack
-        needs: [deploy-deployment-stack, deploy-sql-files, deploy-superuser]
+        needs:
+            [
+                deploy-deployment-stack,
+                deploy-sql-files,
+                deploy-superuser,
+                deploy-runtime-stack,
+            ]
         uses: ./.github/workflows/destroy_stack.yml
         with:
             stack-name: deployment

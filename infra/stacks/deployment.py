@@ -76,28 +76,38 @@ class DeploymentStack(Stack):
     ) -> None:
         super().__init__(scope, StackArgs(args.config, args.uid, args.prefix))
 
-        args.vpc.add_interface_endpoint(
+        ec2.InterfaceVpcEndpoint(
+            self,
             "EcrEndpoint",
+            vpc=args.vpc,
             service=ec2.InterfaceVpcEndpointAwsService.ECR,
         ).apply_removal_policy(RemovalPolicy.DESTROY)
 
-        args.vpc.add_interface_endpoint(
+        ec2.InterfaceVpcEndpoint(
+            self,
             "SsmEndpoint",
+            vpc=args.vpc,
             service=ec2.InterfaceVpcEndpointAwsService.SSM,
         ).apply_removal_policy(RemovalPolicy.DESTROY)
 
-        args.vpc.add_interface_endpoint(
+        ec2.InterfaceVpcEndpoint(
+            self,
             "EcrDockerEndpoint",
+            vpc=args.vpc,
             service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
         ).apply_removal_policy(RemovalPolicy.DESTROY)
 
-        args.vpc.add_interface_endpoint(
+        ec2.InterfaceVpcEndpoint(
+            self,
             "SecretsManagerEndpoint",
+            vpc=args.vpc,
             service=ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
         ).apply_removal_policy(RemovalPolicy.DESTROY)
 
-        args.vpc.add_interface_endpoint(
+        ec2.InterfaceVpcEndpoint(
+            self,
             "CloudWatchLogsEndpoint",
+            vpc=args.vpc,
             service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
         ).apply_removal_policy(RemovalPolicy.DESTROY)
 

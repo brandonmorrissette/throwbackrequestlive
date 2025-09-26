@@ -31,7 +31,7 @@ def handler(event, context):
     body = event.get("body")
     data = base64.b64decode(body) if event.get("isBase64Encoded") else body or None
     
-    resp = requests.request(method, target, headers=headers, data=data, stream=True)
+    resp = requests.request(method, target, headers=headers, data=data, stream=True, allow_redirects=False)
     
     resp_headers = {k: v for k, v in resp.raw.headers.items()
                     if k.lower() not in HOP_BY_HOP}
