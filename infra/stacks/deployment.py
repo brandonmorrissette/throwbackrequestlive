@@ -81,40 +81,35 @@ class DeploymentStack(Stack):
             "EcrEndpoint",
             vpc=args.vpc,
             service=ec2.InterfaceVpcEndpointAwsService.ECR,
-            removal_policy=RemovalPolicy.DESTROY,
-        )
+        ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         ec2.InterfaceVpcEndpoint(
             self,
             "SsmEndpoint",
             vpc=args.vpc,
             service=ec2.InterfaceVpcEndpointAwsService.SSM,
-            removal_policy=RemovalPolicy.DESTROY,
-        )
+        ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         ec2.InterfaceVpcEndpoint(
             self,
             "EcrDockerEndpoint",
             vpc=args.vpc,
             service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
-            removal_policy=RemovalPolicy.DESTROY,
-        )
+        ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         ec2.InterfaceVpcEndpoint(
             self,
             "SecretsManagerEndpoint",
             vpc=args.vpc,
             service=ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-            removal_policy=RemovalPolicy.DESTROY,
-        )
+        ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         ec2.InterfaceVpcEndpoint(
             self,
             "CloudWatchLogsEndpoint",
             vpc=args.vpc,
             service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
-            removal_policy=RemovalPolicy.DESTROY,
-        )
+        ).apply_removal_policy(RemovalPolicy.DESTROY)
 
         # Deployment Task Constructs
         sql_task_construct = SqlDeploymentConstruct(
