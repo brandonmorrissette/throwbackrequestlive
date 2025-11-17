@@ -1,6 +1,5 @@
 # pylint: disable=redefined-outer-name, missing-function-docstring, missing-module-docstring, protected-access
 
-import json
 from typing import Generator
 from unittest.mock import MagicMock, patch
 
