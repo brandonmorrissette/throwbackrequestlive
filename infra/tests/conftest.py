@@ -131,7 +131,7 @@ def db_instance(stack: Stack, vpc: ec2.IVpc) -> rds.IDatabaseInstance:
         "TestDBInstance",
         database_name="testdb",
         engine=rds.DatabaseInstanceEngine.postgres(
-            version=rds.PostgresEngineVersion.VER_16_4
+            version=rds.PostgresEngineVersion.VER_16_11
         ),
         instance_type=ec2.InstanceType.of(
             ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO

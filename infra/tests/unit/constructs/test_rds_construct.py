@@ -74,7 +74,7 @@ def test_db_instance_creation(
     )
 
     mocks.rds.DatabaseInstanceEngine.postgres.assert_called_once_with(
-        version=mocks.rds.PostgresEngineVersion.VER_16_4
+        version=mocks.rds.PostgresEngineVersion.VER_16_11
     )
 
     mocks.ec2.SubnetSelection.assert_called_once_with(

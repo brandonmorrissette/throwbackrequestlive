@@ -81,7 +81,7 @@ class RdsConstruct(Construct):
             "rds-instance",
             database_name=args.config.project_name,
             engine=rds.DatabaseInstanceEngine.postgres(
-                version=rds.PostgresEngineVersion.VER_16_4
+                version=rds.PostgresEngineVersion.VER_16_11
             ),
             instance_type=ec2.InstanceType.of(
                 ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO
@@ -98,5 +98,5 @@ class RdsConstruct(Construct):
             security_groups=[self.security_group],
             instance_identifier=f"{args.config.project_name}-{args.config.environment_name}-rds-instance",  # pylint: disable=line-too-long
             allocated_storage=20,
-            storage_type=rds.StorageType.GP2
+            storage_type=rds.StorageType.GP2,
         )
