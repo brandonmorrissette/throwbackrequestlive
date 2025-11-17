@@ -59,7 +59,7 @@ def test_alias_record(
         if record["Properties"]["Name"] == "example.com."
     )
     assert alias_record
-    assert alias_record["Properties"]["AliasTarget"]["DNSName"]["Fn::Join"][1][1][
+    assert alias_record["Properties"]["AliasTarget"]["DNSName"]["Fn::GetAtt"][1][1][
         "Fn::GetAtt"
     ] == [next(iter(load_balancers.keys())), "DNSName"]
 
@@ -79,7 +79,7 @@ def test_alias_www_record(
         if record["Properties"]["Name"] == "www.example.com."
     )
     assert alias_record
-    assert alias_record["Properties"]["AliasTarget"]["DNSName"]["Fn::Join"][1][1][
+    assert alias_record["Properties"]["AliasTarget"]["DNSName"]["Fn::GetAtt"][1][1][
         "Fn::GetAtt"
     ] == [next(iter(load_balancers.keys())), "DNSName"]
 

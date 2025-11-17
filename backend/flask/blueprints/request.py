@@ -5,9 +5,9 @@ for handling request related public routes in a Flask application.
 
 from typing import Any, Tuple
 
-from flask import request, redirect, url_for
-
+from flask import redirect, request, url_for
 from sqlalchemy.exc import OperationalError
+from werkzeug.wrappers.response import Response
 
 from backend.flask.blueprints.data import DataBlueprint
 from backend.flask.services.request import RequestService
@@ -26,7 +26,7 @@ class RequestBlueprint(DataBlueprint):
         """
 
         @self.route("/requests/redirect/<string:show_hash>", methods=["GET"])
-        def redirect_request(show_hash: str) -> Tuple[Any, int]:
+        def redirect_request(show_hash: str) -> Tuple[Any, int] | Response:
             """
             Redirects to the request page for a specific show.
             """
@@ -35,12 +35,11 @@ class RequestBlueprint(DataBlueprint):
             except OperationalError:
                 return redirect(
                     url_for(
-                        "renderblueprint.render_main", 
-                        error="We are not currently taking requests."
+                        "renderblueprint.render_main",
+                        error="We are not currently taking requests.",
                     ),
-                    302
+                    302,
                 )
-
 
         @self.route("/requests", methods=["POST"])
         def write_request() -> Tuple[Any, int]:
@@ -48,8 +47,7 @@ class RequestBlueprint(DataBlueprint):
             Writes a new row in the 'requests' table.
             :return: JSON response with the result of the operation.
             """
-            song_request = request.get_json()
-            return self._service.write_request(song_request), 201
+            return self._service.write_request(request.get_json()), 201
 
         @self.route("/requests/count", methods=["GET"])
         def get_requests_count() -> Tuple[Any, int]:

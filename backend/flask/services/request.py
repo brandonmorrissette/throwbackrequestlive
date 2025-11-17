@@ -29,7 +29,9 @@ class RequestService(DataService):
         app.logger.info("Processing redirect for show_hash: %s", show_hash)
         request_id = request.cookies.get("totalRequestLiveRequestId", "")
         if self._is_duplicate(request_id, show_hash):
-            app.logger.info("Duplicate request %s detected, redirecting to main page.", request_id)
+            app.logger.info(
+                "Duplicate request %s detected, redirecting to main page.", request_id
+            )
             duplicate_request = self._get_duplicate_request(request_id)
             return redirect(
                 url_for(
@@ -41,12 +43,8 @@ class RequestService(DataService):
             )
 
         response = make_response(
-            redirect(
-                url_for("renderblueprint.render_request",
-                        show_hash=show_hash
-                    )
-                )
-            )
+            redirect(url_for("renderblueprint.render_request", show_hash=show_hash))
+        )
 
         app.logger.info("Redirecting to the request page.")
         return response

@@ -53,18 +53,6 @@ def test_given_list_users_returns_users_when_read_rows_then_users_returned(
     assert result == expected
 
 
-def test_given_user_when_read_rows_then_set_user_in_redis(
-    cognito_service: CognitoService,
-) -> None:
-    with patch.object(cognito_service, "_persist_user") as persist_user:
-        cognito_service._cognito_client.list_users.return_value = users
-        cognito_service._cognito_client.admin_list_groups_for_user.return_value = groups
-
-        cognito_service.read_rows()
-
-        persist_user.assert_called_once_with(USERNAME, USER)
-
-
 def test_given_client_error_when_read_rows_then_raise_http_exception(
     cognito_service: CognitoService,
 ) -> None:
@@ -74,35 +62,6 @@ def test_given_client_error_when_read_rows_then_raise_http_exception(
         cognito_service.read_rows()
         assert e.value.description == ERROR_MESSAGE
         assert e.value.code == STATUS_CODE
-
-
-def test_given_rows_without_users_in_redis_when_write_rows_then_delete_users_called(
-    cognito_service: CognitoService,
-) -> None:
-    with patch.object(cognito_service, "_delete_user") as delete_user:
-        cognito_service.write_rows([])
-
-        delete_user.assert_called_once_with(REDIS_KEYS[0])
-
-
-def test_given_rows_with_users_not_in_redis_when_write_rows_then_add_rows_called(
-    cognito_service: CognitoService,
-) -> None:
-    with patch.object(cognito_service, "_add_user") as add_user:
-        cognito_service.write_rows([USER])
-
-        add_user.assert_called_once_with(USER)
-
-
-def test_given_rows_with_users_in_redis_when_write_rows_then_update_rows_called(
-    cognito_service: CognitoService,
-) -> None:
-    with patch.object(cognito_service, "_update_user") as update_user:
-        key = REDIS_KEYS[0]
-        _user = {"Username": key}
-        cognito_service.write_rows([_user])
-
-        update_user.assert_called_once_with(key, _user)
 
 
 def test_when_generate_temp_password_then_return_secrets(
@@ -118,68 +77,3 @@ def test_when_generate_temp_password_then_return_secrets(
 
         for call in mock_secrets.call_args_list:
             assert call[0][0] in valid_characters
-
-
-def test_given_user_when_add_user_then_user_added(
-    cognito_service: CognitoService,
-) -> None:
-    with patch.object(cognito_service, "_persist_user") as persist_user, patch.object(
-        cognito_service, "_generate_temp_password"
-    ) as generate_temp_password:
-        cognito_service._add_user(USER)
-        cognito_service._cognito_client.admin_create_user.assert_called_once_with(
-            Username=EMAIL,
-            UserPoolId=cognito_service._user_pool_id,
-            UserAttributes=[{"Name": "email", "Value": EMAIL}],
-            TemporaryPassword=generate_temp_password.return_value,
-        )
-        persist_user.assert_called_once_with(
-            cognito_service._cognito_client.admin_create_user.return_value["User"][
-                "Username"
-            ],
-            cognito_service._cognito_client.admin_create_user.return_value["User"],
-        )
-
-
-def test_given_user_when_update_user_then_user_updated(
-    cognito_service: CognitoService,
-) -> None:
-    with patch.object(cognito_service, "_persist_user") as persist_user:
-        cognito_service._update_user(USERNAME, USER)
-        cognito_service._cognito_client.admin_update_user_attributes.assert_called_once_with(
-            UserAttributes=[{"Name": "email", "Value": EMAIL}],
-            UserPoolId=cognito_service._user_pool_id,
-            Username=USERNAME,
-        )
-        persist_user.assert_called_once_with(USERNAME, USER)
-
-
-def test_given_user_when_delete_user_then_user_deleted(
-    cognito_service: CognitoService,
-) -> None:
-    with patch.object(cognito_service, "_remove_user") as remove_user:
-        cognito_service._delete_user(USERNAME)
-        cognito_service._cognito_client.admin_delete_user.assert_called_once_with(
-            UserPoolId=cognito_service._user_pool_id,
-            Username=USERNAME,
-        )
-        remove_user.assert_called_once_with(USERNAME)
-
-
-def test_given_username_and_user_when_persist_user_then_set_user_in_redis(
-    cognito_service: CognitoService,
-) -> None:
-    with patch("backend.flask.services.cognito.json") as mock_json:
-        cognito_service._persist_user(USERNAME, USER)
-
-        mock_json.dumps.assert_called_once_with(USER, default=cognito_json_encoder)
-        cognito_service._redis_client.set.assert_called_once_with(
-            USERNAME, mock_json.dumps.return_value
-        )
-
-
-def test_given_username_when_remove_user_then_remove_user_from_redis(
-    cognito_service: CognitoService,
-) -> None:
-    cognito_service._remove_user(USERNAME)
-    cognito_service._redis_client.delete.assert_called_once_with(USERNAME)

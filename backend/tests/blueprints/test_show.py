@@ -43,8 +43,8 @@ def service() -> ShowService:
 def test_when_read_shows_then_all_shows_are_returned(
     client: FlaskClient, service: ShowService
 ) -> None:
-
-    response = client.get("/tables/shows")
+    service.get_shows.return_value = [show]
+    response = client.get("/shows")
 
     service.get_shows.assert_called_once()
     assert response.status_code == 200
@@ -55,7 +55,7 @@ def test_given_no_data_when_insert_show_then_error_is_returned(
     client: FlaskClient,
 ) -> None:
     response = client.post(
-        "/tables/shows", data=json.dumps({}), content_type="application/json"
+        "/shows", data=json.dumps({}), content_type="application/json"
     )
 
     assert response.status_code == 400
@@ -67,8 +67,8 @@ def test_given_valid_data_when_insert_show_then_show_is_inserted(
 ) -> None:
 
     response = client.post(
-        "/tables/shows/rows",
-        data=json.dumps({"rows": [show]}),
+        "/shows",
+        data=json.dumps(show),
         content_type="application/json",
     )
 
@@ -80,8 +80,9 @@ def test_given_valid_data_when_insert_show_then_show_is_inserted(
 def test_when_get_upcoming_shows_then_upcoming_shows_are_returned(
     client: FlaskClient, service: ShowService
 ) -> None:
+    service.get_upcoming_shows.return_value = [show]
     response = client.get("/shows/upcoming")
 
     service.get_upcoming_shows.assert_called_once()
     assert response.status_code == 200
-    assert json.loads(response.data) == [service.get_upcoming_shows.return_value]
+    assert json.loads(response.data) == [show]

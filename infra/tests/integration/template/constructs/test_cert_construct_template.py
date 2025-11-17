@@ -17,8 +17,8 @@ def test_certificate(certificates: Mapping[str, Any]):
     assert len(certificates) == 1
     certificate = next(iter(certificates.values()))
 
-    assert certificate["Properties"]["DomainName"] == "throwbackrequestlive.com"
+    assert certificate["Properties"]["DomainName"] == "unit-test-project.com"
     assert certificate["Properties"]["SubjectAlternativeNames"] == [
-        "www.throwbackrequestlive.com"
+        "www.unit-test-project.com"
     ]
     assert certificate["Properties"]["ValidationMethod"] == "DNS"

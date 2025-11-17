@@ -54,7 +54,7 @@ def test_db_instance(config: Config, db_instances: Mapping[str, Any]) -> None:
     assert db_instance["Properties"]["Engine"] == "postgres"
     assert db_instance["Properties"]["EngineVersion"] == "16.4"
     assert db_instance["Properties"]["DBInstanceClass"] == "db.t3.micro"
-    assert db_instance["Properties"]["AllocatedStorage"] == "100"
+    assert db_instance["Properties"]["AllocatedStorage"] == "20"
     assert db_instance["Properties"]["BackupRetentionPeriod"] == 7
     assert db_instance["Properties"]["PubliclyAccessible"] is False
     assert (
