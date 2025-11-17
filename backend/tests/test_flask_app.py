@@ -158,7 +158,7 @@ def test_when_create_app_then_blueprints_instantiated_with_services(
         service=mock_services["song"].return_value, url_prefix="/api"
     )
     mock_blueprints["request"].assert_called_once_with(
-        service=mock_services["request"].return_value
+        service=mock_services["request"].return_value, url_prefix="/api"
     )
     mock_blueprints["demo"].assert_called_once_with(
         service=mock_services["demo"].return_value
