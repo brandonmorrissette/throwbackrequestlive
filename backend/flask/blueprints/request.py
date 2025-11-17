@@ -32,8 +32,14 @@ class RequestBlueprint(DataBlueprint):
             """
             try:
                 return self._service.redirect(show_hash), 302
-            except OperationalError as e:
-                return redirect(url_for("renderblueprint.render_main", error="We are not currently taking requests."), 302)
+            except OperationalError:
+                return redirect(
+                    url_for(
+                        "renderblueprint.render_main", 
+                        error="We are not currently taking requests."
+                    ),
+                    302
+                )
 
 
         @self.route("/requests", methods=["POST"])

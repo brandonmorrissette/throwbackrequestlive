@@ -14,19 +14,22 @@ from aws_cdk import Duration, RemovalPolicy
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr_assets as ecr_assets
-from aws_cdk import aws_ecs as ecs, aws_servicediscovery as servicediscovery
+from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_secretsmanager as secretsmanager
+from aws_cdk import aws_servicediscovery as servicediscovery
 
 from infra.config import Config
 from infra.constructs.construct import Construct, ConstructArgs
 from infra.stacks.stack import Stack
 
 
-class RuntimeConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-methods
+class RuntimeConstructArgs(
+    ConstructArgs
+):  # pylint: disable=too-few-public-methods, too-many-instance-attributes, duplicate-code
     """
     A class that defines properties for the RuntimeConstruct class.
 
@@ -137,7 +140,7 @@ class RuntimeConstruct(Construct):
                         "s3:PutObject",
                         "s3:GetObject",
                         "s3:DeleteObject",
-                        "s3:ListBucket"
+                        "s3:ListBucket",
                     ],
                     resources=[
                         f"arn:aws:s3:::{args.config.project_name}-"
@@ -157,7 +160,7 @@ class RuntimeConstruct(Construct):
         security_group.add_ingress_rule(
             peer=args.gateway_security_group,
             connection=ec2.Port.tcp(5000),
-            description="Allow Flask traffic from Lambda"
+            description="Allow Flask traffic from Lambda",
         )
 
         security_group.add_egress_rule(
@@ -210,11 +213,11 @@ class RuntimeConstruct(Construct):
         )
 
         task_definition = ecs.FargateTaskDefinition(
-            self, 
+            self,
             f"{args.config.project_name}-runtime-task-def",
             task_role=task_role,
         )
-        
+
         docker_image = ecr_assets.DockerImageAsset(
             self,
             f"{args.config.project_name}-{args.config.environment_name}-image",
@@ -225,7 +228,9 @@ class RuntimeConstruct(Construct):
         container = task_definition.add_container(
             f"{args.config.project_name}-{args.config.environment_name}-flask-container",
             image=ecs.ContainerImage.from_docker_image_asset(docker_image),
-            logging=ecs.LogDrivers.aws_logs(stream_prefix=args.config.project_name, log_group=log_group),
+            logging=ecs.LogDrivers.aws_logs(
+                stream_prefix=args.config.project_name, log_group=log_group
+            ),
             environment=args.runtime_variables,
             secrets={"JWT_SECRET_KEY": ecs.Secret.from_secrets_manager(jwt_secret)},
         )
@@ -233,24 +238,24 @@ class RuntimeConstruct(Construct):
         container.add_port_mappings(ecs.PortMapping(container_port=5000))
 
         namespace = servicediscovery.PrivateDnsNamespace(
-            self, 
-            f"{args.config.project_name}-{args.config.environment_name}-service-discovery-namespace",
+            self,
+            f"{args.config.project_name}-{args.config.environment_name}-service-discovery-namespace",  # pylint: disable=line-too-long
             name=f"{args.config.project_name}-{args.config.environment_name}.local",
-            vpc=args.vpc
+            vpc=args.vpc,
         )
 
         self.runtime_service = ecs.FargateService(
-            self, 
+            self,
             f"{args.config.project_name}-{args.config.environment_name}-runtime-service",
             cluster=args.cluster,
             task_definition=task_definition,
-            assign_public_ip=False,   
+            assign_public_ip=False,
             desired_count=1,
             security_groups=[security_group],
             cloud_map_options=ecs.CloudMapOptions(
                 name="runtime",
                 cloud_map_namespace=namespace,
                 dns_record_type=servicediscovery.DnsRecordType.A,
-                dns_ttl=Duration.seconds(30)
-            )
+                dns_ttl=Duration.seconds(30),
+            ),
         )

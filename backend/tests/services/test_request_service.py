@@ -36,12 +36,11 @@ def mocks() -> Generator[Tuple[MagicMock,], None, None]:
 @pytest.fixture
 def service(
     # pylint: disable=unused-argument
-    redis_client: MagicMock,
     config: MagicMock,
     mocks: Generator[Tuple[MagicMock], None, None],
     mock_sql_alchemy_libraries: Generator[None, None, None],
 ) -> ShowService:
-    service = ShowService(redis_client, config)
+    service = ShowService(config)
     return service
 
 

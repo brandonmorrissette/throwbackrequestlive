@@ -8,7 +8,7 @@ from flask import Flask
 from flask.testing import FlaskClient
 
 from backend.flask.blueprints.show import ShowBlueprint
-from backend.flask.services.entrypoint import EntryPointService
+from backend.flask.services.show import ShowService
 from backend.tests.mock.decorators import trace_decorator
 
 show = {"name": "show"}
@@ -31,23 +31,22 @@ def app(blueprint: ShowBlueprint) -> Generator[Flask, None, None]:
 
 
 @pytest.fixture()
-def blueprint(service: EntryPointService) -> ShowBlueprint:
+def blueprint(service: ShowService) -> ShowBlueprint:
     return ShowBlueprint(service=service)
 
 
 @pytest.fixture()
-def service() -> EntryPointService:
-    return MagicMock(spec=EntryPointService)
+def service() -> ShowService:
+    return MagicMock(spec=ShowService)
 
 
 def test_when_read_shows_then_all_shows_are_returned(
-    client: FlaskClient, service: EntryPointService
+    client: FlaskClient, service: ShowService
 ) -> None:
-    service.execute.return_value = [show]
 
-    response = client.get("/tables/shows/rows")
+    response = client.get("/tables/shows")
 
-    service.execute.assert_called_once_with("SELECT * FROM shows")
+    service.get_shows.assert_called_once()
     assert response.status_code == 200
     assert json.loads(response.data) == [show]
 
@@ -56,7 +55,7 @@ def test_given_no_data_when_insert_show_then_error_is_returned(
     client: FlaskClient,
 ) -> None:
     response = client.post(
-        "/tables/shows/rows", data=json.dumps({}), content_type="application/json"
+        "/tables/shows", data=json.dumps({}), content_type="application/json"
     )
 
     assert response.status_code == 400
@@ -64,10 +63,8 @@ def test_given_no_data_when_insert_show_then_error_is_returned(
 
 
 def test_given_valid_data_when_insert_show_then_show_is_inserted(
-    client: FlaskClient, service: EntryPointService
+    client: FlaskClient, service: ShowService
 ) -> None:
-    entry_point_id = "entry_point_id"
-    service.create_entrypoint.return_value = entry_point_id
 
     response = client.post(
         "/tables/shows/rows",
@@ -75,25 +72,16 @@ def test_given_valid_data_when_insert_show_then_show_is_inserted(
         content_type="application/json",
     )
 
-    show["entry_point_id"] = service.create_entrypoint.return_value
-    service.insert_rows.assert_called_once_with("shows", [show])
-    service.create_qr_code.assert_called_once_with(
-        f"https://www.throwbackrequestlive.com/entrypoint?entryPointId={entry_point_id}",
-        f"entrypoints/{show['name']}/",
-    )
+    service.insert_show.assert_called_once_with(show)
     assert response.status_code == 201
     assert json.loads(response.data) == {"success": True}
 
 
 def test_when_get_upcoming_shows_then_upcoming_shows_are_returned(
-    client: FlaskClient, service: EntryPointService
+    client: FlaskClient, service: ShowService
 ) -> None:
-    service.execute.return_value = [show]
-
     response = client.get("/shows/upcoming")
 
-    service.execute.assert_called_once_with(
-        "SELECT * FROM shows WHERE start_time > NOW()::timestamp ORDER BY start_time ASC"
-    )
+    service.get_upcoming_shows.assert_called_once()
     assert response.status_code == 200
-    assert json.loads(response.data) == [show]
+    assert json.loads(response.data) == [service.get_upcoming_shows.return_value]

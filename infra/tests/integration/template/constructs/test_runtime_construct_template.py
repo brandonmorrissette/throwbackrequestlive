@@ -5,9 +5,9 @@ import pytest
 from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
-from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_rds as rds
+from aws_cdk import aws_s3 as s3
 
 from infra.config import Config
 from infra.constructs.runtime import RuntimeConstruct, RuntimeConstructArgs
@@ -26,18 +26,21 @@ def runtime_construct_args(  # pylint: disable=too-many-arguments, too-many-posi
     certificate: acm.Certificate,
     policy: iam.ManagedPolicy,
     cluster: ecs.Cluster,
-    load_balancer: elbv2.IApplicationLoadBalancer,
+    bucket: s3.IBucket,
     db_instance: rds.IDatabaseInstance,
+    gateway_security_group: ec2.ISecurityGroup,
     runtime_variables: dict,
 ) -> RuntimeConstructArgs:
+    # pylint: disable=duplicate-code
     return RuntimeConstructArgs(
         config=config,
         vpc=vpc,
         certificate=certificate,
         policy=policy,
         cluster=cluster,
-        load_balancer=load_balancer,
+        bucket=bucket,
         db_instance=db_instance,
+        gateway_security_group=gateway_security_group,
         runtime_variables=runtime_variables,
     )
 

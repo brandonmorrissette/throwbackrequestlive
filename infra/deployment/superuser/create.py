@@ -1,7 +1,7 @@
 """
 This script creates a superuser in the Cognito user pool for the specified project.
 It retrieves the project name and superuser email from environment variables,
-checks if the user already exists, and if not, 
+checks if the user already exists, and if not,
 creates the user and adds them to the superuser group.
 """
 

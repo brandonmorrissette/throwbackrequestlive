@@ -1,19 +1,21 @@
 """
-This module defines the GatewayConstruct class, which sets up the API Gateway and its associated resources.
+This module defines the GatewayConstruct class,
+which sets up the API Gateway and its associated resources.
 """
-from aws_cdk import Duration, BundlingOptions
+
+from aws_cdk import BundlingOptions, Duration
+from aws_cdk import aws_apigatewayv2 as apigwv2
+from aws_cdk import aws_apigatewayv2_integrations as integrations
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
-from aws_cdk import aws_apigatewayv2 as apigwv2
-from aws_cdk import aws_apigatewayv2_integrations as integrations
 
+from infra.config import Config
 from infra.constructs.construct import Construct, ConstructArgs
 from infra.stacks.stack import Stack
-from infra.config import Config
 
 
-class GatewayConstructArgs(ConstructArgs):
+class GatewayConstructArgs(ConstructArgs):  # pylint: disable=too-few-public-methods
     """
     Arguments for the GatewayConstruct.
 
@@ -23,7 +25,7 @@ class GatewayConstructArgs(ConstructArgs):
         certificate (acm.ICertificate | None): The SSL certificate for the custom domain.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         config: Config,
         vpc: ec2.IVpc,
@@ -40,6 +42,7 @@ class GatewayConstruct(Construct):
     """
     This construct sets up the API Gateway and its associated resources.
     """
+
     def __init__(self, scope: Stack, args: GatewayConstructArgs) -> None:
         super().__init__(scope, ConstructArgs(args.config, args.uid, args.prefix))
 
@@ -64,33 +67,37 @@ class GatewayConstruct(Construct):
             ],
         )
 
-        code = _lambda.Code.from_asset("infra/lambda/gateway", 
+        code = _lambda.Code.from_asset(
+            "infra/lambda/gateway",
             bundling=BundlingOptions(
-                image=_lambda.Runtime.PYTHON_3_12.bundling_image,
+                image=_lambda.Runtime.PYTHON_3_12.bundling_image,  # pylint: disable=no-member
                 command=[
-                    "bash", "-c",
-                    "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output"
-                ]
+                    "bash",
+                    "-c",
+                    "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
+                ],
             ),
         )
 
         lambda_fn = _lambda.Function(
             self,
             f"{args.config.project_name}-runtime-proxy-lambda",
-            function_name=f"{args.config.project_name}-{args.config.environment_name}-runtime-proxy-lambda",
+            function_name=f"{args.config.project_name}-{args.config.environment_name}-runtime-proxy-lambda",  # pylint: disable=line-too-long
             runtime=_lambda.Runtime.PYTHON_3_12,
             handler="index.handler",
             code=code,
             role=lambda_role,
             vpc=args.vpc,
             security_groups=[self.security_group],
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+            ),
             timeout=Duration.seconds(30),
         )
 
         lambda_fn.add_environment(
             "FARGATE_URL",
-            f"http://runtime.{args.config.project_name}-{args.config.environment_name}.local:5000"
+            f"http://runtime.{args.config.project_name}-{args.config.environment_name}.local:5000",
         )
 
         integration = integrations.HttpLambdaIntegration(

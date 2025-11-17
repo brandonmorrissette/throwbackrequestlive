@@ -39,12 +39,6 @@ def mock_sql_alchemy_libraries(
     ), patch("backend.flask.services.data.MetaData", return_value=metadata):
         yield
 
-
-@pytest.fixture
-def redis_client():
-    return MagicMock()
-
-
 @pytest.fixture()
 def engine() -> Engine:
     return MagicMock()

@@ -19,16 +19,16 @@ class Mocks:  # pylint: disable=missing-class-docstring
 
 @pytest.fixture(scope="module")
 def mocked_runtime_stack_args(config: Config):
+    # pylint: disable=duplicate-code
     return RuntimeStackArgs(
         config,
         vpc=MagicMock(),
         certificate=MagicMock(),
-        hosted_zone=MagicMock(),
         policy=MagicMock(),
         cluster=MagicMock(),
+        bucket=MagicMock(),
         db_instance=MagicMock(),
-        cache_cluster=MagicMock(),
-        load_balancer=MagicMock(),
+        gateway_security_group=MagicMock(),
     )
 
 
@@ -80,23 +80,15 @@ def test_runtime_construct(
         certificate=mocked_runtime_stack_args.certificate,
         policy=mocked_runtime_stack_args.policy,
         cluster=mocked_runtime_stack_args.cluster,
-        load_balancer=mocked_runtime_stack_args.load_balancer,
         db_instance=mocked_runtime_stack_args.db_instance,
         runtime_variables={
             "PROJECT_NAME": str(config.project_name),
             "ENVIRONMENT": str(config.environment_name),
-            "REDIS_HOST": str(
-                mocked_runtime_stack_args.cache_cluster.attr_redis_endpoint_address
-            ),
-            "REDIS_PORT": str(
-                mocked_runtime_stack_args.cache_cluster.attr_redis_endpoint_port
-            ),
         },
     )
 
 
 def test_route53_construct(
-    mocked_runtime_stack_args: RuntimeStackArgs,
     mocked_runtime_stack: tuple[RuntimeStack, Mocks],
     config: Config,
 ):
@@ -109,6 +101,4 @@ def test_route53_construct(
 
     mocks.route53_construct_args.assert_called_once_with(
         config,
-        hosted_zone=mocked_runtime_stack_args.hosted_zone,
-        load_balancer=mocked_runtime_stack_args.load_balancer,
     )

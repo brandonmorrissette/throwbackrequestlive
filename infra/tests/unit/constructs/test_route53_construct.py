@@ -12,7 +12,7 @@ from infra.stacks.stack import Stack
 @pytest.fixture(scope="module")
 def route53_construct_args(config: Config) -> Route53ConstructArgs:
     return Route53ConstructArgs(
-        config, hosted_zone=MagicMock(), load_balancer=MagicMock()
+        config, hosted_zone=MagicMock(), domain_name=MagicMock()
     )
 
 

@@ -40,7 +40,13 @@ class RequestService(DataService):
                 )
             )
 
-        response = make_response(redirect(url_for("renderblueprint.render_request", show_hash=show_hash)))
+        response = make_response(
+            redirect(
+                url_for("renderblueprint.render_request",
+                        show_hash=show_hash
+                    )
+                )
+            )
 
         app.logger.info("Redirecting to the request page.")
         return response

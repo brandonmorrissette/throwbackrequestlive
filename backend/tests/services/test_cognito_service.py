@@ -21,10 +21,8 @@ REDIS_KEYS = ["key"]
 
 @pytest.fixture
 def cognito_service(config: MagicMock) -> CognitoService:
-    with patch("boto3.client"), patch("redis.StrictRedis") as mock_redis_client:
-        mock_redis_client = MagicMock()
-        mock_redis_client.keys.return_value = REDIS_KEYS
-        return CognitoService(mock_redis_client, config)
+    with patch("boto3.client"):
+        return CognitoService(config)
 
 
 def test_given_datetime_when_cognito_json_encoder_then_return_isoformat() -> None:

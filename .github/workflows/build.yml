@@ -20,7 +20,7 @@ jobs:
 
             - name: Install dependencies
               run: |
-                  pip install pylint pytest bandit -r infra/requirements.txt -r backend/requirements.txt
+                  pip install pylint pytest bandit -r infra/requirements.txt -r backend/requirements.txt -r infra/lambda/gateway/requirements.txt
 
             - name: Running pylint on backend
               run: |

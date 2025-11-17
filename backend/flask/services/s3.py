@@ -11,7 +11,7 @@ import boto3
 from backend.flask.exceptions.boto import raise_http_exception
 
 
-class S3Service:
+class S3Service: # pylint: disable=too-few-public-methods
     """
     Service class for handling data stored in S3.
     """

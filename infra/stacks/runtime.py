@@ -19,7 +19,7 @@ from infra.constructs.runtime import RuntimeConstruct, RuntimeConstructArgs
 from infra.stacks.stack import Stack, StackArgs
 
 
-class RuntimeStackArgs(  # pylint: disable=too-few-public-methods, too-many-instance-attributes
+class RuntimeStackArgs(  # pylint: disable=too-few-public-methods, too-many-instance-attributes, duplicate-code
     StackArgs
 ):
     """

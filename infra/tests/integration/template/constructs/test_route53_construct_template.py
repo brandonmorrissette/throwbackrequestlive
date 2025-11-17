@@ -2,8 +2,8 @@
 from typing import Any, Mapping
 
 import pytest
-from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_elasticloadbalancingv2 as elbv2
+from aws_cdk import aws_apigatewayv2 as apigwv2
+from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_route53 as route53
 
 from infra.config import Config
@@ -12,11 +12,15 @@ from infra.stacks.stack import Stack
 
 
 @pytest.fixture(scope="module")
-def load_balancer(stack: Stack, vpc: ec2.Vpc) -> elbv2.ApplicationLoadBalancer:
-    return elbv2.ApplicationLoadBalancer(
+def domain_name(
+    stack: Stack,
+    certificate: acm.Certificate,
+) -> apigwv2.IDomainName:
+    return apigwv2.DomainName(
         stack,
-        "MockLoadBalancer",
-        vpc=vpc,
+        "TestDomainName",
+        domain_name="example.com",
+        certificate=certificate,
     )
 
 
@@ -24,12 +28,12 @@ def load_balancer(stack: Stack, vpc: ec2.Vpc) -> elbv2.ApplicationLoadBalancer:
 def route53_construct_args(
     config: Config,
     hosted_zone: route53.HostedZone,
-    load_balancer: elbv2.ApplicationLoadBalancer,
+    domain_name: apigwv2.IDomainName,
 ) -> Route53ConstructArgs:
     return Route53ConstructArgs(
         config=config,
         hosted_zone=hosted_zone,
-        load_balancer=load_balancer,
+        domain_name=domain_name,
     )
 
 

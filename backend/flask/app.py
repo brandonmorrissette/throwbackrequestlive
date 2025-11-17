@@ -13,7 +13,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from errors import register_error_handlers
+from backend.flask.errors import register_error_handlers
 
 from backend.flask.blueprints.auth import AuthBlueprint
 from backend.flask.blueprints.data import DataBlueprint

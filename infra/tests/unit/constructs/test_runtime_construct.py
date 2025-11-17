@@ -13,14 +13,16 @@ from infra.stacks.stack import Stack
 
 @pytest.fixture(scope="module")
 def runtime_construct_args(config: Config) -> RuntimeConstructArgs:
+    # pylint: disable=duplicate-code
     return RuntimeConstructArgs(
         config=config,
         vpc=MagicMock(),
         certificate=MagicMock(),
         policy=MagicMock(),
         cluster=MagicMock(),
-        load_balancer=MagicMock(),
+        bucket=MagicMock(),
         db_instance=MagicMock(),
+        gateway_security_group=MagicMock(),
         runtime_variables=MagicMock(),
     )
 

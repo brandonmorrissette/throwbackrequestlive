@@ -60,7 +60,8 @@ class ShowService(S3Service):
         return [
             show
             for show in self.shows
-            if datetime.fromisoformat(show.get("end_time")) > datetime.now() and show.get("name") != "DEMO"
+            if datetime.fromisoformat(show.get("end_time")) > datetime.now()
+                and show.get("name") != "DEMO"
         ]
 
     def insert_show(self, show: dict[str, str]) -> None:
